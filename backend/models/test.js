@@ -1,0 +1,3 @@
+/*
+Models folder should have files specifying format of data sent to database.
+*/

@@ -1,10 +1,7 @@
 const app = require('./app')
 
-/*
-How to run:
-1) ensure you are in backend directory
-2) type npm run dev in terminal
-3) open localhost 3001 (we don't really use this, it's just to ensure that backend works)
+/* Note: this is the file ran when npm run dev is typed, this file imports everyting
+from app, hierachy is index->app->...
 */
 
 const PORT = 3001

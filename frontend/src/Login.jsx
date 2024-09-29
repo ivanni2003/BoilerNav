@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './Login.css';
+import ForgotPassword from './ForgotPassword';
 
 const Login = ({ onClose, onLoginSuccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,6 +30,10 @@ const Login = ({ onClose, onLoginSuccess }) => {
       }
     }
   };
+
+  if (showForgotPassword) {
+    return <ForgotPassword onClose={() => setShowForgotPassword(false)} />;
+  }
 
   return (
     <div className="login-container">
@@ -56,6 +62,9 @@ const Login = ({ onClose, onLoginSuccess }) => {
         {error && <div className="error-message">{error}</div>}
         <button type="submit">Login</button>
       </form>
+      <button className="forgot-password-link" onClick={() => setShowForgotPassword(true)}>
+        Forgot Password?
+      </button>
     </div>
   );
 };

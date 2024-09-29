@@ -1,4 +1,5 @@
 const app = require('./app')
+require('dotenv').config();
 const saveData = require('./fetchOverpassData') // for fetching osm data
 
 /* Note: this is the file ran when npm run dev is typed, this file imports everyting

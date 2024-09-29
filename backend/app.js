@@ -25,7 +25,7 @@ app.use(express.json());    // ensures data sent in json
 app.use('/api/test', testRouter) // for testing
 app.use('/api/nodes', nodeRouter)
 app.use('/api/relations', relationRouter)
-app.use('/api/wayRouter', wayRouter)
+app.use('/api/ways', wayRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/reset-password', resetPasswordRouter)

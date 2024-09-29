@@ -3,6 +3,7 @@ import './App.css'
 import axios from 'axios'
 import logoImage from './img/icon.png'
 import CreateAccount from './CreateAccount'
+import Login from './Login'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -29,15 +30,8 @@ function App() {
   const [testData, setTestData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [showCreateAccount, setShowCreateAccount] = useState(false);
-
-  const getData = async () => {
-    try {
-      const response = await axios.get(baseURL + '/api/test');
-      setTestData(response.data);
-    } catch (exception) {
-      console.log(exception)
-    }
-  };
+  const [showLogin, setShowLogin] = useState(false);
+  const [user, setUser] = useState(null);
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -52,6 +46,24 @@ function App() {
     setShowCreateAccount(false);
   };
 
+  const handleLogin = () => {
+    setShowLogin(true);
+    setIsPopupOpen(false);
+  };
+
+  const handleCloseLogin = () => {
+    setShowLogin(false);
+  };
+
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    setShowLogin(false);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -63,7 +75,7 @@ function App() {
         {isPopupOpen && (
           <div className="popup">
             <button onClick={handleCreateAccount}>Create Account</button>
-            <button onClick={() => console.log("Log In clicked")}>Log In</button>
+            <button onClick={handleLogin}>Log In</button>
           </div>
         )}
         <div className="logo-title">
@@ -74,6 +86,8 @@ function App() {
       <div className="content">
         {showCreateAccount ? (
           <CreateAccount onClose={handleCloseCreateAccount} />
+        ) : showLogin ? (
+          <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
         ) : (
           <div className="map-container">
             <MapContainer center={[40.4274, -86.9132]} zoom={15} style={{ height: "100%", width: "100%" }}>

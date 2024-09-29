@@ -3,7 +3,7 @@ const usersRouter = require('express').Router();
 const User = require('../models/user');
 
 usersRouter.post('/', async (request, response) => {
-  const { fullName, major, affiliation, username, password } = request.body;
+  const { fullName, major, affiliation, username, password, email } = request.body;
 
   const saltRounds = 10;
   const passwordHash = await bcrypt.hash(password, saltRounds);
@@ -14,6 +14,7 @@ usersRouter.post('/', async (request, response) => {
     affiliation,
     username,
     password: passwordHash,
+    email,
   });
 
   try {

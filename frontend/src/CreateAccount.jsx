@@ -8,6 +8,7 @@ const CreateAccount = ({ onClose }) => {
   const [affiliation, setAffiliation] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,7 +18,8 @@ const CreateAccount = ({ onClose }) => {
         major,
         affiliation,
         username,
-        password
+        password,
+        email
       });
       console.log('Account created:', response.data);
       onClose();
@@ -87,6 +89,16 @@ const CreateAccount = ({ onClose }) => {
             required
           />
         </div>
+        <div className="form-group">
+          <label htmlFor="email">Email:</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div> 
         <button type="submit">Create Account</button>
       </form>
     </div>

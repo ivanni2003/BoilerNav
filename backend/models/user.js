@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   affiliation: String,
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
+  email: { type: String, unique:true, required: true },
   // Add any other fields you want to store
 });
 

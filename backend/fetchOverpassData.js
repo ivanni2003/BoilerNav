@@ -18,28 +18,50 @@ async function fetchOverpassData() {
         `
   
     try {
+      // getting query result
       const response = await axios.post(overpassUrl, `data=${encodeURIComponent(query)}`);
-      return response.data.elements; // elements returned from query
+      return response.data.elements;
     } catch (exception) {
-      console.error('Fetch Failed:' + exception);
+      console.log('Fetch Failed:' + exception);
       return [];
     }
   }
 
   async function saveData() {
 
-    const data = await fetchOverpassData();
+    const data = await fetchOverpassData();   // contains all data from query
   
     if (data && data.length > 0) {
+      // categorizing data from query
       const nodes = data.filter(element => element.type === 'node');
       const ways = data.filter(element => element.type === 'way');
       const relations = data.filter(element => element.type === 'relation');
     
-      await Node.insertMany(nodes);
-      await Way.insertMany(ways);
-      await Relation.insertMany(relations);
-  
-      console.log(`Inserted ${nodes.length} nodes, ${ways.length} ways, and ${relations.length} relations into MongoDB.`);
+      console.log(`${nodes.length} nodes, ${ways.length} ways, and ${relations.length} relations`);
+
+      try {
+        await Relation.insertMany(relations, { ordered: false });
+        console.log("Relations inserted");
+      } catch (exception) {
+          console.log("Relation insert issue:" + exception);
+      }
+      
+      try {
+        await Node.insertMany(nodes, { ordered: false });
+        console.log("Nodes inserted");
+      } catch (exception) {
+        console.log("Node insert issue:" + exception);
+    }
+      
+      try {
+        await Way.insertMany(ways, { ordered: false });
+        console.log("Ways inserted");
+      } catch (exception) {
+        console.log("Way insert issue" + exception);
+    }
+
+    console.log("Insert Done")
+
     } else {
       console.log('No data fetched');
     }

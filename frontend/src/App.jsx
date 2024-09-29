@@ -1,7 +1,19 @@
 import { useState } from 'react'
 import './App.css'
 import axios from 'axios'
-import logoImage from '../public/icon.png'
+import logoImage from './img/icon.png'
+import CreateAccount from './CreateAccount'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
+});
 
 const baseURL = 'http://localhost:3001'
 
@@ -16,6 +28,7 @@ How to run:
 function App() {
   const [testData, setTestData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [showCreateAccount, setShowCreateAccount] = useState(false);
 
   const getData = async () => {
     try {
@@ -30,6 +43,15 @@ function App() {
     setIsPopupOpen(!isPopupOpen);
   };
 
+  const handleCreateAccount = () => {
+    setShowCreateAccount(true);
+    setIsPopupOpen(false);
+  };
+
+  const handleCloseCreateAccount = () => {
+    setShowCreateAccount(false);
+  };
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -40,7 +62,7 @@ function App() {
         </button>
         {isPopupOpen && (
           <div className="popup">
-            <button onClick={() => console.log("Create Account clicked")}>Create Account</button>
+            <button onClick={handleCreateAccount}>Create Account</button>
             <button onClick={() => console.log("Log In clicked")}>Log In</button>
           </div>
         )}
@@ -50,14 +72,22 @@ function App() {
         </div>
       </header>
       <div className="content">
-        <button onClick={getData}>Show test data</button>
-        
-        {(
-          <ul>
-            {testData.map(user => (
-              <li key={user.id}>ID: {user.id}, Name: {user.name}</li>
-            ))}
-          </ul>
+        {showCreateAccount ? (
+          <CreateAccount onClose={handleCloseCreateAccount} />
+        ) : (
+          <div className="map-container">
+            <MapContainer center={[40.4274, -86.9132]} zoom={15} style={{ height: "100%", width: "100%" }}>
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              <Marker position={[40.4274, -86.9132]}>
+                <Popup>
+                  Purdue University
+                </Popup>
+              </Marker>
+            </MapContainer>
+          </div>
         )}
       </div>
     </div>

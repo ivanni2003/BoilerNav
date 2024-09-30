@@ -11,22 +11,25 @@ const mg = mailgun.client({
 });
 
 // Define a route for sending the email
-router.post('/send', (req, res) => {
+// In ResetPassword.js
+router.post('/', (req, res) => {
+  const { email } = req.body;
   mg.messages.create('sandbox19bae2ebb0364a398da14766ce80414c.mailgun.org', {
     from: "Excited User <mailgun@sandbox19bae2ebb0364a398da14766ce80414c.mailgun.org>",
-    to: [req.body.email],  // Get recipient email from request body
+    to: [email],  // Use email from request body
     subject: "Password Reset",
     text: "You requested a password reset.",
     html: "<h1>Password Reset Instructions</h1>"
   })
   .then(msg => {
     console.log(msg);
-    res.status(200).send("Email sent successfully!");
+    res.status(200).json({ message: "Email sent successfully!" });
   })
   .catch(err => {
-    console.log(err);
-    res.status(500).send("Error sending email.");
+    console.error(err);
+    res.status(500).json({ message: "Error sending email." });
   });
 });
+
 
 module.exports = router;  // Export the router

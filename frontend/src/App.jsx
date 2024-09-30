@@ -64,6 +64,11 @@ function App() {
     setUser(null);
   };
 
+  const handleTitleClick = () => {
+    setShowCreateAccount(false);
+    setShowLogin(false);
+  };
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -78,7 +83,7 @@ function App() {
             <button onClick={handleLogin}>Log In</button>
           </div>
         )}
-        <div className="logo-title">
+        <div className="logo-title" onClick={handleTitleClick} style={{cursor: 'pointer'}}>
           <img src={logoImage} alt="BoilerNav Logo" className="logo" />
           <h1>BoilerNav</h1>
         </div>

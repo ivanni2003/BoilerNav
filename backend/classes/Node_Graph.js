@@ -1,4 +1,4 @@
-import Node, {NodeType} from ("./node_graph.js")
+import Node, {NodeType} from ("./Node_Struct.js")
 
 class Graph {
     constructor(sizeX, sizeY) {

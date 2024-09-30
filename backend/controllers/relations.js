@@ -10,7 +10,7 @@ relationRouter.get("/", async (request, response) => {
 });
 
 // GET a relation by its _id in the database
-relationRouter.get("/id/Dbid/:_id", async (request, response) => {
+relationRouter.get("/id/DBID/:_id", async (request, response) => {
   const relation = await Relation.findById(request.params._id);
   response.json(relation);
 });

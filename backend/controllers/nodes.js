@@ -10,13 +10,13 @@ nodeRouter.get("/", async (request, response) => {
 });
 
 // GET a node by its _id in the database
-nodeRouter.get("/id/:_id", async (request, response) => {
+nodeRouter.get("/id/DBID/:_id", async (request, response) => {
   const node = await Node.findById(request.params._id);
   response.json(node);
 });
 
 // GET a node by id
-nodeRouter.get("/:id", async (request, response) => {
+nodeRouter.get("/id/:id", async (request, response) => {
   // Use the id field, not _id
   const node = await Node.findOne({ id: request.params.id });
   response.json(node);
@@ -33,4 +33,18 @@ nodeRouter.get(
     response.json(nodes);
   },
 );
+
+// GET all nodes within a bounding box and that match a given type
+nodeRouter.get(
+  "/bbox/:minLat/:minLon/:maxLat/:maxLon/:type",
+  async (request, response) => {
+    const nodes = await Node.find({
+      lat: { $gte: request.params.minLat, $lte: request.params.maxLat },
+      lon: { $gte: request.params.minLon, $lte: request.params.maxLon },
+      type: request.params.type,
+    });
+    response.json(nodes);
+  },
+);
+
 module.exports = nodeRouter;

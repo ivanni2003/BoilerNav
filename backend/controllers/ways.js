@@ -10,7 +10,7 @@ wayRouter.get("/", async (request, response) => {
 });
 
 // GET a way by its _id in the database
-wayRouter.get("/id/Dbid/:_id", async (request, response) => {
+wayRouter.get("/id/DBID/:_id", async (request, response) => {
   const way = await Way.findById(request.params._id);
   response.json(way);
 });

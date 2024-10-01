@@ -1,0 +1,2 @@
+// Test getting node by id
+GET http://localhost:3001/api/nodes/id/37968548

@@ -1,2 +1,0 @@
-// Test getting nodes by bounding box
-GET http://localhost:3001/api/nodes/bbox/40.42/-86.9/40.421/-86.8

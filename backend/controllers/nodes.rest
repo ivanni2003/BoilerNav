@@ -1,0 +1,23 @@
+### Get all nodes
+GET http://localhost:3001/api/nodes
+
+### Get a node by id
+GET http://localhost:3001/api/nodes/id/37968548 
+
+### Get many nodes by id
+GET http://localhost:3001/api/nodes/id/37968548,37998576
+
+### Get nodes by id that are also associated with a way
+GET http://localhost:3001/api/nodes/id/10087689633
+
+### Get a node by database id
+GET http://localhost:3001/api/nodes/id/DBID/66f970f4c3509200a6859348
+
+### Get many nodes by database id
+GET http://localhost:3001/api/nodes/id/DBID/66f970f4c3509200a685935e,66f970f4c3509200a685938a
+
+### Get many nodes by bounding box
+GET http://localhost:3001/api/nodes/bbox/40.42/-86.9/40.421/-86.8
+
+### Get many nodes by bounding box and by type
+GET http://localhost:3001/api/nodes/bbox/40.42/-86.9/40.421/-86.8/node

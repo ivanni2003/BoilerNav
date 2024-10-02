@@ -1,0 +1,14 @@
+### Get all relations
+GET http://localhost:3001/api/relations 
+
+### Get a relation by id
+GET http://localhost:3001/api/relations/id/3759822
+
+### Get many relations by id
+GET http://localhost:3001/api/relations/id/7091598,12191761
+
+### Get a relation by database id
+GET http://localhost:3001/api/relations/id/DBID/66f970f2c3509200a68485e7
+
+### Get many relations by database id
+GET http://localhost:3001/api/relations/id/DBID/66f970f2c3509200a68485ed,66f970f2c3509200a6848793

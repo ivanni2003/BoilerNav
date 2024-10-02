@@ -9,17 +9,29 @@ wayRouter.get("/", async (request, response) => {
   response.json(ways);
 });
 
-// GET a way by its _id in the database
-wayRouter.get("/id/DBID/:_id", async (request, response) => {
-  const way = await Way.findById(request.params._id);
-  response.json(way);
+// GET ways by  _id in the database
+wayRouter.get("/id/DBID/:_ids", async (request, response) => {
+  // There may be multiple ids separated by commas
+  // Get a list of strings (database ids are strings)
+  const ids = request.params._ids.split(",");
+  const ways = await Way.find({ _id: { $in: ids } });
+  response.json(ways);
 });
 
-// GET a way by id
-wayRouter.get("/id/:id", async (request, response) => {
+// GET ways by id
+wayRouter.get("/id/:ids", async (request, response) => {
   // Use the id field, not _id
-  const way = await Way.findOne({ id: request.params.id });
-  response.json(way);
+  // Ids are numbers, so we need to convert the strings to numbers (which may
+  // fail)
+  const ids = request.params.ids.split(",").map((id) => {
+    try {
+      return parseInt(id);
+    } catch (error) {
+      return null;
+    }
+  });
+  const ways = await Way.find({ id: { $in: ids } });
+  response.json(ways);
 });
 
 module.exports = wayRouter;

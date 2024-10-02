@@ -9,17 +9,29 @@ nodeRouter.get("/", async (request, response) => {
   response.json(nodes);
 });
 
-// GET a node by its _id in the database
-nodeRouter.get("/id/DBID/:_id", async (request, response) => {
-  const node = await Node.findById(request.params._id);
-  response.json(node);
+// GET nodes by its _id in the database
+nodeRouter.get("/id/DBID/:_ids", async (request, response) => {
+  // There may be multiple ids separated by commas
+  // Get a list of strings (database ids are strings)
+  const ids = request.params._ids.split(",");
+  const nodes = await Node.find({ _id: { $in: ids } });
+  response.json(nodes);
 });
 
-// GET a node by id
-nodeRouter.get("/id/:id", async (request, response) => {
+// GET nodes by id
+nodeRouter.get("/id/:ids", async (request, response) => {
   // Use the id field, not _id
-  const node = await Node.findOne({ id: request.params.id });
-  response.json(node);
+  // Ids are numbers, so we need to convert the strings to numbers (which may
+  // fail)
+  const ids = request.params.ids.split(",").map((id) => {
+    try {
+      return parseInt(id);
+    } catch (error) {
+      return null;
+    }
+  });
+  const nodes = await Node.find({ id: { $in: ids } });
+  response.json(nodes);
 });
 
 // GET all nodes within a bounding box using their lat and lon fields

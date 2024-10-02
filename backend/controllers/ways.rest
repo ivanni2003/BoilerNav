@@ -1,0 +1,18 @@
+### Get all ways
+GET http://localhost:3001/api/ways
+
+### Get a way by id
+GET http://localhost:3001/api/ways/id/5331434
+
+### Get many ways by id
+GET http://localhost:3001/api/ways/id/5328974,5329037
+
+### Get a ways by database id
+GET http://localhost:3001/api/ways/id/DBID/66f9714dc3509200a6859cb4
+
+### Get many ways by database id
+GET http://localhost:3001/api/ways/id/DBID/66f9714dc3509200a6859cb8,66f9714dc3509200a6859cb0
+
+### Get ways by database id that happen to be associated with a relation
+### (this doesn't work right now)
+GET http://localhost:3001/api/ways/id/DBID/66f970f2c3509200a6848271,66f970f2c3509200a6848274,66f970f2c3509200a6848277

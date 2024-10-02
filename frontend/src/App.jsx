@@ -2,36 +2,24 @@ import { useState } from 'react'
 import './App.css'
 import axios from 'axios'
 import logoImage from './img/icon.png'
-import CreateAccount from './CreateAccount'
-import Login from './Login'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
+import CreateAccount from './components/CreateAccount'
+import Login from './components/Login'
+import Map from './components/Map'
+import SearchBar from './components/SearchBar'
 
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
-});
 
 const baseURL = 'http://localhost:3001'
 
-/*
-How to run:
-1) ensure you are in frontend directory
-2) npm install vite
-3) type npm run dev in terminal
-4) open localhost 5173
-
-*/
 function App() {
   const [testData, setTestData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
+
+  const [nodes, setNodes] = useState([])
+  const [ways, setWays] = useState([])
+  const [relations, setRelations] = useState([])
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -67,7 +55,10 @@ function App() {
   const handleTitleClick = () => {
     setShowCreateAccount(false);
     setShowLogin(false);
+    setShowSearchBar(false)
   };
+
+
 
   return (
     <div className="app-container">
@@ -89,25 +80,19 @@ function App() {
         </div>
       </header>
       <div className="content">
-        {showCreateAccount ? (
-          <CreateAccount onClose={handleCloseCreateAccount} />
-        ) : showLogin ? (
-          <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
-        ) : (
-          <div className="map-container">
-            <MapContainer center={[40.4274, -86.9132]} zoom={15} style={{ height: "100%", width: "100%" }}>
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              <Marker position={[40.4274, -86.9132]}>
-                <Popup>
-                  Purdue University
-                </Popup>
-              </Marker>
-            </MapContainer>
-          </div>
-        )}
+        {(showCreateAccount ? (
+            <CreateAccount onClose={handleCloseCreateAccount} />
+          ) : showLogin ? (
+            <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
+          ) : (
+            <div className="map-container">
+              <Map nodes={nodes} relations={relations} ways={ways} />
+              <SearchBar items={["Hello", "There"]}/>
+            </div>
+            
+  )
+)}
+
       </div>
     </div>
   );

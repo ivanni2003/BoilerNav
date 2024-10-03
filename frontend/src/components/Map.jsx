@@ -14,10 +14,10 @@ const Map = ({nodes, ways, relations, userLocation, accuracy}) => {
                     {accuracy && (
                         <Circle
                             center={userLocation}
-                            radius={200} // Accuracy in meters
+                            radius={accuracy} // Accuracy in meters
                             color="blue"
                             fillColor="blue"
-                            fillOpacity={1}
+                            fillOpacity={0.2}
                         />
                     )}
                 </>

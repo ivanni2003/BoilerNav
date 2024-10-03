@@ -2,6 +2,7 @@ import React from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, Circle} from 'react-leaflet';
 
 const Map = ({nodes, ways, relations, userLocation, accuracy}) => {
+
     return (
         <MapContainer center={[40.4274, -86.9132]} zoom={13} style={{ height: "600px", width: "100%" }}>
             <TileLayer
@@ -13,7 +14,7 @@ const Map = ({nodes, ways, relations, userLocation, accuracy}) => {
                     <Marker position={userLocation}></Marker>
                     {accuracy && (
                         <Circle
-                            center={userLocation}
+                            center={userLocation}  
                             radius={accuracy} // Accuracy in meters
                             color="blue"
                             fillColor="blue"

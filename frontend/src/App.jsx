@@ -30,6 +30,8 @@ function App() {
         const { latitude, longitude, accuracy } = pos.coords;
         setUserLocation([latitude, longitude]);
         setAccuracy(accuracy);
+        console.log("Map Props - User Location:", pos.coords);
+
       },
       (err) => {
         console.error(err);

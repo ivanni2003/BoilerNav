@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import axios from 'axios'
 import logoImage from './img/icon.png'
@@ -16,9 +16,33 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
 
-  const [nodes, setNodes] = useState([])
-  const [ways, setWays] = useState([])
-  const [relations, setRelations] = useState([])
+  const [nodes, setNodes] = useState([]);
+  const [ways, setWays] = useState([]);
+  const [relations, setRelations] = useState([]);
+
+  const [userLocation, setUserLocation] = useState(null);
+
+  useEffect(() => {
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setUserLocation([latitude, longitude]);
+      },
+      (err) => {
+        console.error(err);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      }
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, []);
+
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -85,7 +109,7 @@ function App() {
             <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
           ) : (
             <div className="map-container">
-            <Map nodes={nodes} relations={relations} ways={ways} />
+            <Map nodes={nodes} relations={relations} ways={ways} userLocation={userLocation} />
             <div className="search-container">
                 <SearchBar items={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]} />
             </div>

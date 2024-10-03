@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './SearchBar.css'
 
 const SearchBar = ({items}) => {
     
@@ -8,10 +9,13 @@ const SearchBar = ({items}) => {
         setSearch(e.target.value)
     }
 
-    const filteredItems = items.filter(item =>
-        item.toLowerCase().includes(search.toLowerCase())
-      );
+    const filteredItems = search ? items.filter(item =>
+      item.toLowerCase().includes(search.toLowerCase())
+  ).slice(0, 20) : [];
 
+    const handleItemClick = (item) => {
+        // jump to lat/long of item in map
+    };
       return (
         <div>
           <input
@@ -20,17 +24,17 @@ const SearchBar = ({items}) => {
             onChange={handleChange}
             placeholder="Search For Destination"
           />
-          <ul>
+          <div className="dropdown">
             {filteredItems.length > 0 ? (
               filteredItems.map((item, index) => (
-                <li key={index} onClick={() => handleItemClick(item)} style={{ cursor: 'pointer' }}>
+                <ul className="item" key={index} onClick={() => handleItemClick(item)} style={{ cursor: 'pointer' }}>
               {item}
-            </li>
+            </ul>
               ))
             ) : (
-              <li>No results found</li>
+              <ul className="item">No results found</ul>
             )}
-          </ul>
+          </div>
         </div>
       );
 

@@ -7,7 +7,6 @@ import Login from './components/Login'
 import Map from './components/Map'
 import SearchBar from './components/SearchBar'
 
-
 const baseURL = 'http://localhost:3001'
 
 function App() {
@@ -86,10 +85,11 @@ function App() {
             <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
           ) : (
             <div className="map-container">
-              <Map nodes={nodes} relations={relations} ways={ways} />
-              <SearchBar items={["Hello", "There"]}/>
+            <Map nodes={nodes} relations={relations} ways={ways} />
+            <div className="search-container">
+                <SearchBar items={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]} />
             </div>
-            
+        </div>
   )
 )}
 

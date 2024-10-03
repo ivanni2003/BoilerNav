@@ -1,0 +1,28 @@
+input {
+    width: 250px; 
+    padding: 8px; 
+    border: 1px solid #4CAF50; 
+    border-radius: 3px; 
+}
+
+.dropdown {
+    position: absolute; 
+    padding: 8px;
+    margin: 0px 0; 
+    width: 250px;
+    background-color: white; 
+    border: 1px solid #4CAF50; 
+    max-height: 240px; 
+    overflow-y: auto; 
+}
+
+.item {
+    padding: 8px; 
+    border: 1px solid #45a049; 
+    margin: 1px 0; 
+    cursor: pointer; 
+}
+
+.item:hover {
+    background-color: #f0f0f0; /* highlight on hover */
+}

@@ -5,6 +5,17 @@
   font-family: Arial, sans-serif;
 }
 
+.map-container {
+    position: relative; 
+}
+
+.search-container {
+  position: absolute; 
+  top: 0px; 
+  right: 0px; 
+  z-index: 1000; 
+}
+
 .app-header {
   display: flex;
   justify-content: center;

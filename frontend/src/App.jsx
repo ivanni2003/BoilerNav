@@ -73,7 +73,7 @@ function App() {
     setShowLogin(false);
   };
 
-  const handleMapUpdate = (latitude, longitude, zoom) => {
+  const handleMapUpdate = (latitude, longitude, zoom) => { // Use this to update map centering 
     setLatitude(latitude);
     setLongitude(longitude);
     setZoom(zoom)

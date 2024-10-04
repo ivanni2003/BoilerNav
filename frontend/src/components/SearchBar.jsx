@@ -26,13 +26,20 @@ const SearchBar = ({items, updateMap}) => {
       let numNodes = 0
  
       try {
+        let idList = ""
         for (const nodeId of item.nodes) {
-            const response = await axios.get(`${baseURL}/api/nodes/id/${nodeId}`)
-            const node = response.data
-            totalLat += node[0].lat
-            totalLon += node[0].lon
-            numNodes += 1
+            idList += nodeId + ',' 
         }
+        idList = idList.slice(0, -1)  // remove last ','
+        const response = await axios.get(`${baseURL}/api/nodes/id/${idList}`)  // fetch all nodes associate w/building
+        const nodes = response.data
+        
+        for (const node of nodes) {
+          totalLat += node.lat
+          totalLon += node.lon
+          numNodes += 1
+        }
+        
       } catch (error) {
         console.log(error);
       }

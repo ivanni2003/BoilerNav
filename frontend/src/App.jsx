@@ -22,15 +22,22 @@ function App() {
 
   const [userLocation, setUserLocation] = useState(null);
   const [accuracy, setAccuracy] = useState(null); // Store accuracy
+  const [heading, setHeading] = useState(null);
+  const [altitude, setAltitude] = useState(null);
 
 
   useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
-        const { latitude, longitude, accuracy } = pos.coords;
+        const { latitude, longitude, accuracy, heading, altitude } = pos.coords;
         setUserLocation([latitude, longitude]);
         setAccuracy(accuracy);
+        setAltitude(altitude);
         console.log("Map Props - User Location:", pos.coords);
+
+        if (heading !== null) {
+          setHeading(heading);
+        }
 
       },
       (err) => {
@@ -114,7 +121,7 @@ function App() {
             <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
           ) : (
             <div className="map-container">
-            <Map nodes={nodes} relations={relations} ways={ways} userLocation={userLocation} accuracy={accuracy} />
+            <Map nodes={nodes} relations={relations} ways={ways} userLocation={userLocation} accuracy={accuracy} altitude={altitude} />
             <div className="search-container">
                 <SearchBar items={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]} />
             </div>

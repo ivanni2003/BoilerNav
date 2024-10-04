@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import axios from 'axios'
 import logoImage from './img/icon.png'
@@ -10,7 +10,6 @@ import SearchBar from './components/SearchBar'
 const baseURL = 'http://localhost:3001'
 
 function App() {
-  const [testData, setTestData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
@@ -19,6 +18,24 @@ function App() {
   const [nodes, setNodes] = useState([])
   const [ways, setWays] = useState([])
   const [relations, setRelations] = useState([])
+
+  const [buildings, setBuildings] = useState([])
+
+  const fetchBuildings = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/api/ways/buildings`);
+        setBuildings(response.data); 
+      } catch (error) {
+        console.log(error); 
+      }
+  };
+
+  useEffect(() => {   // runs when component mounts
+    console.log("fetch")
+    if (!showLogin) { 
+      fetchBuildings(); // Fetch buildings only when showLogin is false
+    }
+  }, []); // Dependency array includes showLogin
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -54,7 +71,6 @@ function App() {
   const handleTitleClick = () => {
     setShowCreateAccount(false);
     setShowLogin(false);
-    setShowSearchBar(false)
   };
 
 
@@ -87,7 +103,7 @@ function App() {
             <div className="map-container">
             <Map nodes={nodes} relations={relations} ways={ways} />
             <div className="search-container">
-                <SearchBar items={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]} />
+                <SearchBar items={buildings} />
             </div>
         </div>
   )

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import './SearchBar.css'
+import axios from 'axios'
 
-const SearchBar = ({items}) => {
+const baseURL = 'http://localhost:3001'
+
+const SearchBar = ({items, updateMap}) => {
     
     const [search, setSearch] = useState('')
 
@@ -17,9 +20,27 @@ const SearchBar = ({items}) => {
     ).slice(0, 20) 
     : [];
 
-    const handleItemClick = (item) => {
-        // jump to lat/long of item in map
-    };
+    const handleItemClick = async (item) => {
+      let totalLat = 0
+      let totalLon = 0
+      let numNodes = 0
+ 
+      try {
+        for (const nodeId of item.nodes) {
+            const response = await axios.get(`${baseURL}/api/nodes/id/${nodeId}`)
+            const node = response.data
+            totalLat += node[0].lat
+            totalLon += node[0].lon
+            numNodes += 1
+        }
+      } catch (error) {
+        console.log(error);
+      }
+      const avgLat = totalLat / numNodes
+      const avgLon = totalLon / numNodes
+
+      updateMap(avgLat, avgLon, 20)
+    }
       return (
         <div>
           <input

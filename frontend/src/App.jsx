@@ -15,11 +15,11 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
 
-  const [nodes, setNodes] = useState([])
-  const [ways, setWays] = useState([])
-  const [relations, setRelations] = useState([])
-
   const [buildings, setBuildings] = useState([])
+
+  const [latitude, setLatitude] = useState(40.4274);
+  const [longitude, setLongitude] = useState(-86.9132);
+  const [zoom, setZoom] = useState(15)
 
   const fetchBuildings = async () => {
       try {
@@ -73,6 +73,11 @@ function App() {
     setShowLogin(false);
   };
 
+  const handleMapUpdate = (latitude, longitude, zoom) => {
+    setLatitude(latitude);
+    setLongitude(longitude);
+    setZoom(zoom)
+  };
 
 
   return (
@@ -101,9 +106,9 @@ function App() {
             <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
           ) : (
             <div className="map-container">
-            <Map nodes={nodes} relations={relations} ways={ways} />
+            <Map latitude={latitude} longitude={longitude} zoom={zoom} />
             <div className="search-container">
-                <SearchBar items={buildings} />
+                <SearchBar items={buildings} updateMap={handleMapUpdate}/>
             </div>
         </div>
   )

@@ -62,15 +62,25 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <button className="user-button" onClick={togglePopup}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-          </svg>
+      <button className="user-button" onClick={togglePopup}>
+          {user && user.name && user.name.length > 0 ? (
+            <span className="user-initial">{user.name[0].toUpperCase()}</span>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+          )}
         </button>
         {isPopupOpen && (
           <div className="popup">
-            <button onClick={handleCreateAccount}>Create Account</button>
-            <button onClick={handleLogin}>Log In</button>
+            {user ? (
+              <button onClick={handleLogout}>Log Out</button>
+            ) : (
+              <>
+                <button onClick={handleCreateAccount}>Create Account</button>
+                <button onClick={handleLogin}>Log In</button>
+              </>
+            )}
           </div>
         )}
         <div className="logo-title" onClick={handleTitleClick} style={{cursor: 'pointer'}}>
@@ -80,7 +90,7 @@ function App() {
       </header>
       <div className="content">
         {(showCreateAccount ? (
-            <CreateAccount onClose={handleCloseCreateAccount} />
+            <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleLoginSuccess} />
           ) : showLogin ? (
             <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
           ) : (
@@ -92,7 +102,6 @@ function App() {
         </div>
   )
 )}
-
       </div>
     </div>
   );

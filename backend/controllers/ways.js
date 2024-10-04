@@ -1,5 +1,5 @@
 const wayRouter = require("express").Router();
-const Way = require("../models/osm_way");
+const Way = require("../models/osmWay");
 
 /* endpoints here */
 

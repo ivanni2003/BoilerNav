@@ -11,7 +11,7 @@ app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`)
 
     try {
-        //await saveData();  *Leave commented out, don't want to fetch every time backend in run*
+        await saveData(); //Leave commented out, don't want to fetch every time backend in run
       } catch (exception) {
         console.error('Fetch Data Error:' + exception);
       }

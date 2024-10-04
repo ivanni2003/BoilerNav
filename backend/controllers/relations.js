@@ -1,5 +1,5 @@
 const relationRouter = require("express").Router();
-const Relation = require("../models/osm_relation");
+const Relation = require("../models/osmRelation");
 
 /* endpoints here */
 

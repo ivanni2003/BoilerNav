@@ -9,6 +9,12 @@ wayRouter.get("/", async (request, response) => {
   response.json(ways);
 });
 
+// GET all ways that represent buildings
+wayRouter.get("/buildings", async (request, response) => {
+  const buildings = await Way.find({ "tags.building": {$exists: true} });
+  response.json(buildings);
+});
+
 // GET ways by  _id in the database
 wayRouter.get("/id/DBID/:_ids", async (request, response) => {
   // There may be multiple ids separated by commas

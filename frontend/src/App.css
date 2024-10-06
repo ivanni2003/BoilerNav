@@ -72,6 +72,11 @@
   height: 24px;
 }
 
+.user-initial {
+  font-size: 20px;
+  font-weight: bold;
+}
+
 .popup {
   position: absolute;
   top: 60px;

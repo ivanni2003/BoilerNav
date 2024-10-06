@@ -16,7 +16,12 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
 };
 
 const PopupContent = ({ building }) => {
-  return "Popup content here.";
+  return (
+    <div>
+      { building.tags.name ? <h2>{building.tags.name}</h2> : <h2>Building</h2> }
+      <p>More content...</p>
+    </div>
+  );
 }
 
 const BuildingsRenderer = ({ buildings }) => {
@@ -25,13 +30,16 @@ const BuildingsRenderer = ({ buildings }) => {
     fillColor: 'gold',
   };
   return buildings.map((building, index) => {
+    // building.buildingPosition.rad is in lat/lon, while circle radius is in meters
+    // here I've done some rough conversion to make the circles reasonable
+    const minSize = 7;
+    const buildingSize = building.buildingPosition.rad * 100000 / 4 > minSize ? 
+      building.buildingPosition.rad * 100000 / 4 : 
+      minSize;
     return <CircleMarker
       key={index}
       center={[building.buildingPosition.lat, building.buildingPosition.lon]}
-      // TODO
-      // radius={building.buildingPosition.rad} // Right now, this makes the radius too small
-      // buildingPosition.rad is in lat/lon, leaflet uses meters for circle radius
-      radius={5}
+      radius={buildingSize}
       pathOptions={buildingPathOptions}
       >
       <Popup><PopupContent building={building} /></Popup>

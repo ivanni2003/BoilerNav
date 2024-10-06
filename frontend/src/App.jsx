@@ -6,6 +6,7 @@ import CreateAccount from './components/CreateAccount'
 import Login from './components/Login'
 import Map from './components/Map'
 import SearchBar from './components/SearchBar'
+import Notification from './components/Notification'
 
 const baseURL = 'http://localhost:3001'
 
@@ -15,6 +16,7 @@ function App() {
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   const [nodes, setNodes] = useState([])
   const [ways, setWays] = useState([])
@@ -45,19 +47,29 @@ function App() {
   const handleLoginSuccess = (userData) => {
     setUser(userData);
     setShowLogin(false);
+    showNotification('Successfully logged in!', 'success');
   };
 
   const handleLogout = () => {
     setUser(null);
+    setIsPopupOpen(false);
+    showNotification('You have been logged out.', 'info');
   };
 
   const handleTitleClick = () => {
     setShowCreateAccount(false);
     setShowLogin(false);
-    setShowSearchBar(false)
   };
 
+  const showNotification = (message, type) => {
+    setNotification({ message, type });
+  };
 
+  const handleCreateSuccess = (userData) => {
+    setUser(userData);
+    setShowCreateAccount(false);
+    showNotification('Account created successfully!', 'success');
+  }
 
   return (
     <div className="app-container">
@@ -103,6 +115,13 @@ function App() {
   )
 )}
       </div>
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </div>
   );
 }

@@ -21,13 +21,7 @@ const Login = ({ onClose, onLoginSuccess }) => {
       onClose();
     } catch (error) {
       console.error('Error logging in:', error);
-      if (error.response) {
-        setError(`Server error: ${error.response.status} ${error.response.statusText}`);
-      } else if (error.request) {
-        setError('No response received from server. Please try again.');
-      } else {
-        setError('An error occurred while logging in. Please try again.');
-      }
+      onLoginSuccess(null, 'Invalid username or password. Please try again.');
     }
   };
 

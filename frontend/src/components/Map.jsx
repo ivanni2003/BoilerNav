@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import 'leaflet/dist/leaflet.css';
+import './Map.css';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
@@ -11,7 +13,12 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
 
 const Map = ({ latitude, longitude, zoom}) => {
     return (
-        <MapContainer center={[latitude, longitude]} zoom={zoom} style={{ height: "600px", width: "100%" }}>
+        <MapContainer 
+            center={[latitude, longitude]} 
+            zoom={zoom} 
+            className="map-container" 
+            zoomControl={false}
+        >
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

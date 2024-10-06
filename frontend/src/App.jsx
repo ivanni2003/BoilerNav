@@ -7,6 +7,7 @@ import Login from './components/Login'
 import Map from './components/Map'
 import SearchBar from './components/SearchBar'
 import Notification from './components/Notification'
+import Profile from './components/Profile'
 
 const baseURL = 'http://localhost:3001'
 
@@ -15,12 +16,14 @@ function App() {
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
+  const [showProfile, setShowProfile] = useState(false);
 
   const [buildings, setBuildings] = useState([])
 
   const [latitude, setLatitude] = useState(40.4274);
   const [longitude, setLongitude] = useState(-86.9132);
   const [zoom, setZoom] = useState(15)
+  const [notification, setNotification] = useState(null);
 
   const fetchBuildings = async () => {
       try {
@@ -51,6 +54,15 @@ function App() {
     setShowCreateAccount(false);
   };
 
+  const handleViewProfile = () => {
+    setShowProfile(true);
+    setIsPopupOpen(false);
+  };
+
+  const handleCloseProfile = () => {
+    setShowProfile(false);
+  };
+
   const handleLogin = () => {
     setShowLogin(true);
     setIsPopupOpen(false);
@@ -77,6 +89,10 @@ function App() {
     setShowLogin(false);
   };
 
+  const showNotification = (message, type) => {
+    setNotification({ message, type });
+  };
+
   const handleMapUpdate = (latitude, longitude, zoom) => { // Use this to update map centering 
     setLatitude(latitude);
     setLongitude(longitude);
@@ -88,6 +104,11 @@ function App() {
     setShowCreateAccount(false);
     showNotification('Account created successfully!', 'success');
   }
+
+  const handleUpdateUser = (updatedUser) => {
+    setUser(updatedUser);
+    showNotification('Profile updated successfully!', 'success');
+  };
 
   return (
     <div className="app-container">
@@ -104,7 +125,10 @@ function App() {
         {isPopupOpen && (
           <div className="popup">
             {user ? (
-              <button onClick={handleLogout}>Log Out</button>
+              <>
+                <button onClick={handleViewProfile}>View Profile</button>
+                <button onClick={handleLogout}>Log Out</button>
+              </>
             ) : (
               <>
                 <button onClick={handleCreateAccount}>Create Account</button>
@@ -120,11 +144,13 @@ function App() {
       </header>
       <div className="content">
         {(showCreateAccount ? (
-            <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleLoginSuccess} />
+            <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} />
           ) : showLogin ? (
             <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
+          ) :showProfile ? (
+            <Profile user={user} onClose={handleCloseProfile} onUpdateUser={handleUpdateUser}/>
           ) : (
-            <div className="map-container">
+            <div className="map-content">
             <Map latitude={latitude} longitude={longitude} zoom={zoom} />
             <div className="search-container">
                 <SearchBar items={buildings} updateMap={handleMapUpdate}/>

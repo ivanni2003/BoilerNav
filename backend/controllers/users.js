@@ -25,4 +25,25 @@ usersRouter.post('/', async (request, response) => {
   }
 });
 
+usersRouter.put('/:id', async (request, response) => {
+  const { id } = request.params;
+  const { name, email, major, affiliation } = request.body;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { fullName: name, email, major, affiliation },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return response.status(404).json({ error: 'User not found' });
+    }
+
+    response.json(updatedUser);
+  } catch (error) {
+    response.status(400).json({ error: error.message });
+  }
+});
+
 module.exports = usersRouter;

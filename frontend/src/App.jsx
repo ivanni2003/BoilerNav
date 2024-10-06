@@ -116,7 +116,7 @@ function App() {
             <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
           ) : (
             <div className="map-container">
-            <Map latitude={latitude} longitude={longitude} zoom={zoom} />
+            <Map latitude={latitude} longitude={longitude} zoom={zoom} buildings={buildings}/>
             <div className="search-container">
                 <SearchBar items={buildings} updateMap={handleMapUpdate}/>
             </div>

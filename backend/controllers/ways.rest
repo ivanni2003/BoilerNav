@@ -1,6 +1,9 @@
 ### Get all ways
 GET http://localhost:3001/api/ways
 
+### Get all ways that are buildings
+GET http://localhost:3001/api/ways/buildings
+
 ### Get a way by id
 GET http://localhost:3001/api/ways/id/5331434
 

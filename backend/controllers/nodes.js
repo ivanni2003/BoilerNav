@@ -1,5 +1,5 @@
 const nodeRouter = require("express").Router();
-const Node = require("../models/osm_node");
+const Node = require("../models/osmNode");
 
 /* endpoints here */
 

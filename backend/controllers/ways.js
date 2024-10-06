@@ -1,5 +1,5 @@
 const wayRouter = require("express").Router();
-const Way = require("../models/osm_way");
+const Way = require("../models/osmWay");
 
 /* endpoints here */
 
@@ -7,6 +7,12 @@ const Way = require("../models/osm_way");
 wayRouter.get("/", async (request, response) => {
   const ways = await Way.find({});
   response.json(ways);
+});
+
+// GET all ways that represent buildings
+wayRouter.get("/buildings", async (request, response) => {
+  const buildings = await Way.find({ "tags.building": {$exists: true} });
+  response.json(buildings);
 });
 
 // GET ways by  _id in the database

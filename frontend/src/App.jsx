@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import axios from 'axios'
 import logoImage from './img/icon.png'
@@ -11,16 +11,32 @@ import Notification from './components/Notification'
 const baseURL = 'http://localhost:3001'
 
 function App() {
-  const [testData, setTestData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
-  const [notification, setNotification] = useState(null);
 
-  const [nodes, setNodes] = useState([])
-  const [ways, setWays] = useState([])
-  const [relations, setRelations] = useState([])
+  const [buildings, setBuildings] = useState([])
+
+  const [latitude, setLatitude] = useState(40.4274);
+  const [longitude, setLongitude] = useState(-86.9132);
+  const [zoom, setZoom] = useState(15)
+
+  const fetchBuildings = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/api/ways/buildings`);
+        setBuildings(response.data); 
+      } catch (error) {
+        console.log(error); 
+      }
+  };
+
+  useEffect(() => {   // runs when component mounts
+    console.log("fetch")
+    if (!showLogin) { 
+      fetchBuildings(); // Fetch buildings only when showLogin is false
+    }
+  }, []); // Dependency array includes showLogin
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -61,8 +77,10 @@ function App() {
     setShowLogin(false);
   };
 
-  const showNotification = (message, type) => {
-    setNotification({ message, type });
+  const handleMapUpdate = (latitude, longitude, zoom) => { // Use this to update map centering 
+    setLatitude(latitude);
+    setLongitude(longitude);
+    setZoom(zoom)
   };
 
   const handleCreateSuccess = (userData) => {
@@ -107,9 +125,9 @@ function App() {
             <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
           ) : (
             <div className="map-container">
-            <Map nodes={nodes} relations={relations} ways={ways} />
+            <Map latitude={latitude} longitude={longitude} zoom={zoom} />
             <div className="search-container">
-                <SearchBar items={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]} />
+                <SearchBar items={buildings} updateMap={handleMapUpdate}/>
             </div>
         </div>
   )

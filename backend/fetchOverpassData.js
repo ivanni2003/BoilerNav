@@ -1,7 +1,7 @@
 const axios = require('axios')
-const Node = require('./models/osm_node')
-const Way = require('./models/osm_way')
-const Relation = require('./models/osm_relation')
+const Node = require('./models/osmNode')
+const Way = require('./models/osmWay')
+const Relation = require('./models/osmRelation')
 
 async function fetchOverpassData() {
     const overpassUrl = 'https://overpass-api.de/api/interpreter'

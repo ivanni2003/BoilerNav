@@ -158,7 +158,7 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-      <button className="user-button" onClick={togglePopup}>
+        <button className="user-button" onClick={togglePopup}>
           {user && user.name && user.name.length > 0 ? (
             <span className="user-initial">{user.name[0].toUpperCase()}</span>
           ) : (
@@ -188,25 +188,30 @@ function App() {
         </div>
       </header>
       <div className="content">
-        {(showCreateAccount ? (
-            <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} />
-          ) : showLogin ? (
-            <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
-          ) :showProfile ? (
-            <Profile user={user} onClose={handleCloseProfile} onUpdateUser={handleUpdateUser} onClick={handleTitleClick}/>
-          ) : (
-            <div className="map-content">
-            <Map latitude={latitude} longitude={longitude} zoom={zoom} />
+        {showCreateAccount ? (
+          <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} />
+        ) : showLogin ? (
+          <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
+        ) : showProfile ? (
+          <Profile user={user} onClose={handleCloseProfile} onUpdateUser={handleUpdateUser} onTitleClick={handleTitleClick}/>
+        ) : (
+          <div className="map-content">
             <div className="map-container">
-
-            <Map latitude={latitude} longitude={longitude} zoom={zoom} buildings={buildings} userLocation={userLocation} accuracy={accuracy} altitude={altitude} />
-
-            <div className="search-container">
+              <Map 
+                latitude={latitude} 
+                longitude={longitude} 
+                zoom={zoom} 
+                buildings={buildings} 
+                userLocation={userLocation} 
+                accuracy={accuracy} 
+                altitude={altitude} 
+              />
+              <div className="search-container">
                 <SearchBar items={buildings} updateMap={handleMapUpdate}/>
+              </div>
             </div>
-        </div>
-  )
-)}
+          </div>
+        )}
       </div>
       {notification && (
         <Notification
@@ -217,6 +222,6 @@ function App() {
       )}
     </div>
   );
-}
 
-export default App
+}
+export default App;

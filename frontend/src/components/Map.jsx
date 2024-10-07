@@ -55,7 +55,7 @@ const BuildingsRenderer = ({ buildings }) => {
 
 const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, altitude }) => {
   return (
-    <MapContainer center={[latitude, longitude]} zoom={zoom} style={{ height: "600px", width: "100%" }}>
+    <MapContainer center={[latitude, longitude]} zoom={zoom} zoomControl={false} className="map-container">
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -85,20 +85,5 @@ const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, alt
             )}
     </MapContainer>
   );
-const Map = ({ latitude, longitude, zoom}) => {
-    return (
-        <MapContainer 
-            center={[latitude, longitude]} 
-            zoom={zoom} 
-            className="map-container" 
-            zoomControl={false}
-        >
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            <MapViewUpdater latitude={latitude} longitude={longitude} zoom={zoom} /> {/* Include the updater */}
-        </MapContainer>
-    );
 };
 export default Map;

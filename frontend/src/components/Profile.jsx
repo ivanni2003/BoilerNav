@@ -140,7 +140,9 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
     );
   };
 
-  if (!user) return null;
+  if (!user) {
+    return <div className="profile-container">Loading user data...</div>;
+  }
 
   return (
     <div className="profile-container">
@@ -150,11 +152,11 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
       </div>
       <div className="profile-content">
         <div className="user-icon">
-          <span>{user.name[0].toUpperCase()}</span>
+          <span>{user.name && user.name[0] ? user.name[0].toUpperCase() : '?'}</span>
         </div>
         <div className="user-info">
           {renderField("Full Name", "name")}
-          <p><strong>Username:</strong> {user.username}</p>
+          <p><strong>Username:</strong> {user.username || 'N/A'}</p>
           {renderField("Email", "email")}
           {renderField("Major", "major")}
           {renderField("Affiliation", "affiliation")}

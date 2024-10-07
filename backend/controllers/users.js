@@ -4,21 +4,33 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 
 usersRouter.post('/', async (request, response) => {
-  const { fullName, major, affiliation, username, password, email } = request.body;
-
-  const saltRounds = 10;
-  const passwordHash = await bcrypt.hash(password, saltRounds);
-
-  const user = new User({
-    fullName,
-    major,
-    affiliation,
-    username,
-    password: passwordHash,
-    email,
-  });
-
   try {
+    const { fullName, major, affiliation, username, password, email } = request.body;
+
+    // Check if username already exists
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      return response.status(409).json({ error: 'Username already exists', field: 'username' });
+    }
+
+    // Check if email already exists
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return response.status(409).json({ error: 'Email already exists', field: 'email' });
+    }
+
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    const user = new User({
+      fullName,
+      major,
+      affiliation,
+      username,
+      password: passwordHash,
+      email,
+    });
+
     const savedUser = await user.save();
     response.status(201).json(savedUser);
   } catch (error) {

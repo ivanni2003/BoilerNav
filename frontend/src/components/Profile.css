@@ -63,9 +63,19 @@
   margin-left: 10px;
 }
 
-.user-info-field input {
+.user-info-field input,
+.user-info-field select {
   margin-left: 5px;
   padding: 5px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.user-info-field select {
+  background-color: white;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
 }

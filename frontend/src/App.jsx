@@ -72,11 +72,6 @@ function App() {
     setShowLogin(false);
   };
 
-  const handleLoginSuccess = (userData) => {
-    setUser(userData);
-    setShowLogin(false);
-    showNotification('Successfully logged in!', 'success');
-  };
 
   const handleLogout = () => {
     setUser(null);
@@ -87,6 +82,7 @@ function App() {
   const handleTitleClick = () => {
     setShowCreateAccount(false);
     setShowLogin(false);
+    setShowProfile(false);
   };
 
   const showNotification = (message, type) => {
@@ -108,6 +104,19 @@ function App() {
   const handleUpdateUser = (updatedUser) => {
     setUser(updatedUser);
     showNotification('Profile updated successfully!', 'success');
+  };
+
+  const handleLoginSuccess = (userData) => {
+    setUser({
+      id: userData.id, // Make sure to include the id
+      name: userData.name,
+      username: userData.username,
+      email: userData.email,
+      major: userData.major,
+      affiliation: userData.affiliation
+    });
+    setShowLogin(false);
+    showNotification('Successfully logged in!', 'success');
   };
 
   return (
@@ -148,7 +157,7 @@ function App() {
           ) : showLogin ? (
             <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
           ) :showProfile ? (
-            <Profile user={user} onClose={handleCloseProfile} onUpdateUser={handleUpdateUser}/>
+            <Profile user={user} onClose={handleCloseProfile} onUpdateUser={handleUpdateUser} onClick={handleTitleClick}/>
           ) : (
             <div className="map-content">
             <Map latitude={latitude} longitude={longitude} zoom={zoom} />

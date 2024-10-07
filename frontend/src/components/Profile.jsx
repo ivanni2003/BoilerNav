@@ -11,9 +11,19 @@ const Profile = ({ user, onClose, onUpdateUser }) => {
     affiliation: false
   });
   const [editedUser, setEditedUser] = useState({ ...user });
+  const [error, setError] = useState('');
+
+  const affiliationOptions = [
+    { value: "student", label: "Student" },
+    { value: "faculty", label: "Faculty" },
+    { value: "staff", label: "Staff" },
+    { value: "alumni", label: "Alumni" },
+    { value: "other", label: "Other" }
+  ];
 
   const toggleEdit = (field) => {
     setEditMode({ ...editMode, [field]: !editMode[field] });
+    setError(''); // Clear any previous errors when toggling edit mode
   };
 
   const handleChange = (e, field) => {
@@ -22,6 +32,9 @@ const Profile = ({ user, onClose, onUpdateUser }) => {
 
   const handleSave = async (field) => {
     try {
+      if (!user.id) {
+        throw new Error('User ID is missing. Please log out and log in again.');
+      }
       const response = await axios.put(`http://localhost:3001/api/users/${user.id}`, {
         [field]: editedUser[field]
       });
@@ -31,30 +44,60 @@ const Profile = ({ user, onClose, onUpdateUser }) => {
       }
     } catch (error) {
       console.error('Error updating user:', error);
-      // Optionally, add error handling here (e.g., show an error message to the user)
+      setError(error.response?.data?.error || error.message || 'An error occurred while updating. Please try again.');
     }
   };
 
-  const renderField = (label, field) => (
-    <div className="user-info-field">
-      <strong>{label}:</strong> 
-      {editMode[field] ? (
-        <>
-          <input
-            type="text"
-            value={editedUser[field]}
-            onChange={(e) => handleChange(e, field)}
-          />
-          <Check onClick={() => handleSave(field)} className="edit-icon" />
-        </>
-      ) : (
-        <>
-          {user[field]}
-          <Pencil onClick={() => toggleEdit(field)} className="edit-icon" />
-        </>
-      )}
-    </div>
-  );
+  const renderField = (label, field) => {
+    if (field === 'affiliation') {
+      return (
+        <div className="user-info-field">
+          <strong>{label}:</strong> 
+          {editMode[field] ? (
+            <>
+              <select
+                value={editedUser[field]}
+                onChange={(e) => handleChange(e, field)}
+              >
+                {affiliationOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <Check onClick={() => handleSave(field)} className="edit-icon" />
+            </>
+          ) : (
+            <>
+              {affiliationOptions.find(option => option.value === user[field])?.label || user[field]}
+              <Pencil onClick={() => toggleEdit(field)} className="edit-icon" />
+            </>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="user-info-field">
+        <strong>{label}:</strong> 
+        {editMode[field] ? (
+          <>
+            <input
+              type="text"
+              value={editedUser[field]}
+              onChange={(e) => handleChange(e, field)}
+            />
+            <Check onClick={() => handleSave(field)} className="edit-icon" />
+          </>
+        ) : (
+          <>
+            {user[field]}
+            <Pencil onClick={() => toggleEdit(field)} className="edit-icon" />
+          </>
+        )}
+      </div>
+    );
+  };
 
   if (!user) return null;
 
@@ -75,6 +118,7 @@ const Profile = ({ user, onClose, onUpdateUser }) => {
           {renderField("Major", "major")}
           {renderField("Affiliation", "affiliation")}
         </div>
+        {error && <div className="error-message">{error}</div>}
       </div>
     </div>
   );

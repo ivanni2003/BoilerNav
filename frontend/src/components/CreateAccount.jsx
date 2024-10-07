@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './CreateAccount.css';
 
-const CreateAccount = ({ onClose }) => {
+const CreateAccount = ({ onClose, onAccountCreated, showNotification }) => {
   const [fullName, setFullName] = useState('');
   const [major, setMajor] = useState('');
   const [affiliation, setAffiliation] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       const response = await axios.post('http://localhost:3001/api/users', {
         fullName,
@@ -22,12 +24,25 @@ const CreateAccount = ({ onClose }) => {
         email
       });
       console.log('Account created:', response.data);
-      onCreateSuccess(response.data);
+      onAccountCreated(response.data);
+      showNotification('Account created successfully!', 'success');
       onClose();
     } catch (error) {
       console.error('Error creating account:', error);
-      // Handle error (e.g., show error message to user)
-      onCreateSuccess(null, 'Error creating account. Please try again.');
+      if (error.response) {
+        if (error.response.status === 409) {
+          // 409 Conflict - typically used for duplicate resource
+          const field = error.response.data.field; // 'email' or 'username'
+          showNotification(`An account with this ${field} already exists.`, 'error');
+          setError(`An account with this ${field} already exists. Please use a different ${field}.`);
+        } else {
+          setError(error.response.data.error || 'An error occurred while creating the account.');
+        }
+      } else if (error.request) {
+        setError('No response received from server. Please try again.');
+      } else {
+        setError('An error occurred while setting up the request. Please try again.');
+      }
     }
   };
 

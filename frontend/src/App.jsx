@@ -133,10 +133,18 @@ function App() {
   };
 
   const handleCreateSuccess = (userData) => {
-    setUser(userData);
+    setUser({
+      id: userData.id,
+      name: userData.fullName,  // Make sure this matches the property name from your API
+      username: userData.username,
+      email: userData.email,
+      major: userData.major,
+      affiliation: userData.affiliation
+    });
+    localStorage.setItem('token', userData.token);  // If your API returns a token on account creation
     setShowCreateAccount(false);
     showNotification('Account created successfully!', 'success');
-  }
+  };
 
   const handleUpdateUser = (updatedUser) => {
     setUser(updatedUser);
@@ -191,7 +199,7 @@ function App() {
       </header>
       <div className="content">
         {showCreateAccount ? (
-          <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} />
+          <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} showNotification={showNotification}/>
         ) : showLogin ? (
           <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
         ) : showProfile ? (

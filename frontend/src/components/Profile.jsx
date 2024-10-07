@@ -1,17 +1,58 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Pencil, Check } from 'lucide-react';
+import { Pencil, Check, Trash2 } from 'lucide-react';
 import './Profile.css';
 
-const Profile = ({ user, onClose, onUpdateUser }) => {
+const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
   const [editMode, setEditMode] = useState({
     name: false,
     email: false,
     major: false,
     affiliation: false
   });
+
   const [editedUser, setEditedUser] = useState({ ...user });
   const [error, setError] = useState('');
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+
+      if (!user.id) {
+        throw new Error('User ID is missing. Please log out and log in again.');
+      }
+
+      const response = await axios.delete(`http://localhost:3001/api/users/${user.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 204) {
+        onLogout();
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      if (error.response) {
+        console.error(error.response.data);
+        console.error(error.response.status);
+        console.error(error.response.headers);
+        setError(`Error ${error.response.status}: ${error.response.data.error || 'Unknown error'}`);
+      } else if (error.request) {
+        console.error(error.request);
+        setError('No response received from server. Please try again.');
+      } else {
+        console.error('Error', error.message);
+        setError(error.message || 'An unknown error occurred');
+      }
+    }
+  };
+
 
   const affiliationOptions = [
     { value: "student", label: "Student" },
@@ -118,6 +159,24 @@ const Profile = ({ user, onClose, onUpdateUser }) => {
           {renderField("Major", "major")}
           {renderField("Affiliation", "affiliation")}
         </div>
+        <div className="delete-account-section">
+        {!showDeleteConfirmation ? (
+          <button className="delete-account-button" onClick={() => setShowDeleteConfirmation(true)}>
+            <Trash2 size={16} />
+            Delete Account
+          </button>
+        ) : (
+          <div className="delete-confirmation">
+            <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+            <button className="confirm-delete-button" onClick={handleDeleteAccount}>
+              Yes, Delete My Account
+            </button>
+            <button className="cancel-delete-button" onClick={() => setShowDeleteConfirmation(false)}>
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
         {error && <div className="error-message">{error}</div>}
       </div>
     </div>

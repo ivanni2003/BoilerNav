@@ -111,6 +111,7 @@ function App() {
 
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem('token');
     setIsPopupOpen(false);
     showNotification('You have been logged out.', 'info');
   };
@@ -151,6 +152,7 @@ function App() {
       major: userData.major,
       affiliation: userData.affiliation
     });
+    localStorage.setItem('token', userData.token);
     setShowLogin(false);
     showNotification('Successfully logged in!', 'success');
   };
@@ -193,7 +195,7 @@ function App() {
         ) : showLogin ? (
           <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
         ) : showProfile ? (
-          <Profile user={user} onClose={handleCloseProfile} onUpdateUser={handleUpdateUser} onTitleClick={handleTitleClick}/>
+          <Profile user={user} onClose={handleCloseProfile} onUpdateUser={handleUpdateUser} onLogout={handleLogout}/>
         ) : (
           <div className="map-content">
             <div className="map-container">

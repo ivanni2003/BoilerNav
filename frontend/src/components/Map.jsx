@@ -1,11 +1,14 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap, Circle, Marker} from 'react-leaflet';
+
+import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup } from 'react-leaflet';
+
 
 const baseURL = "http://localhost:3001";
 const buildingAPI = `${baseURL}/api/ways/buildings`;
 const nodeAPI = `${baseURL}/api/nodes`;
 const nodeIDAPI = `${baseURL}/api/nodes/id`;
+
 
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
@@ -47,6 +50,7 @@ const BuildingsRenderer = ({ buildings }) => {
   });
 }
 
+
 const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, altitude }) => {
   return (
     <MapContainer center={[latitude, longitude]} zoom={zoom} style={{ height: "600px", width: "100%" }}>
@@ -80,5 +84,4 @@ const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, alt
     </MapContainer>
   );
 };
-
 export default Map;

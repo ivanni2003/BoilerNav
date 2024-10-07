@@ -15,6 +15,47 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
 
+
+  const [nodes, setNodes] = useState([]);
+  const [ways, setWays] = useState([]);
+  const [relations, setRelations] = useState([]);
+
+  const [userLocation, setUserLocation] = useState(null);
+  const [accuracy, setAccuracy] = useState(null); // Store accuracy
+  const [heading, setHeading] = useState(null);
+  const [altitude, setAltitude] = useState(null);
+
+
+  useEffect(() => {
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy, heading, altitude } = pos.coords;
+        setUserLocation([latitude, longitude]);
+        setAccuracy(accuracy);
+        setAltitude(altitude);
+        console.log("Map Props - User Location:", pos.coords);
+
+        if (heading !== null) {
+          setHeading(heading);
+        }
+
+      },
+      (err) => {
+        console.error(err);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      }
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, []);
+
+
   const [buildings, setBuildings] = useState([])
 
   const [latitude, setLatitude] = useState(40.4274);
@@ -66,6 +107,7 @@ function App() {
       navigator.geolocation.clearWatch(watchId);
     };
   }, []); // Dependency array includes showLogin
+
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -146,7 +188,9 @@ function App() {
             <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
           ) : (
             <div className="map-container">
+
             <Map latitude={latitude} longitude={longitude} zoom={zoom} buildings={buildings} userLocation={userLocation} accuracy={accuracy} altitude={altitude} />
+
             <div className="search-container">
                 <SearchBar items={buildings} updateMap={handleMapUpdate}/>
             </div>

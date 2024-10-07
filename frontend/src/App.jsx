@@ -18,12 +18,22 @@ function App() {
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
 
+
+  const [nodes, setNodes] = useState([]);
+  const [ways, setWays] = useState([]);
+  const [relations, setRelations] = useState([]);
+
   const [buildings, setBuildings] = useState([])
 
   const [latitude, setLatitude] = useState(40.4274);
   const [longitude, setLongitude] = useState(-86.9132);
   const [zoom, setZoom] = useState(15)
   const [notification, setNotification] = useState(null);
+
+  const [userLocation, setUserLocation] = useState(null);
+  const [accuracy, setAccuracy] = useState(null); // Store accuracy
+  const [heading, setHeading] = useState(null);
+  const [altitude, setAltitude] = useState(null);
 
   const fetchBuildings = async () => {
       try {
@@ -39,7 +49,33 @@ function App() {
     if (!showLogin) { 
       fetchBuildings(); // Fetch buildings only when showLogin is false
     }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy, heading, altitude } = pos.coords;
+        setUserLocation([latitude, longitude]);
+        setAccuracy(accuracy);
+        setAltitude(altitude);
+
+        if (heading !== null) {
+          setHeading(heading);
+        }
+      },
+      (err) => {
+        setUserLocation([40.4274, -86.9132])
+        console.error(err);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      }
+    );
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
   }, []); // Dependency array includes showLogin
+
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -161,6 +197,10 @@ function App() {
           ) : (
             <div className="map-content">
             <Map latitude={latitude} longitude={longitude} zoom={zoom} />
+            <div className="map-container">
+
+            <Map latitude={latitude} longitude={longitude} zoom={zoom} buildings={buildings} userLocation={userLocation} accuracy={accuracy} altitude={altitude} />
+
             <div className="search-container">
                 <SearchBar items={buildings} updateMap={handleMapUpdate}/>
             </div>

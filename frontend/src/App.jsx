@@ -6,6 +6,8 @@ import CreateAccount from './components/CreateAccount'
 import Login from './components/Login'
 import Map from './components/Map'
 import SearchBar from './components/SearchBar'
+import Notification from './components/Notification'
+import Profile from './components/Profile'
 
 const baseURL = 'http://localhost:3001'
 
@@ -14,6 +16,7 @@ function App() {
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
+  const [showProfile, setShowProfile] = useState(false);
 
 
   const [nodes, setNodes] = useState([]);
@@ -25,6 +28,7 @@ function App() {
   const [latitude, setLatitude] = useState(40.4274);
   const [longitude, setLongitude] = useState(-86.9132);
   const [zoom, setZoom] = useState(15)
+  const [notification, setNotification] = useState(null);
 
   const [userLocation, setUserLocation] = useState(null);
   const [accuracy, setAccuracy] = useState(null); // Store accuracy
@@ -86,6 +90,15 @@ function App() {
     setShowCreateAccount(false);
   };
 
+  const handleViewProfile = () => {
+    setShowProfile(true);
+    setIsPopupOpen(false);
+  };
+
+  const handleCloseProfile = () => {
+    setShowProfile(false);
+  };
+
   const handleLogin = () => {
     setShowLogin(true);
     setIsPopupOpen(false);
@@ -95,18 +108,22 @@ function App() {
     setShowLogin(false);
   };
 
-  const handleLoginSuccess = (userData) => {
-    setUser(userData);
-    setShowLogin(false);
-  };
 
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem('token');
+    setIsPopupOpen(false);
+    showNotification('You have been logged out.', 'info');
   };
 
   const handleTitleClick = () => {
     setShowCreateAccount(false);
     setShowLogin(false);
+    setShowProfile(false);
+  };
+
+  const showNotification = (message, type) => {
+    setNotification({ message, type });
   };
 
   const handleMapUpdate = (latitude, longitude, zoom) => { // Use this to update map centering 
@@ -115,11 +132,35 @@ function App() {
     setZoom(zoom)
   };
 
+  const handleCreateSuccess = (userData) => {
+    setUser(userData);
+    setShowCreateAccount(false);
+    showNotification('Account created successfully!', 'success');
+  }
+
+  const handleUpdateUser = (updatedUser) => {
+    setUser(updatedUser);
+    showNotification('Profile updated successfully!', 'success');
+  };
+
+  const handleLoginSuccess = (userData) => {
+    setUser({
+      id: userData.id, // Make sure to include the id
+      name: userData.name,
+      username: userData.username,
+      email: userData.email,
+      major: userData.major,
+      affiliation: userData.affiliation
+    });
+    localStorage.setItem('token', userData.token);
+    setShowLogin(false);
+    showNotification('Successfully logged in!', 'success');
+  };
 
   return (
     <div className="app-container">
       <header className="app-header">
-      <button className="user-button" onClick={togglePopup}>
+        <button className="user-button" onClick={togglePopup}>
           {user && user.name && user.name.length > 0 ? (
             <span className="user-initial">{user.name[0].toUpperCase()}</span>
           ) : (
@@ -131,7 +172,10 @@ function App() {
         {isPopupOpen && (
           <div className="popup">
             {user ? (
-              <button onClick={handleLogout}>Log Out</button>
+              <>
+                <button onClick={handleViewProfile}>View Profile</button>
+                <button onClick={handleLogout}>Log Out</button>
+              </>
             ) : (
               <>
                 <button onClick={handleCreateAccount}>Create Account</button>
@@ -146,24 +190,40 @@ function App() {
         </div>
       </header>
       <div className="content">
-        {(showCreateAccount ? (
-            <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleLoginSuccess} />
-          ) : showLogin ? (
-            <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
-          ) : (
+        {showCreateAccount ? (
+          <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} />
+        ) : showLogin ? (
+          <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
+        ) : showProfile ? (
+          <Profile user={user} onClose={handleCloseProfile} onUpdateUser={handleUpdateUser} onLogout={handleLogout}/>
+        ) : (
+          <div className="map-content">
             <div className="map-container">
-
-            <Map latitude={latitude} longitude={longitude} zoom={zoom} buildings={buildings} userLocation={userLocation} accuracy={accuracy} altitude={altitude} />
-
-            <div className="search-container">
+              <Map 
+                latitude={latitude} 
+                longitude={longitude} 
+                zoom={zoom} 
+                buildings={buildings} 
+                userLocation={userLocation} 
+                accuracy={accuracy} 
+                altitude={altitude} 
+              />
+              <div className="search-container">
                 <SearchBar items={buildings} updateMap={handleMapUpdate}/>
+              </div>
             </div>
-        </div>
-  )
-)}
+          </div>
+        )}
       </div>
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </div>
   );
-}
 
-export default App
+}
+export default App;

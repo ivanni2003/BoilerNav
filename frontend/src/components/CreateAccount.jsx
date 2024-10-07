@@ -22,10 +22,12 @@ const CreateAccount = ({ onClose }) => {
         email
       });
       console.log('Account created:', response.data);
+      onCreateSuccess(response.data);
       onClose();
     } catch (error) {
       console.error('Error creating account:', error);
       // Handle error (e.g., show error message to user)
+      onCreateSuccess(null, 'Error creating account. Please try again.');
     }
   };
 

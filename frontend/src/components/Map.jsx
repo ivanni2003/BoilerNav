@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap, Circle, Marker} from 'react-leaflet';
 
 const baseURL = "http://localhost:3001";
 const buildingAPI = `${baseURL}/api/ways/buildings`;
@@ -47,7 +47,7 @@ const BuildingsRenderer = ({ buildings }) => {
   });
 }
 
-const Map = ({ latitude, longitude, zoom, buildings }) => {
+const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, altitude }) => {
   return (
     <MapContainer center={[latitude, longitude]} zoom={zoom} style={{ height: "600px", width: "100%" }}>
       <TileLayer
@@ -56,6 +56,27 @@ const Map = ({ latitude, longitude, zoom, buildings }) => {
       />
       <BuildingsRenderer buildings={buildings} />
       <MapViewUpdater latitude={latitude} longitude={longitude} zoom={zoom} /> {/* Include the updater */}
+      {userLocation && (
+                <>
+                    {/* Render Marker regardless of altitude */}
+                    <Marker position={userLocation}>
+                        <Popup>
+                            Lat: {userLocation[0]} <br />
+                            Long: {userLocation[1]} <br />
+                            {altitude && <>Alt: {altitude} m</>}
+                        </Popup>
+                    </Marker>
+                    {accuracy && (
+                        <Circle
+                            center={userLocation}
+                            radius={accuracy} // Accuracy in meters
+                            color="blue"
+                            fillColor="blue"
+                            fillOpacity={.2}
+                        />
+                    )}
+                </>
+            )}
     </MapContainer>
   );
 };

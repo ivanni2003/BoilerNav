@@ -18,7 +18,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
 
-
+ /* may or may need need these */
   const [nodes, setNodes] = useState([]);
   const [ways, setWays] = useState([]);
   const [relations, setRelations] = useState([]);
@@ -165,6 +165,24 @@ function App() {
     showNotification('Successfully logged in!', 'success');
   };
 
+  const handleSaveFavoriteRoute = (building) => {
+    console.log(building)
+    // add functionality to save route
+    // selected building is the parameter
+  }
+
+  const handleViewIndoorPlan = (building) => {
+    console.log(building)
+    // add functionality for user to select floor + rendering
+    // selected building is the parameter
+  }
+
+  const handleGetDirections = (building) => {
+    console.log(building)
+    // implement routing
+    // selected building is the parameter
+  }
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -215,6 +233,9 @@ function App() {
                 userLocation={userLocation} 
                 accuracy={accuracy} 
                 altitude={altitude} 
+                viewIndoorPlan={handleViewIndoorPlan}
+                saveFavoriteRoute={handleSaveFavoriteRoute}
+                getDirections={handleGetDirections}
               />
               <div className="search-container">
                 <SearchBar items={buildings} updateMap={handleMapUpdate}/>

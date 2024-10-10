@@ -18,7 +18,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
 
-
+ /* may or may need need these */
   const [nodes, setNodes] = useState([]);
   const [ways, setWays] = useState([]);
   const [relations, setRelations] = useState([]);
@@ -83,6 +83,7 @@ function App() {
 
   const handleCreateAccount = () => {
     setShowCreateAccount(true);
+    setShowLogin(false);
     setIsPopupOpen(false);
   };
 
@@ -101,6 +102,7 @@ function App() {
 
   const handleLogin = () => {
     setShowLogin(true);
+    setShowCreateAccount(false);
     setIsPopupOpen(false);
   };
 
@@ -133,10 +135,18 @@ function App() {
   };
 
   const handleCreateSuccess = (userData) => {
-    setUser(userData);
+    setUser({
+      id: userData.id,
+      name: userData.fullName,  // Make sure this matches the property name from your API
+      username: userData.username,
+      email: userData.email,
+      major: userData.major,
+      affiliation: userData.affiliation
+    });
+    localStorage.setItem('token', userData.token);  // If your API returns a token on account creation
     setShowCreateAccount(false);
     showNotification('Account created successfully!', 'success');
-  }
+  };
 
   const handleUpdateUser = (updatedUser) => {
     setUser(updatedUser);
@@ -156,6 +166,24 @@ function App() {
     setShowLogin(false);
     showNotification('Successfully logged in!', 'success');
   };
+
+  const handleSaveFavoriteRoute = (building) => {
+    console.log(building)
+    // add functionality to save route
+    // selected building is the parameter
+  }
+
+  const handleViewIndoorPlan = (building) => {
+    console.log(building)
+    // add functionality for user to select floor + rendering
+    // selected building is the parameter
+  }
+
+  const handleGetDirections = (building) => {
+    console.log(building)
+    // implement routing
+    // selected building is the parameter
+  }
 
   return (
     <div className="app-container">
@@ -191,7 +219,7 @@ function App() {
       </header>
       <div className="content">
         {showCreateAccount ? (
-          <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} />
+          <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} showNotification={showNotification}/>
         ) : showLogin ? (
           <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
         ) : showProfile ? (
@@ -207,6 +235,9 @@ function App() {
                 userLocation={userLocation} 
                 accuracy={accuracy} 
                 altitude={altitude} 
+                viewIndoorPlan={handleViewIndoorPlan}
+                saveFavoriteRoute={handleSaveFavoriteRoute}
+                getDirections={handleGetDirections}
               />
               <div className="search-container">
                 <SearchBar items={buildings} updateMap={handleMapUpdate}/>

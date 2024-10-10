@@ -61,7 +61,7 @@ const BuildingsRenderer = ({ buildings, viewIndoorPlan, saveFavoriteRoute, getDi
 }
 
 
-const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, altitude, heading, viewIndoorPlan, saveFavoriteRoute, getDirections }) => {
+const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, altitude, heading, viewIndoorPlan, saveFavoriteRoute, getDirections, polylineCoordinates}) => {
   const customIcon = L.divIcon({
     className: "custom-marker",
     html: `
@@ -71,6 +71,9 @@ const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, alt
     `,
     iconAnchor: [16, 16] // Center the icon
   });
+  const updatedPolylineCoordinates = userLocation
+    ? [...(polylineCoordinates || []), userLocation] // Add userLocation at the end
+    : polylineCoordinates;
   return (
     <MapContainer center={[latitude, longitude]} zoom={zoom} zoomControl={false} className="map-container">
       <TileLayer
@@ -87,6 +90,7 @@ const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, alt
                             Lat: {userLocation[0]} <br />
                             Long: {userLocation[1]} <br />
                             {altitude && <>Alt: {altitude} m</>}
+                            {accuracy && <>Accuracy: {accuracy} m</>}
                         </Popup>
                     </Marker>
                     {accuracy && (
@@ -99,6 +103,9 @@ const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, alt
                         />
                     )}
                 </>
+            )}
+            {updatedPolylineCoordinates && (
+              <Polyline positions={updatedPolylineCoordinates} color="blue" />
             )}
     </MapContainer>
   );

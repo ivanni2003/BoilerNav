@@ -39,6 +39,19 @@ function App() {
   const [activeMenu, setActiveMenu] = useState('search');
   const [start, setStart] = useState(null)
   const [destination, setDestination] = useState(null)
+  const [polylineCoordinates, setPolylinecoordinates] = useState([]);
+  const addCoordinate = (newCoordinate) => {
+    setPolylineCoordinates(prevCoordinates => [
+      ...prevCoordinates, // Keep the existing coordinates
+      newCoordinate       // Add the new coordinate to the array
+    ]);
+  };
+  const clearCoordinate = () => {
+    setPolylinecoordinates([]);
+  }
+  const removeFirstCoordinate = () => {
+    setPolylineCoordinates(prevCoordinates => prevCoordinates.slice(1)); // Remove the first element
+  };
 
   const fetchBuildings = async () => {
       try {
@@ -250,6 +263,7 @@ function App() {
                 viewIndoorPlan={handleViewIndoorPlan}
                 saveFavoriteRoute={handleSaveFavoriteRoute}
                 getDirections={handleGetDirections}
+                polylineCoordinates={polylineCoordinates}
               />
               {activeMenu === 'directions' ? (
                 <div className="directions-menu">

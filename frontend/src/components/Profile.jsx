@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Pencil, Check, Trash2 } from 'lucide-react';
+import { Pencil, Check, Trash2, Minus } from 'lucide-react';
 import './Profile.css';
 
 const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
@@ -14,6 +14,35 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
   const [editedUser, setEditedUser] = useState({ ...user });
   const [error, setError] = useState('');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [favoriteLocations, setFavoriteLocations] = useState([]);
+
+  useEffect(() => {
+    fetchFavoriteLocations();
+  }, []);
+
+  const fetchFavoriteLocations = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3001/api/users/${user.id}/favorites`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setFavoriteLocations(response.data);
+    } catch (error) {
+      console.error('Error fetching favorite locations:', error);
+      setError('Failed to fetch favorite locations');
+    }
+  };
+
+  const handleRemoveFavorite = async (buildingId) => {
+    try {
+      await axios.delete(`http://localhost:3001/api/users/${user.id}/favorites/${buildingId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setFavoriteLocations(prevFavorites => prevFavorites.filter(fav => fav.buildingId !== buildingId));
+    } catch (error) {
+      console.error('Error removing favorite location:', error);
+      setError('Failed to remove favorite location');
+    }
+  };
 
   const handleDeleteAccount = async () => {
     try {
@@ -160,6 +189,26 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
           {renderField("Email", "email")}
           {renderField("Major", "major")}
           {renderField("Affiliation", "affiliation")}
+        </div>
+        <div className="favorite-locations">
+          <h3>Saved Locations</h3>
+          <div className="favorite-locations-list">
+            {favoriteLocations.length > 0 ? (
+              favoriteLocations.map((location) => (
+                <div key={location.buildingId} className="favorite-location-item">
+                  <span>{location.name}</span>
+                  <button 
+                    onClick={() => handleRemoveFavorite(location.buildingId)}
+                    className="remove-favorite-button"
+                  >
+                    <Minus size={16} />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="empty-favorites-message">Your saved locations will appear here</p>
+            )}
+          </div>
         </div>
         <div className="delete-account-section">
         {!showDeleteConfirmation ? (

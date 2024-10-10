@@ -21,7 +21,7 @@ function App() {
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
 
- /* may or may need need these */
+  /* may or may need need these */
   const [nodes, setNodes] = useState([]);
   const [ways, setWays] = useState([]);
   const [relations, setRelations] = useState([]);
@@ -245,10 +245,14 @@ function App() {
     setActiveMenu('directions');
 }
 
-  const handleRouting = (start, destination) => {
-    console.log(start)
-    console.log(destination)
+  const handleRouting = async (start, destination) => {
+    console.log("Start: ", start); // list of lat and lon
+    console.log("Destination: ", destination); // building way
     // implement routing logic
+    const buildingPos = destination.buildingPosition;
+    const routeQuery = `${baseURL}/api/ways/route/${start[0]}/${start[1]}/${buildingPos.lat}/${buildingPos.lon}`;
+    const routeNodes = await axios.get(`${routeQuery}`);
+    console.log(routeNodes);
   }
 
   return (

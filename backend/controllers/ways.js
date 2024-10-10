@@ -43,28 +43,50 @@ wayRouter.get("/id/:ids", async (request, response) => {
 });
 
 const getClosestNode = (nodes, lat, lon) => {
-  return nodes.reduce(
-    (closest, node) => {
-      const distance = Math.sqrt((node.lat - lat) ** 2 + (node.lon - lon) ** 2);
-      if (distance < closest.distance) {
-        return { node, distance };
-      }
-      return closest;
-    },
-    { node: null, distance: Infinity },
-  ).node;
+  // console.log(nodes.length);
+  let closestNode = null;
+  let closestDistance = Infinity;
+  nodes.forEach((node) => {
+    const distance = Math.sqrt(
+      (node.latitude - lat) ** 2 + (node.longitude - lon) ** 2,
+    );
+    if (distance < closestDistance) {
+      closestNode = node;
+      closestDistance = distance;
+    }
+  });
+  return closestNode;
 };
 
 const pathBetweenNodes = (startNode, endNode, nodes, ways) => {
+  if (startNode === null || endNode === null) {
+    console.log("Start or end node is null");
+    return [];
+  }
   startNode.distance = 0;
   const unvisited = new Set(nodes);
+  let iterations = 0;
   while (unvisited.size > 0) {
-    const current = [...unvisited].reduce((minNode, node) => {
-      if (node.distance < minNode.distance) {
-        return node;
+    iterations += 1;
+    // Find the unvisited node with the smallest distance
+    let current = null;
+    let smallestDistance = Infinity;
+    unvisited.forEach((node) => {
+      if (node.id === startNode.id) {
+        // console.log("Start node is still unvisited");
+        // console.log("Start node distance: " + node.distance);
       }
-      return minNode;
+      if (node.distance < smallestDistance) {
+        current = node;
+        smallestDistance = node.distance;
+        // console.log("Current node: " + current.distance);
+      }
     });
+    if (current === null) {
+      console.log("No current node found");
+      console.log(iterations);
+      return [];
+    }
     unvisited.delete(current);
     if (current === endNode) {
       break;
@@ -81,15 +103,23 @@ const pathBetweenNodes = (startNode, endNode, nodes, ways) => {
         neighbors.push(nodes.find((n) => n.id === way.nodes[index + 1]));
       }
     });
+    // console.log("Neighbors: " + neighbors.length);
     neighbors.forEach((neighbor) => {
       const distance =
         current.distance +
         Math.sqrt(
-          (neighbor.lat - current.lat) ** 2 + (neighbor.lon - current.lon) ** 2,
+          (neighbor.latitude - current.latitude) ** 2 +
+            (neighbor.longitude - current.longitude) ** 2,
         );
+      // console.log("Distance: " + distance);
+      // console.log("Neighbor distance: " + neighbor.distance);
+      if (neighbor.distance === undefined) {
+        neighbor.distance = Infinity;
+      }
       if (distance < neighbor.distance) {
         neighbor.distance = distance;
         neighbor.previous = current;
+        // console.log("New Neighbor distance: " + neighbor.distance);
       }
     });
   }
@@ -105,37 +135,59 @@ const pathBetweenNodes = (startNode, endNode, nodes, ways) => {
 wayRouter.get(
   "/route/:startLat/:startLon/:endLat/:endLon",
   async (request, response) => {
-    const start = {
-      lat: request.params.startLat,
-      lon: request.params.startLon,
-    };
-    const end = { lat: request.params.endLat, lon: request.params.endLon };
-    const searchRadiusMeters = 50;
+    // Convert the start and end coordinates from strings to numbers
+    let start = {};
+    let end = {};
+    try {
+      start = {
+        lat: parseFloat(request.params.startLat),
+        lon: parseFloat(request.params.startLon),
+      };
+      end = {
+        lat: parseFloat(request.params.endLat),
+        lon: parseFloat(request.params.endLon),
+      };
+    } catch (error) {
+      response.status(400).json({ error: "Invalid coordinates" });
+      return;
+    }
+    const searchRadiusMeters = 1000;
     const searchRadiusDegrees = searchRadiusMeters / 111111;
+    // navNode lat and lon are named latitude and longitude
     const closeStartNodes = await NavNode.find({
-      lat: {
+      latitude: {
         $gte: start.lat - searchRadiusDegrees,
         $lte: start.lat + searchRadiusDegrees,
       },
-      lon: {
+      longitude: {
         $gte: start.lon - searchRadiusDegrees,
         $lte: start.lon + searchRadiusDegrees,
       },
     });
     const closeEndNodes = await NavNode.find({
-      lat: {
+      latitude: {
         $gte: end.lat - searchRadiusDegrees,
         $lte: end.lat + searchRadiusDegrees,
       },
-      lon: {
+      longitude: {
         $gte: end.lon - searchRadiusDegrees,
         $lte: end.lon + searchRadiusDegrees,
       },
     });
     const nodes = await NavNode.find({});
     const ways = await NavWay.find({});
-    const startNode = getClosestNode(closeStartNodes, start.lat, start.lon);
-    const endNode = getClosestNode(closeEndNodes, end.lat, end.lon);
+    const startNodeID = getClosestNode(
+      closeStartNodes,
+      start.lat,
+      start.lon,
+    ).id;
+    const endNodeID = getClosestNode(closeEndNodes, end.lat, end.lon).id;
+    const startNode = nodes.find((node) => node.id === startNodeID);
+    const endNode = nodes.find((node) => node.id === endNodeID);
+    console.log("Start node:");
+    console.log(startNode);
+    console.log("End node:");
+    console.log(endNode);
     const path = pathBetweenNodes(startNode, endNode, nodes, ways);
     response.json(path);
   },

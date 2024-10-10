@@ -124,7 +124,7 @@ const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, sho
 }
 
 
-const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, altitude, heading, viewIndoorPlan, saveFavoriteRoute, getDirections, polylineCoordinates}) => {
+const Map = ({ latitude, longitude, zoom, buildings, user, userLocation, accuracy, altitude, heading, viewIndoorPlan, saveFavoriteRoute, getDirections, polylineCoordinates, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle}) => {
   const customIcon = L.divIcon({
     className: "custom-marker",
     html: `

@@ -246,6 +246,7 @@ function App() {
                 userLocation={userLocation} 
                 accuracy={accuracy} 
                 altitude={altitude} 
+                heading={heading}
                 viewIndoorPlan={handleViewIndoorPlan}
                 saveFavoriteRoute={handleSaveFavoriteRoute}
                 getDirections={handleGetDirections}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './App.css'
 import axios from 'axios'
 import logoImage from './img/icon.png'
@@ -17,6 +17,8 @@ function App() {
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
+  const [favoriteLocations, setFavoriteLocations] = useState([]);
+  const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
 
  /* may or may need need these */
@@ -49,12 +51,28 @@ function App() {
       }
   };
 
-  useEffect(() => {   // runs when component mounts
-    console.log("fetch")
-    if (!showLogin) { 
-      fetchBuildings(); // Fetch buildings only when showLogin is false
+  const fetchFavoriteLocations = useCallback(async (userId, token) => {
+    setIsLoadingFavorites(true);
+    try {
+      const response = await axios.get(`${baseURL}/api/users/${userId}/favorites`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFavoriteLocations(response.data);
+    } catch (error) {
+      console.error('Error fetching favorite locations:', error);
+    } finally {
+      setIsLoadingFavorites(false);
+    }
+  }, []);
+
+  useEffect(() => {
+
+    // Fetch buildings only when showLogin is false
+    if (!showLogin) {
+      fetchBuildings();
     }
 
+    // Geolocation watching
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const { latitude, longitude, accuracy, heading, altitude } = pos.coords;
@@ -76,11 +94,25 @@ function App() {
         maximumAge: 0,
       }
     );
+
+    // Cleanup function
     return () => {
       navigator.geolocation.clearWatch(watchId);
     };
-  }, []); // Dependency array includes showLogin
+  }, [showLogin]); // Dependency array includes showLogin
 
+  const fetchUserData = async (token) => {
+    try {
+      const response = await axios.get(`${baseURL}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(response.data);
+      await fetchFavoriteLocations(response.data.id, token);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      localStorage.removeItem('token');
+    }
+  };
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -118,6 +150,7 @@ function App() {
 
   const handleLogout = () => {
     setUser(null);
+    setFavoriteLocations([]);
     localStorage.removeItem('token');
     setIsPopupOpen(false);
     showNotification('You have been logged out.', 'info');
@@ -142,7 +175,7 @@ function App() {
   const handleCreateSuccess = (userData) => {
     setUser({
       id: userData.id,
-      name: userData.fullName,  // Make sure this matches the property name from your API
+      name: userData.fullName,  
       username: userData.username,
       email: userData.email,
       major: userData.major,
@@ -158,19 +191,28 @@ function App() {
     showNotification('Profile updated successfully!', 'success');
   };
 
-  const handleLoginSuccess = (userData) => {
-    setUser({
-      id: userData.id, // Make sure to include the id
-      name: userData.name,
-      username: userData.username,
-      email: userData.email,
-      major: userData.major,
-      affiliation: userData.affiliation
-    });
+  const handleLoginSuccess = async (userData) => {
+    setUser(userData);
     localStorage.setItem('token', userData.token);
+    await fetchFavoriteLocations(userData.id, userData.token);
     setShowLogin(false);
     showNotification('Successfully logged in!', 'success');
   };
+
+  const isBuildingFavorite = useCallback((buildingId) => {
+    return favoriteLocations.some(fav => fav.buildingId === buildingId);
+  }, [favoriteLocations]);
+
+  const handleFavoriteToggle = useCallback((buildingId, isFavorite, buildingData) => {
+    setFavoriteLocations(prevFavorites => {
+      if (isFavorite) {
+        return [...prevFavorites, buildingData];
+      } else {
+        return prevFavorites.filter(fav => fav.buildingId !== buildingId);
+      }
+    });
+  }, []);
+
 
   const handleSaveFavoriteRoute = (building) => {
     console.log(building)
@@ -248,8 +290,12 @@ function App() {
                 altitude={altitude} 
                 heading={heading}
                 viewIndoorPlan={handleViewIndoorPlan}
-                saveFavoriteRoute={handleSaveFavoriteRoute}
                 getDirections={handleGetDirections}
+                user={user}
+                showNotification={showNotification}
+                favoriteLocations={favoriteLocations}
+                isLoadingFavorites={isLoadingFavorites}
+                onFavoriteToggle={handleFavoriteToggle}
               />
               {activeMenu === 'directions' ? (
                 <div className="directions-menu">

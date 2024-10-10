@@ -22,22 +22,75 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   }, [latitude, longitude, zoom, map]); 
 };
 
-const PopupContent = ({ building, viewIndoorPlan, saveFavoriteRoute, getDirections}) => {
+const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    if (user && !isLoadingFavorites) {
+      setIsFavorite(favoriteLocations.some(fav => fav.buildingId === building.id.toString()));
+    } else {
+      setIsFavorite(false);
+    }
+  }, [building.id, favoriteLocations, isLoadingFavorites, user]);
+
+  const handleFavoriteToggle = async () => {
+    if (!user) {
+      showNotification('Please log in to save favorites', 'error');
+      return;
+    }
+
+    setIsUpdating(true);
+    const newFavoriteStatus = !isFavorite;
+
+    try {
+      const buildingData = {
+        name: building.tags.name || 'Unnamed Building',
+        lat: building.buildingPosition.lat,
+        lon: building.buildingPosition.lon,
+        buildingId: building.id.toString()
+      };
+
+      if (newFavoriteStatus) {
+        await axios.post(`${baseURL}/api/users/${user.id}/favorites`, buildingData, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.delete(`${baseURL}/api/users/${user.id}/favorites/${building.id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      }
+
+      setIsFavorite(newFavoriteStatus);
+      onFavoriteToggle(building.id, newFavoriteStatus, buildingData);
+      showNotification(newFavoriteStatus ? 'Location saved to favorites!' : 'Location removed from favorites!', 'success');
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      showNotification('Failed to update favorite. Please try again.', 'error');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <div>
-      { building.tags.name ? <h2>{building.tags.name}</h2> : <h2>Building</h2> }
+      {building.tags.name ? <h2>{building.tags.name}</h2> : <h2>Building</h2>}
       <p>More content...</p>
       <div className="popup-buttons">
         <button onClick={() => viewIndoorPlan(building)}>View Indoors</button>
-        <button onClick={() => saveFavoriteRoute(building)}>Save as Favorite</button>
+        <button onClick={handleFavoriteToggle} disabled={isLoadingFavorites || isUpdating}>
+          {isLoadingFavorites ? 'Loading...' : 
+          isUpdating ? 'Updating...' :
+          (isFavorite ? 'Unsave from favorites' : 'Save as Favorite')}
+        </button>
         <button onClick={() => getDirections(building)}>Directions</button>
       </div>
-      
     </div>
   );
-}
+};
 
-const BuildingsRenderer = ({ buildings, viewIndoorPlan, saveFavoriteRoute, getDirections }) => {
+
+const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
   const buildingPathOptions = {
     color: 'black',
     fillColor: 'gold',
@@ -55,7 +108,17 @@ const BuildingsRenderer = ({ buildings, viewIndoorPlan, saveFavoriteRoute, getDi
       radius={buildingSize}
       pathOptions={buildingPathOptions}
       >
-      <Popup><PopupContent building={building} viewIndoorPlan={viewIndoorPlan} saveFavoriteRoute={saveFavoriteRoute} getDirections={getDirections}/></Popup>
+      <Popup>
+        <PopupContent 
+        building={building} 
+        viewIndoorPlan={viewIndoorPlan}  
+        getDirections={getDirections} 
+        user={user} 
+        showNotification={showNotification}
+        favoriteLocations={favoriteLocations}
+        isLoadingFavorites={isLoadingFavorites}
+        onFavoriteToggle={onFavoriteToggle}/>
+      </Popup>
     </CircleMarker>
   });
 }
@@ -77,7 +140,16 @@ const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, alt
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      <BuildingsRenderer buildings={buildings} viewIndoorPlan={viewIndoorPlan} saveFavoriteRoute={saveFavoriteRoute} getDirections={getDirections}/>
+      <BuildingsRenderer 
+        buildings={buildings} 
+        viewIndoorPlan={viewIndoorPlan} 
+        getDirections={getDirections}
+        user={user}
+        showNotification={showNotification}
+        favoriteLocations={favoriteLocations}
+        isLoadingFavorites={isLoadingFavorites}
+        onFavoriteToggle={onFavoriteToggle}
+      />
       <MapViewUpdater latitude={latitude} longitude={longitude} zoom={zoom} /> {/* Include the updater */}
       {userLocation && (
                 <>

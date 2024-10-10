@@ -15,6 +15,12 @@ const nodeIDAPI = `${baseURL}/api/nodes/id`;
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
 
+  var SouthWestCoords = [40.41602275997173, -86.9300490901509];
+  var NorthEastCoords = [40.436762526584644, -86.90957099760823];
+  var WL_Bounds = [SouthWestCoords, NorthEastCoords]; 
+  map.setMaxBounds(WL_Bounds);
+  map.setMinZoom(15);
+
   useEffect(() => {
     map.setView([latitude, longitude], zoom); 
   }, [latitude, longitude, zoom, map]); 

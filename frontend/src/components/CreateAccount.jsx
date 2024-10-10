@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './CreateAccount.css';
 
-const CreateAccount = ({ onClose, onAccountCreated, showNotification }) => {
+const CreateAccount = ({ onClose, onCreateSuccess, showNotification }) => {
   const [fullName, setFullName] = useState('');
   const [major, setMajor] = useState('');
   const [affiliation, setAffiliation] = useState('');
@@ -24,7 +24,7 @@ const CreateAccount = ({ onClose, onAccountCreated, showNotification }) => {
         email
       });
       console.log('Account created:', response.data);
-      onAccountCreated(response.data);
+      onCreateSuccess(response.data);
       showNotification('Account created successfully!', 'success');
       onClose();
     } catch (error) {

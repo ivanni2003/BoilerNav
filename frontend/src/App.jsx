@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './App.css'
 import axios from 'axios'
 import logoImage from './img/icon.png'
@@ -6,6 +6,7 @@ import CreateAccount from './components/CreateAccount'
 import Login from './components/Login'
 import Map from './components/Map'
 import SearchBar from './components/SearchBar'
+import DirectionsMenu from './components/DirectionsMenu'
 import Notification from './components/Notification'
 import Profile from './components/Profile'
 
@@ -16,6 +17,8 @@ function App() {
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(null);
+  const [favoriteLocations, setFavoriteLocations] = useState([]);
+  const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
 
  /* may or may need need these */
@@ -35,6 +38,23 @@ function App() {
   const [heading, setHeading] = useState(null);
   const [altitude, setAltitude] = useState(null);
 
+  const [activeMenu, setActiveMenu] = useState('search');
+  const [start, setStart] = useState(null)
+  const [destination, setDestination] = useState(null)
+  const [polylineCoordinates, setPolylinecoordinates] = useState([]);
+  const addCoordinate = (newCoordinate) => {
+    setPolylineCoordinates(prevCoordinates => [
+      ...prevCoordinates, // Keep the existing coordinates
+      newCoordinate       // Add the new coordinate to the array
+    ]);
+  };
+  const clearCoordinate = () => {
+    setPolylinecoordinates([]);
+  }
+  const removeFirstCoordinate = () => {
+    setPolylineCoordinates(prevCoordinates => prevCoordinates.slice(1)); // Remove the first element
+  };
+
   const fetchBuildings = async () => {
       try {
         const response = await axios.get(`${baseURL}/api/ways/buildings`);
@@ -44,12 +64,28 @@ function App() {
       }
   };
 
-  useEffect(() => {   // runs when component mounts
-    console.log("fetch")
-    if (!showLogin) { 
-      fetchBuildings(); // Fetch buildings only when showLogin is false
+  const fetchFavoriteLocations = useCallback(async (userId, token) => {
+    setIsLoadingFavorites(true);
+    try {
+      const response = await axios.get(`${baseURL}/api/users/${userId}/favorites`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFavoriteLocations(response.data);
+    } catch (error) {
+      console.error('Error fetching favorite locations:', error);
+    } finally {
+      setIsLoadingFavorites(false);
+    }
+  }, []);
+
+  useEffect(() => {
+
+    // Fetch buildings only when showLogin is false
+    if (!showLogin) {
+      fetchBuildings();
     }
 
+    // Geolocation watching
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const { latitude, longitude, accuracy, heading, altitude } = pos.coords;
@@ -71,11 +107,25 @@ function App() {
         maximumAge: 0,
       }
     );
+
+    // Cleanup function
     return () => {
       navigator.geolocation.clearWatch(watchId);
     };
-  }, []); // Dependency array includes showLogin
+  }, [showLogin]); // Dependency array includes showLogin
 
+  const fetchUserData = async (token) => {
+    try {
+      const response = await axios.get(`${baseURL}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(response.data);
+      await fetchFavoriteLocations(response.data.id, token);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      localStorage.removeItem('token');
+    }
+  };
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -113,6 +163,7 @@ function App() {
 
   const handleLogout = () => {
     setUser(null);
+    setFavoriteLocations([]);
     localStorage.removeItem('token');
     setIsPopupOpen(false);
     showNotification('You have been logged out.', 'info');
@@ -137,7 +188,7 @@ function App() {
   const handleCreateSuccess = (userData) => {
     setUser({
       id: userData.id,
-      name: userData.fullName,  // Make sure this matches the property name from your API
+      name: userData.fullName,  
       username: userData.username,
       email: userData.email,
       major: userData.major,
@@ -153,19 +204,28 @@ function App() {
     showNotification('Profile updated successfully!', 'success');
   };
 
-  const handleLoginSuccess = (userData) => {
-    setUser({
-      id: userData.id, // Make sure to include the id
-      name: userData.name,
-      username: userData.username,
-      email: userData.email,
-      major: userData.major,
-      affiliation: userData.affiliation
-    });
+  const handleLoginSuccess = async (userData) => {
+    setUser(userData);
     localStorage.setItem('token', userData.token);
+    await fetchFavoriteLocations(userData.id, userData.token);
     setShowLogin(false);
     showNotification('Successfully logged in!', 'success');
   };
+
+  const isBuildingFavorite = useCallback((buildingId) => {
+    return favoriteLocations.some(fav => fav.buildingId === buildingId);
+  }, [favoriteLocations]);
+
+  const handleFavoriteToggle = useCallback((buildingId, isFavorite, buildingData) => {
+    setFavoriteLocations(prevFavorites => {
+      if (isFavorite) {
+        return [...prevFavorites, buildingData];
+      } else {
+        return prevFavorites.filter(fav => fav.buildingId !== buildingId);
+      }
+    });
+  }, []);
+
 
   const handleSaveFavoriteRoute = (building) => {
     console.log(building)
@@ -180,9 +240,15 @@ function App() {
   }
 
   const handleGetDirections = (building) => {
-    console.log(building)
-    // implement routing
-    // selected building is the parameter
+    setStart(userLocation)
+    setDestination(building)
+    setActiveMenu('directions');
+}
+
+  const handleRouting = (start, destination) => {
+    console.log(start)
+    console.log(destination)
+    // implement routing logic
   }
 
   return (
@@ -235,13 +301,32 @@ function App() {
                 userLocation={userLocation} 
                 accuracy={accuracy} 
                 altitude={altitude} 
+                heading={heading}
                 viewIndoorPlan={handleViewIndoorPlan}
-                saveFavoriteRoute={handleSaveFavoriteRoute}
                 getDirections={handleGetDirections}
+                user={user}
+                showNotification={showNotification}
+                favoriteLocations={favoriteLocations}
+                isLoadingFavorites={isLoadingFavorites}
+                onFavoriteToggle={handleFavoriteToggle}
+                polylineCoordinates={polylineCoordinates}
               />
-              <div className="search-container">
-                <SearchBar items={buildings} updateMap={handleMapUpdate}/>
+              {activeMenu === 'directions' ? (
+                <div className="directions-menu">
+                  <DirectionsMenu
+                    items={buildings} // Pass the items (buildings) to the DirectionsMenu
+                    updateMap={handleMapUpdate} // Pass the updateMap function
+                    start={userLocation}
+                    destination={destination}
+                    closeDirections={() => setActiveMenu('search')} // Function to close directions
+                    handleRouting={handleRouting}
+                  />
               </div>
+              ) : (
+                <div className="search-container">
+              <SearchBar items={buildings} updateMap={handleMapUpdate} start={null} destination={null} />
+              </div>
+              )}
             </div>
           </div>
         )}

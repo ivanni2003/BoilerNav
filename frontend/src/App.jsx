@@ -6,6 +6,7 @@ import CreateAccount from './components/CreateAccount'
 import Login from './components/Login'
 import Map from './components/Map'
 import SearchBar from './components/SearchBar'
+import DirectionsMenu from './components/DirectionsMenu'
 import Notification from './components/Notification'
 import Profile from './components/Profile'
 
@@ -36,6 +37,10 @@ function App() {
   const [accuracy, setAccuracy] = useState(null); // Store accuracy
   const [heading, setHeading] = useState(null);
   const [altitude, setAltitude] = useState(null);
+
+  const [activeMenu, setActiveMenu] = useState('search');
+  const [start, setStart] = useState(null)
+  const [destination, setDestination] = useState(null)
 
   const fetchBuildings = async () => {
       try {
@@ -222,9 +227,15 @@ function App() {
   }
 
   const handleGetDirections = (building) => {
-    console.log(building)
-    // implement routing
-    // selected building is the parameter
+    setStart(userLocation)
+    setDestination(building)
+    setActiveMenu('directions');
+}
+
+  const handleRouting = (start, destination) => {
+    console.log(start)
+    console.log(destination)
+    // implement routing logic
   }
 
   return (
@@ -277,6 +288,7 @@ function App() {
                 userLocation={userLocation} 
                 accuracy={accuracy} 
                 altitude={altitude} 
+                heading={heading}
                 viewIndoorPlan={handleViewIndoorPlan}
                 getDirections={handleGetDirections}
                 user={user}
@@ -285,9 +297,22 @@ function App() {
                 isLoadingFavorites={isLoadingFavorites}
                 onFavoriteToggle={handleFavoriteToggle}
               />
-              <div className="search-container">
-                <SearchBar items={buildings} updateMap={handleMapUpdate}/>
+              {activeMenu === 'directions' ? (
+                <div className="directions-menu">
+                  <DirectionsMenu
+                    items={buildings} // Pass the items (buildings) to the DirectionsMenu
+                    updateMap={handleMapUpdate} // Pass the updateMap function
+                    start={userLocation}
+                    destination={destination}
+                    closeDirections={() => setActiveMenu('search')} // Function to close directions
+                    handleRouting={handleRouting}
+                  />
               </div>
+              ) : (
+                <div className="search-container">
+              <SearchBar items={buildings} updateMap={handleMapUpdate} start={null} destination={null} />
+              </div>
+              )}
             </div>
           </div>
         )}

@@ -2,6 +2,8 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
+import L from 'leaflet';
+import arrowIcon from '../img/up-arrow.png';
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup } from 'react-leaflet';
 
@@ -122,7 +124,16 @@ const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, sho
 }
 
 
-const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, altitude, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
+const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, altitude, heading, viewIndoorPlan, saveFavoriteRoute, getDirections }) => {
+  const customIcon = L.divIcon({
+    className: "custom-marker",
+    html: `
+      <div style="transform: rotate(${heading || 0}deg); width: 32px; height: 32px;">
+        <img src="${arrowIcon}" style="width: 100%; height: 100%;" alt="Marker" />
+      </div>
+    `,
+    iconAnchor: [16, 16] // Center the icon
+  });
   return (
     <MapContainer center={[latitude, longitude]} zoom={zoom} zoomControl={false} className="map-container">
       <TileLayer
@@ -143,7 +154,7 @@ const Map = ({ latitude, longitude, zoom, buildings, userLocation, accuracy, alt
       {userLocation && (
                 <>
                     {/* Render Marker regardless of altitude */}
-                    <Marker position={userLocation}>
+                    <Marker position={userLocation} icon = {customIcon}>
                         <Popup>
                             Lat: {userLocation[0]} <br />
                             Long: {userLocation[1]} <br />

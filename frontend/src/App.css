@@ -9,7 +9,8 @@
     position: relative; 
 }
 
-.search-container {
+.search-container,
+.directions-menu {
   position: absolute; 
   top: 0px; 
   right: 0px; 

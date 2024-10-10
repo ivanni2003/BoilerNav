@@ -21,6 +21,7 @@
     "experss": "^0.0.1-security",
     "express": "^4.21.0",
     "form-data": "^4.0.0",
+    "index.js": "^0.0.3",
     "jsonwebtoken": "^9.0.2",
     "leaflet": "^1.9.4",
     "mailgun": "^0.5.0",

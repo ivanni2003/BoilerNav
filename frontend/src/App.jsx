@@ -83,6 +83,7 @@ function App() {
 
   const handleCreateAccount = () => {
     setShowCreateAccount(true);
+    setShowLogin(false);
     setIsPopupOpen(false);
   };
 
@@ -101,6 +102,7 @@ function App() {
 
   const handleLogin = () => {
     setShowLogin(true);
+    setShowCreateAccount(false);
     setIsPopupOpen(false);
   };
 

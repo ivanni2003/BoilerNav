@@ -194,6 +194,38 @@ const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, sho
   });
 }
 
+const DebugWaysRenderer = ({ ways, nodes }) => {
+  ways = ways.filter((way) => {
+    if (!way.tags) {
+      return false;
+    }
+    if (way.tags.highway == "footway") {
+      return true;
+    }
+    if (way.tags.highway == "path") {
+      return true;
+    }
+    if (way.tags.footway) {
+      return true;
+    }
+    return false;
+  });
+  return ways.map((way, index) => {
+    const nodeIDs = way.nodes;
+    const wayNodes = nodeIDs.map((nodeID) => {
+      const node = nodes.find((node) => node.id === nodeID);
+      if (!node) {
+        // console.log(`Node with ID ${nodeID} not found`);
+        return null;
+      }
+      return [node.lat, node.lon];
+    });
+    const filteredWayNodes = wayNodes.filter((node) => node !== null);
+    return <Polyline key={index} positions={filteredWayNodes} color="red" />;
+  });
+};
+
+
 
 const Map = ({ latitude,
   longitude,

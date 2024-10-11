@@ -94,6 +94,74 @@ usersRouter.delete('/:id', authenticateToken, async (request, response) => {
   }
 });
 
+usersRouter.post('/:id/favorites', async (request, response) => {
+  try {
+    const { id } = request.params;
+    const { name, lat, lon, buildingId } = request.body;
 
+    const user = await User.findById(id);
+    if (!user) {
+      return response.status(404).json({ error: 'User not found' });
+    }
+
+    user.favoriteLocations.push({ name, lat, lon, buildingId });
+    await user.save();
+
+    response.status(201).json(user.favoriteLocations);
+  } catch (error) {
+    console.error('Error saving favorite location:', error);
+    response.status(500).json({ error: 'An error occurred while saving the favorite location' });
+  }
+});
+
+usersRouter.get('/:id/favorites', async (request, response) => {
+  try {
+    const { id } = request.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return response.status(404).json({ error: 'User not found' });
+    }
+
+    response.json(user.favoriteLocations);
+  } catch (error) {
+    console.error('Error fetching favorite locations:', error);
+    response.status(500).json({ error: 'An error occurred while fetching favorite locations' });
+  }
+});
+
+usersRouter.get('/me', authenticateToken, async (request, response) => {
+  try {
+    const user = await User.findById(request.user.id);
+    if (!user) {
+      return response.status(404).json({ error: 'User not found' });
+    }
+    response.json(user);
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    response.status(500).json({ error: 'An error occurred while fetching user data' });
+  }
+});
+
+usersRouter.delete('/:id/favorites/:buildingId', async (request, response) => {
+  try {
+    const { id, buildingId } = request.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return response.status(404).json({ error: 'User not found' });
+    }
+
+    user.favoriteLocations = user.favoriteLocations.filter(
+      location => location.buildingId !== buildingId
+    );
+    await user.save();
+
+    response.status(200).json(user.favoriteLocations);
+  } catch (error) {
+    console.error('Error removing favorite location:', error);
+    response.status(500).json({ error: 'An error occurred while removing the favorite location' });
+  }
+});
 
 module.exports = usersRouter;

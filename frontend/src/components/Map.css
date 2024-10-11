@@ -20,23 +20,54 @@
 
 .popup-buttons {
     display: flex;
-    flex-direction: row; 
-    gap: 10px;
-    justify-content: center; 
-    flex-wrap: wrap; 
+    flex-direction: row; /* Arrange buttons in a row */
+    gap: 10px; /* Space between buttons */
+    justify-content: center; /* Center the buttons */
+    flex-wrap: wrap; /* Allow wrapping to the next line if necessary */
   }
 
-  button {
-    background-color: #4CAF50; 
-    color: white; 
-    border: none; 
-    border-radius: 5px; 
-    padding: 10px 20px;
-    cursor: pointer; 
-    font-size: 16px; 
-    flex: 1; 
+  .floor-plan-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    z-index: 2000;  
+    display: flex;
+    flex-direction: column;
 }
 
-button:hover {
-    background-color: #45a049; 
+.floor-plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+}
+
+.floor-plan-header select {
+    padding: 5px;
+    font-size: 16px;
+}
+
+.floor-plan-header button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.floor-plan-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+}
+
+.floor-plan-content img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }

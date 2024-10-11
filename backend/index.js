@@ -2,7 +2,7 @@ const app = require("./app");
 require("dotenv").config();
 const saveData = require("./fetchOverpassData"); // for fetching osm data
 const updateBuildingPositions = require("./updateBuildingPositions");
-const populateNavObjects = require("./populateNavObjects");
+// const populateNavObjects = require("./populateNavObjects");
 
 /* Note: this is the file ran when npm run dev is typed, this file imports
 everything from app, hierarchy is index->app->...

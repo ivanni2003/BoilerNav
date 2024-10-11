@@ -249,10 +249,26 @@ function App() {
     console.log("Start: ", start); // list of lat and lon
     console.log("Destination: ", destination); // building way
     // implement routing logic
-    const buildingPos = destination.buildingPosition;
-    const routeQuery = `${baseURL}/api/ways/route/${start[0]}/${start[1]}/${buildingPos.lat}/${buildingPos.lon}`;
-    const routeNodes = await axios.get(`${routeQuery}`);
-    console.log(routeNodes);
+    try {
+      const buildingPos = destination.buildingPosition;
+      const routeQuery = `${baseURL}/api/ways/route/${start[0]}/${start[1]}/${buildingPos.lat}/${buildingPos.lon}`;
+      const routeNodesResponse = await axios.get(`${routeQuery}`);
+      console.log("Route API Response:", routeNodesResponse);
+      const routeNodes = routeNodesResponse.data.nodes;
+      console.log(routeNodes);
+      
+      const nodeCoordinates = await Promise.all(routeNodes.map(async (nodeId) => {
+        const nodeResponse = await axios.get(`${nodeAPI}/${nodeId}`); // Assuming your node API fetches node lat/lon by ID
+        const { lat, lon } = nodeResponse.data;
+        return [lat, lon];
+      }));
+
+      // We use the polyline lib to display the route line.
+      setPolylineCoordinates(nodeCoordinates);
+
+    } catch (error) {
+      console.error("Error fetching route:", error);
+    }
   }
 
   return (

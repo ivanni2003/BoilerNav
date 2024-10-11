@@ -237,6 +237,17 @@ const Map = ({ latitude,
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
+      {/* Add blue polyline nodes for the routing system */}
+      {polylineCoordinates.length > 0 && (
+        <Polyline positions={polylineCoordinates} color="blue" />
+      )}
+      {polylineCoordinates.map((coords, index) => (
+        <Marker key={index} position={coords}>
+          <Popup>
+            Lat: {coords[0]}, Lon: {coords[1]}
+          </Popup>
+        </Marker>
+      ))}
       <BuildingsRenderer 
         buildings={buildings} 
         viewIndoorPlan={handleViewIndoorPlan}

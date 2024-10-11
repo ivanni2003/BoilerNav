@@ -11,6 +11,8 @@ const wayRouter = require('./controllers/ways')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const resetPasswordRouter = require('./controllers/resetPassword')
+const floorPlanRouter = require('./controllers/floorPlans');
+
 
 const url = 'mongodb+srv://boilernav123:team13@boilernav.93a2g.mongodb.net/?retryWrites=true&w=majority&appName=BoilerNav'
 const cors = require('cors')
@@ -27,5 +29,6 @@ app.use('/api/ways', wayRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/reset-password', resetPasswordRouter)
+app.use('/api/floorplans', floorPlanRouter);
 
 module.exports = app

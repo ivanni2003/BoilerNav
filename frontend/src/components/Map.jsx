@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import L from 'leaflet';
 import arrowIcon from '../img/up-arrow.png';
+import SearchBar from './SearchBar'; 
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup } from 'react-leaflet';
 
@@ -28,9 +29,36 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   }, [latitude, longitude, zoom, map]); 
 };
 
+const FloorPlanView = ({ building, floorPlans, onClose }) => {
+  const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans[0]);
+
+  return (
+    <div className="floor-plan-fullscreen">
+      <div className="floor-plan-header">
+        <select 
+          value={selectedFloorPlan.floorNumber} 
+          onChange={(e) => setSelectedFloorPlan(floorPlans.find(fp => fp.floorNumber === e.target.value))}
+        >
+          {floorPlans.map(fp => (
+            <option key={fp.floorNumber} value={fp.floorNumber}>
+              Floor {fp.floorNumber}
+            </option>
+          ))}
+        </select>
+        <button onClick={onClose}>×</button>
+      </div>
+      <div className="floor-plan-content">
+        <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
+      </div>
+    </div>
+  );
+};
+
 const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showFloorPlan, setShowFloorPlan] = useState(false);
+  const [floorPlans, setFloorPlans] = useState([]);
 
   useEffect(() => {
     if (user && !isLoadingFavorites) {
@@ -38,7 +66,14 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
     } else {
       setIsFavorite(false);
     }
-  }, [building.id, favoriteLocations, isLoadingFavorites, user]);
+    if (building.floorPlans) {
+      setFloorPlans(building.floorPlans);
+    }
+  }, [building.id, favoriteLocations, isLoadingFavorites, user, building]);
+
+  if (showFloorPlan) {
+    return <FloorPlanView building={building} floorPlans={floorPlans} onClose={() => setShowFloorPlan(false)} />;
+  }
 
   const handleFavoriteToggle = async () => {
     if (!user) {
@@ -81,9 +116,8 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
   return (
     <div>
       {building.tags.name ? <h2>{building.tags.name}</h2> : <h2>Building</h2>}
-      <p>More content...</p>
       <div className="popup-buttons">
-        <button onClick={() => viewIndoorPlan(building)}>View Indoors</button>
+      <button onClick={() => viewIndoorPlan(building)}>View Indoors</button>
         <button onClick={handleFavoriteToggle} disabled={isLoadingFavorites || isUpdating}>
           {isLoadingFavorites ? 'Loading...' : 
           isUpdating ? 'Updating...' :
@@ -134,6 +168,7 @@ const Map = ({ latitude,
   longitude,
   zoom,
   buildings,
+  updateMap,
   userLocation,
   accuracy,
   altitude,
@@ -146,6 +181,10 @@ const Map = ({ latitude,
   isLoadingFavorites,
   onFavoriteToggle,
   polylineCoordinates }) => {
+    const [showFloorPlan, setShowFloorPlan] = useState(false);
+    const [selectedBuilding, setSelectedBuilding] = useState(null);
+    const [floorPlans, setFloorPlans] = useState([]);
+  
   const customIcon = L.divIcon({
     className: "custom-marker",
     html: `
@@ -158,7 +197,36 @@ const Map = ({ latitude,
   const updatedPolylineCoordinates = userLocation
     ? [...(polylineCoordinates || []), userLocation] // Add userLocation at the end
     : polylineCoordinates;
-  return (
+
+
+    const handleViewIndoorPlan = async (building) => {
+      setSelectedBuilding(building);
+      if (building.floorPlans && building.floorPlans.length > 0) {
+        setFloorPlans(building.floorPlans);
+        setShowFloorPlan(true);
+      } else {
+        try {
+          const response = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
+          if (response.data && response.data.length > 0) {
+            setFloorPlans(response.data);
+            setShowFloorPlan(true);
+          } else {
+            showNotification('No floor plans available for this building', 'info');
+          }
+        } catch (error) {
+          console.error('Error fetching floor plans:', error);
+          showNotification('Error fetching floor plans', 'error');
+        }
+      }
+    };
+
+    return (
+      <div className="map-wrapper">
+        {!showFloorPlan && (
+        <div className="search-container">
+          <SearchBar items={buildings} updateMap={updateMap} />
+        </div>
+      )}
     <MapContainer center={[latitude, longitude]} zoom={zoom} zoomControl={false} className="map-container">
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -166,7 +234,7 @@ const Map = ({ latitude,
       />
       <BuildingsRenderer 
         buildings={buildings} 
-        viewIndoorPlan={viewIndoorPlan} 
+        viewIndoorPlan={handleViewIndoorPlan}
         getDirections={getDirections}
         user={user}
         showNotification={showNotification}
@@ -201,6 +269,14 @@ const Map = ({ latitude,
               <Polyline positions={updatedPolylineCoordinates} color="blue" />
             )}
     </MapContainer>
+    {showFloorPlan && (
+        <FloorPlanView 
+          building={selectedBuilding}
+          floorPlans={floorPlans}
+          onClose={() => setShowFloorPlan(false)}
+        />
+      )}
+    </div>
   );
 };
 export default Map;

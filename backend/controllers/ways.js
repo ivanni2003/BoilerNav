@@ -40,4 +40,20 @@ wayRouter.get("/id/:ids", async (request, response) => {
   response.json(ways);
 });
 
+wayRouter.get("/buildings", async (request, response) => {
+  try {
+    const buildings = await Way.find({ "tags.building": {$exists: true} });
+    const buildingsWithFloorPlans = await Promise.all(buildings.map(async (building) => {
+      const floorPlans = await FloorPlan.find({ buildingId: building.id });
+      return {
+        ...building.toObject(),
+        floorPlans: floorPlans
+      };
+    }));
+    response.json(buildingsWithFloorPlans);
+  } catch (error) {
+    response.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = wayRouter;

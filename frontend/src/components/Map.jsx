@@ -118,10 +118,15 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
       {building.tags.name ? <h2>{building.tags.name}</h2> : <h2>Building</h2>}
       <div className="popup-buttons">
       <button onClick={() => viewIndoorPlan(building)}>View Indoors</button>
-        <button onClick={handleFavoriteToggle} disabled={isLoadingFavorites || isUpdating}>
-          {isLoadingFavorites ? 'Loading...' : 
-          isUpdating ? 'Updating...' :
-          (isFavorite ? 'Unsave from favorites' : 'Save as Favorite')}
+      <button 
+          onClick={handleFavoriteToggle} 
+          disabled={isUpdating}
+        >
+          {user
+            ? (isUpdating 
+                ? 'Updating...' 
+                : (isFavorite ? 'Unsave from favorites' : 'Save as Favorite'))
+            : 'Save as Favorite'}
         </button>
         <button onClick={() => getDirections(building)}>Directions</button>
       </div>

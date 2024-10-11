@@ -245,6 +245,43 @@ function App() {
     setActiveMenu('directions');
 }
 
+// manhattan distance formula. we will later convert to haversine distance for
+// more accuracy.
+const manhattanDistance = (coords1, coords2) => {
+  const latDiff = Math.abs(coords1[0] - coords2[0]);
+  const lonDiff = Math.abs(coords1[1] - coords2[1]);
+
+  
+  const latDistance = latDiff * 69;
+  const lonDistance = lonDiff * 54;
+  return latDistance + lonDistance;
+
+};
+
+// calculate total distance of a polyline (route)
+const getTotalDistance = (polylineCoordinates) => {
+  let totalDistance = 0;
+  for (let i = 0; i < polylineCoordinates.length - 1; i++) {
+    totalDistance += manhattanDistance(
+      polylineCoordinates[i],
+      polylineCoordinates[i + 1]
+    );
+  }
+  return totalDistance; // miles
+};
+
+// get time in minutes to walk.
+const getWalkingTime = (distance) => {
+
+  const walkingSpeed = 3;
+  const time = distance / walkingSpeed;
+  const timeInMinutes = time * 60;
+
+  return timeInMinutes;
+
+};
+
+  const [routeInfo, setRouteInfo] = useState({ manhattanDistance: null, walkingTime: null });
   const handleRouting = async (start, destination) => {
     console.log("Start: ", start); // list of lat and lon
     console.log("Destination: ", destination); // building way
@@ -257,8 +294,22 @@ function App() {
       const nodeCoordinates = routeNodes.map(node => [node.latitude, node.longitude]);
       console.log("Coordinates: ", nodeCoordinates);
       setPolylineCoordinates(nodeCoordinates);
+
+      const totalManhattanDistance = getTotalDistance(nodeCoordinates);
+      const walkingTime = getWalkingTime(totalManhattanDistance);
+      console.log(`total manhattan dist: ${totalManhattanDistance.toFixed(2)} miles`);
+      console.log(`est. walking Time: ${walkingTime.toFixed(2)} minutes`);
+      
+      setRouteInfo({
+        manhattanDistance: totalManhattanDistance.toFixed(2),
+        walkingTime: walkingTime.toFixed(2),
+      });
     } catch (error) {
       console.error("Error fetching route:", error);
+      setRouteInfo({ 
+        manhattanDistance: null, 
+        walkingTime: null
+       });
     }
   }
 
@@ -331,6 +382,8 @@ function App() {
                     destination={destination}
                     closeDirections={() => setActiveMenu('search')} // Function to close directions
                     handleRouting={handleRouting}
+                    manhattanDistance={routeInfo.manhattanDistance}
+                    walkingTime={routeInfo.walkingTime}
                   />
               </div>
               ) : (

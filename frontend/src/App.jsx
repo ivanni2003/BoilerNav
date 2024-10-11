@@ -41,7 +41,7 @@ function App() {
   const [activeMenu, setActiveMenu] = useState('search');
   const [start, setStart] = useState(null)
   const [destination, setDestination] = useState(null)
-  const [polylineCoordinates, setPolylinecoordinates] = useState([]);
+  const [polylineCoordinates, setPolylineCoordinates] = useState([]);
   const addCoordinate = (newCoordinate) => {
     setPolylineCoordinates(prevCoordinates => [
       ...prevCoordinates, // Keep the existing coordinates
@@ -253,19 +253,10 @@ function App() {
       const buildingPos = destination.buildingPosition;
       const routeQuery = `${baseURL}/api/ways/route/${start[0]}/${start[1]}/${buildingPos.lat}/${buildingPos.lon}`;
       const routeNodesResponse = await axios.get(`${routeQuery}`);
-      console.log("Route API Response:", routeNodesResponse);
-      const routeNodes = routeNodesResponse.data.nodes;
-      console.log(routeNodes);
-      
-      const nodeCoordinates = await Promise.all(routeNodes.map(async (nodeId) => {
-        const nodeResponse = await axios.get(`${nodeAPI}/${nodeId}`); // Assuming your node API fetches node lat/lon by ID
-        const { lat, lon } = nodeResponse.data;
-        return [lat, lon];
-      }));
-
-      // We use the polyline lib to display the route line.
+      const routeNodes = routeNodesResponse.data;
+      const nodeCoordinates = routeNodes.map(node => [node.latitude, node.longitude]);
+      console.log("Coordinates: ", nodeCoordinates);
       setPolylineCoordinates(nodeCoordinates);
-
     } catch (error) {
       console.error("Error fetching route:", error);
     }

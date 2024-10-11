@@ -59,10 +59,6 @@ const getClosestNode = (nodes, lat, lon) => {
 };
 
 const pathBetweenNodes = (startNode, endNode, nodes, ways) => {
-  if (startNode === null || endNode === null) {
-    console.log("Start or end node is null");
-    return [];
-  }
   startNode.distance = 0;
   const unvisited = new Set(nodes);
   let iterations = 0;
@@ -176,14 +172,22 @@ wayRouter.get(
     });
     const nodes = await NavNode.find({});
     const ways = await NavWay.find({});
-    const startNodeID = getClosestNode(
-      closeStartNodes,
-      start.lat,
-      start.lon,
-    ).id;
-    const endNodeID = getClosestNode(closeEndNodes, end.lat, end.lon).id;
-    const startNode = nodes.find((node) => node.id === startNodeID);
-    const endNode = nodes.find((node) => node.id === endNodeID);
+    let startNode = getClosestNode(closeStartNodes, start.lat, start.lon);
+    let endNode = getClosestNode(closeEndNodes, end.lat, end.lon);
+    if (startNode === null || endNode === null) {
+      let error = "Could not find nodes near given coordinates";
+      if (startNode === null) {
+        error += " (start)";
+      }
+      if (endNode === null) {
+        error += " (end)";
+      }
+      response.status(400).json({ error: error });
+      return;
+    }
+    // Start and end nodes need to be pointers to the nodes in the nodes array
+    startNode = nodes.find((node) => node.id === startNode.id);
+    endNode = nodes.find((node) => node.id === endNode.id);
     console.log("Start node:");
     console.log(startNode);
     console.log("End node:");
@@ -195,14 +199,13 @@ wayRouter.get(
 
 wayRouter.get("/buildings", async (request, response) => {
   try {
-    const buildings = await Way.find({ "tags.building": {$exists: true} });
-    const buildingsWithFloorPlans = await Promise.all(buildings.map(async (building) => {
-      const floorPlans = await FloorPlan.find({ buildingId: building.id });
-      return {
-        ...building.toObject(),
-        floorPlans: floorPlans
-      };
-    }));
+    const buildings = await Way.find({ "tags.building": { $exists: true } });
+    const buildingsWithFloorPlans = await Promise.all(
+      buildings.map(async (building) => {
+        const floorPlans = await FloorPlan.find({ buildingId: building.id });
+        return { ...building.toObject(), floorPlans: floorPlans };
+      }),
+    );
     response.json(buildingsWithFloorPlans);
   } catch (error) {
     response.status(500).json({ error: error.message });

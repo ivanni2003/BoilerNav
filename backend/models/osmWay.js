@@ -6,6 +6,7 @@ const waySchema = new mongoose.Schema({
   nodes: [{ type: Number }],
   tags: { type: Object },
   buildingPosition: { type: Object },
+  floorPlans: [{ type: mongoose.Schema.Types.ObjectId, ref: 'FloorPlan' }]
 });
 
 module.exports = mongoose.model("Way", waySchema);

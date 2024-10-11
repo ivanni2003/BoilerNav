@@ -11,6 +11,9 @@ import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle
 
 const baseURL = "http://localhost:3001";
 const buildingAPI = `${baseURL}/api/ways/buildings`;
+const nodeAPI = `${baseURL}/api/nodes`;
+const nodeIDAPI = `${baseURL}/api/nodes/id`;
+
 
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
@@ -165,40 +168,6 @@ const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, sho
   });
 }
 
-const wayAPI = `${baseURL}/api/ways`;
-const nodeAPI = `${baseURL}/api/nodes`;
-const DebugWaysRenderer = ({ ways, nodes }) => {
-  ways = ways.filter((way) => {
-    if (!way.tags) {
-      return false;
-    }
-    if (way.tags.highway == "footway") {
-      return true;
-    }
-    if (way.tags.highway == "path") {
-      return true;
-    }
-    if (way.tags.footway) {
-      return true;
-    }
-    return false;
-  });
-  return ways.map((way, index) => {
-    const nodeIDs = way.nodes;
-    const wayNodes = nodeIDs.map((nodeID) => {
-      const node = nodes.find((node) => node.id === nodeID);
-      if (!node) {
-        // console.log(`Node with ID ${nodeID} not found`);
-        return null;
-      }
-      return [node.lat, node.lon];
-    });
-    const filteredWayNodes = wayNodes.filter((node) => node !== null);
-    return <Polyline key={index} positions={filteredWayNodes} color="red" />;
-  });
-};
-
-
 
 const Map = ({ latitude,
   longitude,
@@ -220,30 +189,7 @@ const Map = ({ latitude,
     const [showFloorPlan, setShowFloorPlan] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [floorPlans, setFloorPlans] = useState([]);
-
-    const [ways, setWays] = useState([]);
-  const [nodes, setNodes] = useState([]);
-  const fetchWays = async () => {
-    try {
-      const response = await axios.get(wayAPI);
-      setWays(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  const fetchNodes = async () => {
-    try {
-      const response = await axios.get(nodeAPI);
-      setNodes(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  useEffect(() => {
-    fetchWays();
-    fetchNodes();
-  }, []);
-
+  
   const customIcon = L.divIcon({
     className: "custom-marker",
     html: `
@@ -312,7 +258,6 @@ const Map = ({ latitude,
         isLoadingFavorites={isLoadingFavorites}
         onFavoriteToggle={onFavoriteToggle}
       />
-      <DebugWaysRenderer ways={ways} nodes={nodes} />
       <MapViewUpdater latitude={latitude} longitude={longitude} zoom={zoom} /> {/* Include the updater */}
       {userLocation && (
                 <>

@@ -20,8 +20,23 @@
 
 .popup-buttons {
     display: flex;
-    flex-direction: row; /* Arrange buttons in a row */
-    gap: 10px; /* Space between buttons */
-    justify-content: center; /* Center the buttons */
-    flex-wrap: wrap; /* Allow wrapping to the next line if necessary */
+    flex-direction: row; 
+    gap: 10px;
+    justify-content: center; 
+    flex-wrap: wrap; 
   }
+
+  button {
+    background-color: #4CAF50; 
+    color: white; 
+    border: none; 
+    border-radius: 5px; 
+    padding: 10px 20px;
+    cursor: pointer; 
+    font-size: 16px; 
+    flex: 1; 
+}
+
+button:hover {
+    background-color: #45a049; 
+}

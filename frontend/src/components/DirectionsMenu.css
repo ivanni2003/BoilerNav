@@ -1,0 +1,27 @@
+.directions-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.button-container {
+    display: flex; 
+    justify-content: space-between;
+    gap: 0px; 
+    margin-top: 0px; 
+}
+
+button {
+    background-color: #4CAF50; 
+    color: white; 
+    border: none; 
+    border-radius: 3px; 
+    padding: 10px 53px; 
+    cursor: pointer; 
+    font-size: 14px; 
+    flex: 1; 
+}
+
+button:hover {
+    background-color: #45a049; 
+}

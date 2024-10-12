@@ -1,6 +1,6 @@
 # BoilerNav
 
-<!-- 
+
 **Want to run the application with one command?**
 (1) navigate to /BoilerNav directory
 (2) npm install concurrently
@@ -20,4 +20,3 @@
     }
     --
 BENEFITS: Will speed up testing & iteration.
- -->

@@ -100,7 +100,7 @@ function App() {
         }
       },
       (err) => {
-        setUserLocation([40.4274, -86.9132])
+        //setUserLocation([40.4274, -86.9132])
         console.error(err);
       },
       {

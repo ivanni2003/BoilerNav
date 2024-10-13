@@ -42,6 +42,8 @@ function App() {
   const [start, setStart] = useState(null)
   const [destination, setDestination] = useState(null)
   const [polylineCoordinates, setPolylineCoordinates] = useState([]);
+
+
   const addCoordinate = (newCoordinate) => {
     setPolylineCoordinates(prevCoordinates => [
       ...prevCoordinates, // Keep the existing coordinates
@@ -185,6 +187,12 @@ function App() {
     setZoom(zoom)
   };
 
+  const handleStartUpdate = (building) => {
+    console.log("startupdate")
+    setStart([building.buildingPosition.lat, building.buildingPosition.lon])
+    console.log("updated")
+  }
+
   const handleCreateSuccess = (userData) => {
     setUser({
       id: userData.id,
@@ -226,21 +234,12 @@ function App() {
     });
   }, []);
 
-
-  const handleSaveFavoriteRoute = (building) => {
-    console.log(building)
-    // add functionality to save route
-    // selected building is the parameter
-  }
-
   const handleViewIndoorPlan = (building) => {
-    console.log(building)
-    // add functionality for user to select floor + rendering
-    // selected building is the parameter
+    
   }
 
-  const handleGetDirections = (building) => {
-    setStart(userLocation)
+  const handleGetDirections = (building) => {  // get direction menu within popup
+    setStart(userLocation)  
     setDestination(building)
     setActiveMenu('directions');
 }
@@ -282,7 +281,7 @@ const getWalkingTime = (distance) => {
 };
 
   const [routeInfo, setRouteInfo] = useState({ manhattanDistance: null, walkingTime: null });
-  const handleRouting = async (start, destination) => {
+  const handleRouting = async () => {
     console.log("Start: ", start); // list of lat and lon
     console.log("Destination: ", destination); // building way
     // implement routing logic
@@ -292,13 +291,13 @@ const getWalkingTime = (distance) => {
       const routeNodesResponse = await axios.get(`${routeQuery}`);
       const routeNodes = routeNodesResponse.data;
       const nodeCoordinates = routeNodes.map(node => [node.latitude, node.longitude]);
-      console.log("Coordinates: ", nodeCoordinates);
+      //console.log("Coordinates: ", nodeCoordinates);
       setPolylineCoordinates(nodeCoordinates);
 
       const totalManhattanDistance = getTotalDistance(nodeCoordinates);
       const walkingTime = getWalkingTime(totalManhattanDistance);
-      console.log(`total manhattan dist: ${totalManhattanDistance.toFixed(2)} miles`);
-      console.log(`est. walking Time: ${walkingTime.toFixed(2)} minutes`);
+      //console.log(`total manhattan dist: ${totalManhattanDistance.toFixed(2)} miles`);
+      //console.log(`est. walking Time: ${walkingTime.toFixed(2)} minutes`);
       
       setRouteInfo({
         manhattanDistance: totalManhattanDistance.toFixed(2),
@@ -378,6 +377,7 @@ const getWalkingTime = (distance) => {
                   <DirectionsMenu
                     items={buildings} // Pass the items (buildings) to the DirectionsMenu
                     updateMap={handleMapUpdate} // Pass the updateMap function
+                    updateStart={handleStartUpdate}
                     start={userLocation}
                     destination={destination}
                     closeDirections={() => setActiveMenu('search')} // Function to close directions
@@ -388,7 +388,7 @@ const getWalkingTime = (distance) => {
               </div>
               ) : (
                 <div className="search-container">
-              <SearchBar items={buildings} updateMap={handleMapUpdate} start={null} destination={null} />
+              <SearchBar items={buildings} updateMap={handleMapUpdate} updateStart={handleStartUpdate} start={null} destination={null} />
               </div>
               )}
             </div>

@@ -1,9 +1,6 @@
 import React from 'react'
-import { useState } from 'react'
 import SearchBar from './SearchBar'
 import './DirectionsMenu.css'
-
-const baseURL = 'http://localhost:3001'
 
 const DirectionsMenu = ({ items, updateMap, updateStart, start, destination, closeDirections, handleRouting, manhattanDistance, walkingTime }) => {
 

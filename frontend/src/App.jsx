@@ -187,7 +187,7 @@ function App() {
     setZoom(zoom)
   };
 
-  const handleStartUpdate = (building) => {
+  const handleStartUpdate = (building) => {  // start update within directions menu
     console.log("startupdate")
     setStart([building.buildingPosition.lat, building.buildingPosition.lon])
     console.log("updated")
@@ -234,12 +234,8 @@ function App() {
     });
   }, []);
 
-  const handleViewIndoorPlan = (building) => {
-    
-  }
-
   const handleGetDirections = (building) => {  // get direction menu within popup
-    setStart(userLocation)  
+    setStart(userLocation)  // start is curr. location by default
     setDestination(building)
     setActiveMenu('directions');
 }
@@ -363,7 +359,6 @@ const getWalkingTime = (distance) => {
                 accuracy={accuracy} 
                 altitude={altitude} 
                 heading={heading}
-                viewIndoorPlan={handleViewIndoorPlan}
                 getDirections={handleGetDirections}
                 user={user}
                 showNotification={showNotification}

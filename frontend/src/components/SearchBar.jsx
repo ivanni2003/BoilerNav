@@ -57,7 +57,7 @@ const SearchBar = ({items, updateMap, updateStart, start, destination}) => {
             idList += nodeId + ',' 
         }
         idList = idList.slice(0, -1)  // remove last ','
-        const response = await axios.get(`${baseURL}/api/nodes/id/${idList}`)  // fetch all nodes associate w/building
+        const response = await axios.get(`${baseURL}/api/nodes/id/${idList}`)  // fetch all nodes associated w/building
         const nodes = response.data
         
         for (const node of nodes) {

@@ -5,16 +5,19 @@ import axios from 'axios'
 
 const baseURL = 'http://localhost:3001'
 
-const SearchBar = ({items, updateMap, start, destination}) => {
+const SearchBar = ({items, updateMap, updateStart, start, destination}) => {
     
     const [search, setSearch] = useState('')
+    const [hasStart, setHasStart] = useState(false) // whether start is not null
     const [hasDestination, setHasDestination] = useState(false) // whether destination is not null
+    const [showDropdown, setShowDropdown] = useState(false)
 
     // Note: start and dest will only be non-null if search component is used as part of directions menu
     useEffect(() => {
       if (start) {
           setSearch("Current Location")
-          setHasDestination(true)
+          setShowDropdown(false)
+          setHasStart(true)
       } 
       if (destination) {
           console.log(destination)
@@ -24,6 +27,7 @@ const SearchBar = ({items, updateMap, start, destination}) => {
           else {
             setSearch("Building")
           }
+          setShowDropdown(false)
           setHasDestination(true)
 
       }
@@ -31,6 +35,7 @@ const SearchBar = ({items, updateMap, start, destination}) => {
 
     const handleChange = (e) => {
         setSearch(e.target.value)
+        setShowDropdown(true)
     }
 
     const filteredItems = search 
@@ -67,9 +72,13 @@ const SearchBar = ({items, updateMap, start, destination}) => {
       const avgLat = totalLat / numNodes
       const avgLon = totalLon / numNodes
 
+      if (hasStart) {
+        updateStart(item)
+      }
       updateMap(avgLat, avgLon, 20)
 
       setSearch(item.tags.name);
+      setShowDropdown(false)
     }
       return (
         <div>
@@ -80,17 +89,18 @@ const SearchBar = ({items, updateMap, start, destination}) => {
             placeholder="Search For Destination"
             readOnly={hasDestination}
           />
-          {!hasDestination &&  
-            <div className="dropdown">
-              {filteredItems.length > 0 ? (
+          {showDropdown && !hasDestination &&   
+            <div className="dropdown">            
+                {filteredItems.length > 0 ?  (
                 filteredItems.map((item) => (
                 <ul className="item" key={item.id} onClick={() => handleItemClick(item)} style={{ cursor: 'pointer' }}>
                 {item.tags.name}
               </ul>
                 ))
-              ) : (
+              ) : !hasStart && (
                 <ul className="item">No results found</ul>
               )}
+              
             </div>
           }
         </div>

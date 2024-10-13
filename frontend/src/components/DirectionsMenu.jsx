@@ -1,21 +1,23 @@
 import React from 'react'
+import { useState } from 'react'
 import SearchBar from './SearchBar'
 import './DirectionsMenu.css'
 
 const baseURL = 'http://localhost:3001'
 
-const DirectionsMenu = ({ items, updateMap, start, destination, closeDirections, handleRouting, manhattanDistance, walkingTime }) => {
+const DirectionsMenu = ({ items, updateMap, updateStart, start, destination, closeDirections, handleRouting, manhattanDistance, walkingTime }) => {
+
     return (
     <div className="directions-menu">
-        <div>
-            <SearchBar items={items} updateMap={updateMap} start={start} destination={null} />
+        <div className="search-bar">
+            <SearchBar items={items} updateMap={updateMap} updateStart={updateStart} start={start} destination={null} />
         </div>
-        <div>
-            <SearchBar items={items} updateMap={updateMap} start={null} destination={destination} />
+        <div className="search-bar">
+            <SearchBar items={items} updateMap={updateMap} updateStart={updateStart} start={null} destination={destination} />
         </div>
         <div className="button-container">
         <button onClick={closeDirections}>Close</button>
-        <button onClick={() => handleRouting(start, destination)}>Go</button>
+        <button onClick={() => handleRouting()}>Go</button>
         </div>
         <div className="distance-info">
             {manhattanDistance && walkingTime ? (

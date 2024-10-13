@@ -10,16 +10,19 @@ const mg = mailgun.client({
   key: 'bd5bdec41a111454a3058b8395c38fc8-1b5736a5-66ebc6a2'  // replace with your actual API key
 });
 
+
+
 // Define a route for sending the email
 // In ResetPassword.js
 router.post('/', (req, res) => {
+  const resetLink="localhost:5173"
   const { email } = req.body;
   mg.messages.create('sandbox19bae2ebb0364a398da14766ce80414c.mailgun.org', {
     from: "Excited User <mailgun@sandbox19bae2ebb0364a398da14766ce80414c.mailgun.org>",
     to: [email],  // Use email from request body
     subject: "Password Reset",
     text: "You requested a password reset.",
-    html: "<h1>Password Reset Instructions</h1>"
+    html: '<h1>Password Reset Instructions</h1><br><body><p>Click to reset your password: </p><a href="http://' + resetLink + '">Link</a></body>'
   })
   .then(msg => {
     console.log(msg);

@@ -200,7 +200,7 @@ const Map = ({ latitude,
     iconAnchor: [16, 16] // Center the icon
   });
   const updatedPolylineCoordinates = userLocation
-    ? [...(polylineCoordinates || []), userLocation] // Add userLocation at the end
+    ? [userLocation, ...(polylineCoordinates || [])] // Add userLocation at the beginning
     : polylineCoordinates;
 
 
@@ -267,8 +267,8 @@ const Map = ({ latitude,
                             Lat: {userLocation[0]} <br />
                             Long: {userLocation[1]} <br />
                             {altitude && <>Alt: {altitude} m</>}
-                            {accuracy && <>Accuracy: {accuracy} m</>}
-                        </Popup>
+                            {accuracy && accuracy <= 100 ? <>Accuracy: {accuracy} m</> : <>Turn on your precise location</>}
+                          </Popup>
                     </Marker>
                     {accuracy && (
                         <Circle

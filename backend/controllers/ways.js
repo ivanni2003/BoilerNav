@@ -17,6 +17,11 @@ wayRouter.get("/buildings", async (request, response) => {
   response.json(buildings);
 });
 
+wayRouter.get("/parkinglots", async (request, response) => {
+  const parkingLots = await Way.find({ "tags.building": { $exists: true, $eq: "parking" } });
+  response.json(parkingLots);
+});
+
 // GET ways by  _id in the database
 wayRouter.get("/id/DBID/:_ids", async (request, response) => {
   // There may be multiple ids separated by commas

@@ -2,29 +2,50 @@ import React, { useState, useEffect } from 'react';
 import './Amenities.css'
 import axios from 'axios';
 
+const Popup = ({isVisible, onClose, heading, items, handleItemClick}) => {
+    if (!isVisible) {
+        return null
+    }
+
+    return (
+        <div className="amenity-popup">
+            <div className="popup-content">
+            <span className="close" onClick={onClose}>&times;</span>
+                <h2 style={{ fontSize: '18px'}}>{heading}</h2>
+                <ul className="popup-items">
+                    {items.length > 0 ? (
+                        items.map((item, index) => (
+                            <ul className="popup-item" key={index}>{item.tags.name}</ul>
+                        ))
+                    ) : (
+                        <ul>No parking garages found.</ul>
+                    )}
+                </ul>
+            </div>
+        </div>
+    )
+
+}
 const Amenities = ({items, updateMap}) => {
     const [parkingGarages, setParkingGarages] = useState([])
+    const [isParkingPopupVisible, setIsParkingPopupVisible] = useState(false)
 
     useEffect(() => {
         setParkingGarages(items.filter(item => item.tags.building == 'parking'))
-    }, []);
+    }, [items]);
 
     const handleParkingClick = () => {
-        
-    }
+        setIsParkingPopupVisible(true);
+    };
+
+    const closeParkingPopup = () => {
+        setIsParkingPopupVisible(false);
+    };
 
     return (
         <div>
             <button className='amenity-button' onClick={handleParkingClick}>Parking Garages</button>
-           {/* <ul>
-                {parkingGarages.length > 0 ? (
-                    parkingGarages.map((item, index) => (
-                        <li key={index}>{item.tags.name}</li> 
-                    ))
-                ) : (
-                    <li>No parking garages found.</li>
-                )}
-            </ul>  */ }
+            <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Parking Garages"} items={parkingGarages}></Popup>
         </div>
     );
 }

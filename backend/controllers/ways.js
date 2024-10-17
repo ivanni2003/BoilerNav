@@ -17,6 +17,7 @@ wayRouter.get("/buildings", async (request, response) => {
   response.json(buildings);
 });
 
+// GET parking lots that are buildings
 wayRouter.get("/parkinglots", async (request, response) => {
   const parkingLots = await Way.find({ "tags.building": { $exists: true, $eq: "parking" } });
   response.json(parkingLots);

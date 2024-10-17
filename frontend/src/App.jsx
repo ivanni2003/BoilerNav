@@ -9,6 +9,7 @@ import SearchBar from './components/SearchBar'
 import DirectionsMenu from './components/DirectionsMenu'
 import Notification from './components/Notification'
 import Profile from './components/Profile'
+import Amenities from './components/Amenities'
 
 const baseURL = 'http://localhost:3001'
 
@@ -367,6 +368,9 @@ const getWalkingTime = (distance) => {
                 onFavoriteToggle={handleFavoriteToggle}
                 polylineCoordinates={polylineCoordinates}
               />
+              <div className="amenities-menu">
+                <Amenities items={buildings} />
+              </div>
               {activeMenu === 'directions' ? (
                 <div className="directions-menu">
                   <DirectionsMenu

@@ -81,6 +81,10 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {   // prevents scrolling within app
+    document.body.style.overflow = 'hidden';
+  }, []);
+
   useEffect(() => {
 
     // Fetch buildings only when showLogin is false
@@ -369,7 +373,7 @@ const getWalkingTime = (distance) => {
                 polylineCoordinates={polylineCoordinates}
               />
               <div className="amenities-menu">
-                <Amenities items={buildings} />
+                <Amenities items={buildings} updateMap={handleMapUpdate} />
               </div>
               {activeMenu === 'directions' ? (
                 <div className="directions-menu">

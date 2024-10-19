@@ -3,7 +3,7 @@ import axios from 'axios';
 import './Login.css';
 import ForgotPassword from './ForgotPassword';
 
-const Login = ({ onClose, onLoginSuccess }) => {
+const Login = ({ onClose, onLoginSuccess, showNotification }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,7 +21,7 @@ const Login = ({ onClose, onLoginSuccess }) => {
       onClose();
     } catch (error) {
       console.error('Error logging in:', error);
-      onLoginSuccess(null, 'Invalid username or password. Please try again.');
+      showNotification('Invalid username or password. Please try again.', 'error');
     }
   };
 

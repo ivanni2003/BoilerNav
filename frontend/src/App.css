@@ -17,6 +17,13 @@
   z-index: 1000; 
 }
 
+.amenities-menu {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  z-index: 1000;
+}
+
 .app-header {
   display: flex;
   justify-content: center;

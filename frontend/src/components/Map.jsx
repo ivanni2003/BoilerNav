@@ -116,9 +116,10 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
   return (
     <div>
       {building.tags.name ? <h2>{building.tags.name}</h2> : <h2>Building</h2>}
-      <div className="popup-buttons">
-      <button onClick={() => viewIndoorPlan(building)}>View Indoors</button>
+      <div className="popup-menu">
+      <button className="popup-button" onClick={() => viewIndoorPlan(building)}>View Indoors</button>
       <button 
+          className="popup-button"
           onClick={handleFavoriteToggle} 
           disabled={isUpdating}
         >
@@ -128,7 +129,8 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
                 : (isFavorite ? 'Unsave from favorites' : 'Save as Favorite'))
             : 'Save as Favorite'}
         </button>
-        <button onClick={() => getDirections(building)}>Directions</button>
+        <button className="popup-button"
+        onClick={() => getDirections(building)}>Directions</button>
       </div>
     </div>
   );

@@ -47,35 +47,7 @@ const SearchBar = ({items, updateMap, updateStart, start, destination}) => {
     : [];
 
     const handleItemClick = async (item) => {
-      let totalLat = 0
-      let totalLon = 0
-      let numNodes = 0
- 
-      try {
-        let idList = ""
-        for (const nodeId of item.nodes) {
-            idList += nodeId + ',' 
-        }
-        idList = idList.slice(0, -1)  // remove last ','
-        const response = await axios.get(`${baseURL}/api/nodes/id/${idList}`)  // fetch all nodes associated w/building
-        const nodes = response.data
-        
-        for (const node of nodes) {
-          totalLat += node.lat
-          totalLon += node.lon
-          numNodes += 1
-        }
-        
-      } catch (error) {
-        console.log(error);
-      }
-      const avgLat = totalLat / numNodes
-      const avgLon = totalLon / numNodes
-
-      if (hasStart) {
-        updateStart(item)
-      }
-      updateMap(avgLat, avgLon, 20)
+      updateMap(item.buildingPosition.lat, item.buildingPosition.lon, 20)
 
       setSearch(item.tags.name);
       setShowDropdown(false)

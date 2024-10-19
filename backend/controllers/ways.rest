@@ -4,6 +4,9 @@ GET http://localhost:3001/api/ways
 ### Get all ways that are buildings
 GET http://localhost:3001/api/ways/buildings
 
+### Get all parking amenities
+GET http://localhost:3001/api/ways/parkinglots
+
 ### Get a way by id
 GET http://localhost:3001/api/ways/id/5331434
 

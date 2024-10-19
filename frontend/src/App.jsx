@@ -9,6 +9,7 @@ import SearchBar from './components/SearchBar'
 import DirectionsMenu from './components/DirectionsMenu'
 import Notification from './components/Notification'
 import Profile from './components/Profile'
+import TransportationMode from './components/TransportationMode';
 
 const baseURL = 'http://localhost:3001'
 
@@ -43,6 +44,11 @@ function App() {
   const [destination, setDestination] = useState(null)
   const [polylineCoordinates, setPolylineCoordinates] = useState([]);
 
+  const [selectedMode, setSelectedMode] = useState('footpath'); // footpath route-type default
+
+  const handleSelectMode = (mode) => {
+    setSelectedMode(mode); // Update the selected mode
+  };
 
   const addCoordinate = (newCoordinate) => {
     setPolylineCoordinates(prevCoordinates => [
@@ -283,7 +289,17 @@ const getWalkingTime = (distance) => {
     // implement routing logic
     try {
       const buildingPos = destination.buildingPosition;
-      const routeQuery = `${baseURL}/api/ways/route/${start[0]}/${start[1]}/${buildingPos.lat}/${buildingPos.lon}`;
+      
+      // Query the route based on the method of transportation
+      var routeQuery;
+      console.log("transportation mode = ", selectedMode);
+      if (selectedMode === "footpath") {
+        routeQuery = `${baseURL}/api/ways/route/${start[0]}/${start[1]}/${buildingPos.lat}/${buildingPos.lon}`;
+      }
+      else if (selectedMode === "bike") {
+        routeQuery = `${baseURL}/api/ways/bike-route/${start[0]}/${start[1]}/${buildingPos.lat}/${buildingPos.lon}`;
+      }
+      
       const routeNodesResponse = await axios.get(`${routeQuery}`);
       const routeNodes = routeNodesResponse.data;
       const nodeCoordinates = routeNodes.map(node => [node.latitude, node.longitude]);
@@ -390,6 +406,7 @@ const getWalkingTime = (distance) => {
           </div>
         )}
       </div>
+      <TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />
       {notification && (
         <Notification
           message={notification.message}

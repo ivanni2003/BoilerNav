@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import './Amenities.css'
 import axios from 'axios';
 
-const Popup = ({isVisible, onClose, heading, items, handleItemClick}) => {
+const Popup = ({isVisible, onClose, heading, items, updateMap}) => {
     if (!isVisible) {
         return null
+    }
+
+    const handleItemClick = (item) => {
+        updateMap(item.buildingPosition.lat, item.buildingPosition.lon, 20)
     }
 
     return (
@@ -15,7 +19,7 @@ const Popup = ({isVisible, onClose, heading, items, handleItemClick}) => {
                 <ul className="popup-items">
                     {items.length > 0 ? (
                         items.map((item, index) => (
-                            <ul className="popup-item" key={index}>{item.tags.name}</ul>
+                            <ul className="popup-item" onClick={() => handleItemClick(item)} key={index}>{item.tags.name}</ul>
                         ))
                     ) : (
                         <ul>No parking garages found.</ul>
@@ -45,7 +49,7 @@ const Amenities = ({items, updateMap}) => {
     return (
         <div>
             <button className='amenity-button' onClick={handleParkingClick}>Parking Garages</button>
-            <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Parking Garages"} items={parkingGarages}></Popup>
+            <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Parking Garages"} items={parkingGarages} updateMap={updateMap}></Popup>
         </div>
     );
 }

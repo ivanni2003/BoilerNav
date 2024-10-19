@@ -13,8 +13,8 @@ const DirectionsMenu = ({ items, updateMap, updateStart, start, destination, clo
             <SearchBar items={items} updateMap={updateMap} updateStart={updateStart} start={null} destination={destination} />
         </div>
         <div className="button-container">
-        <button onClick={closeDirections}>Close</button>
-        <button onClick={() => handleRouting()}>Go</button>
+        <button className="directions-button" onClick={closeDirections}>Close</button>
+        <button className="directions-button" onClick={() => handleRouting()}>Go</button>
         </div>
         <div className="distance-info">
             {manhattanDistance && walkingTime ? (

@@ -1,0 +1,55 @@
+.amenity-button {
+    background-color: #4CAF50; 
+    color: white; 
+    border: none; 
+    border-radius: 3px; 
+    padding: 10px 20px; 
+    cursor: pointer; 
+    font-size: 12px; 
+}
+
+.amenity-popup {
+    position: fixed;
+    bottom: 50px;
+    left: 10px;
+    background-color: white;
+    border-radius: 5px; 
+}
+
+.close {
+    cursor: pointer; 
+    font-size: 20px; 
+    position: absolute; 
+    top: 10px; 
+    right: 10px; 
+}
+
+.popup-content {
+    padding: 3px;
+    margin: 0px 0; 
+    width: 250px;
+    height: 200px;
+    background-color: white; 
+    border: 1px solid #4CAF50; 
+    max-height: 200px; 
+    overflow-y: auto; 
+    text-align: center;
+}
+
+.popup-items {
+    display: flex; 
+    flex-direction: column; 
+    padding: 5px; 
+    margin: 1px; 
+}
+
+.popup-item {
+    padding: 8px; 
+    border: 1px solid #45a049; 
+    margin: 1px 0; 
+    cursor: pointer; 
+}
+
+.popup-item:hover {
+    background-color: #f0f0f0; 
+}

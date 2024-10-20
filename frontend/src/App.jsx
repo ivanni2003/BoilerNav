@@ -11,6 +11,7 @@ import Notification from './components/Notification'
 import Profile from './components/Profile'
 import Amenities from './components/Amenities'
 import TransportationMode from './components/TransportationMode';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const baseURL = 'http://localhost:3001'
 
@@ -23,6 +24,7 @@ function App() {
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
   const [isMapView, setIsMapView] = useState(true);
+  const [selectedSavedRoute, setSelectedSavedRoute] = useState(null);
 
   /* may or may need need these */
   const [nodes, setNodes] = useState([]);
@@ -87,6 +89,60 @@ function App() {
       setIsLoadingFavorites(false);
     }
   }, []);
+
+  const validatePolylineCoordinates = (coordinates) => {
+    if (!Array.isArray(coordinates)) return [];
+    return coordinates.filter(coord => 
+      Array.isArray(coord) && 
+      coord.length === 2 && 
+      typeof coord[0] === 'number' && 
+      typeof coord[1] === 'number'
+    );
+  };
+
+  const handleViewSavedRoute = (route) => {
+  console.log('Raw saved route:', route);
+  
+  if (!route || !Array.isArray(route.polyline) || route.polyline.length < 2) {
+    console.error('Invalid route structure:', route);
+    showNotification('Unable to display route: Invalid route data', 'error');
+    return;
+  }
+
+  // Transform polyline data
+  const transformedPolyline = route.polyline.map((point, index) => {
+    if (point && typeof point.lat === 'number' && typeof point.lon === 'number') {
+      return [point.lat, point.lon];
+    } else if (Array.isArray(point) && point.length === 2) {
+      return point;
+    } else if (point && point._id) {
+      console.warn(`Coordinate at index ${index} is malformed:`, point);
+      return null;
+    }
+    console.warn(`Invalid coordinate at index ${index}:`, point);
+    return null;
+  }).filter(point => point !== null);
+
+  console.log('Transformed polyline:', transformedPolyline);
+
+  if (transformedPolyline.length < 2) {
+    console.error('Insufficient valid coordinates after transformation');
+    showNotification('Unable to display route: Insufficient valid coordinates', 'error');
+    return;
+  }
+
+  const transformedRoute = {
+    ...route,
+    polyline: transformedPolyline
+  };
+
+  setSelectedSavedRoute(transformedRoute);
+  setShowProfile(false);
+  setIsMapView(true);
+  
+  // Use the first point of the polyline for initial map centering
+  handleMapUpdate(transformedPolyline[0][0], transformedPolyline[0][1], 15);
+};
 
   useEffect(() => {   // prevents scrolling within app
     document.body.style.overflow = 'hidden';
@@ -200,10 +256,10 @@ function App() {
     setNotification({ message, type });
   };
 
-  const handleMapUpdate = (latitude, longitude, zoom) => { // Use this to update map centering 
-    setLatitude(latitude);
-    setLongitude(longitude);
-    setZoom(zoom)
+  const handleMapUpdate = (newLatitude, newLongitude, newZoom) => {
+    setLatitude(newLatitude !== undefined ? newLatitude : latitude);
+    setLongitude(newLongitude !== undefined ? newLongitude : longitude);
+    setZoom(newZoom !== undefined ? newZoom : zoom);
   };
 
   const handleStartUpdate = (building) => {  // start update within directions menu
@@ -338,6 +394,7 @@ const getWalkingTime = (distance) => {
   }
 
   return (
+    <ErrorBoundary>
     <div className="app-container">
       <header className="app-header">
         <button className="user-button" onClick={togglePopup}>
@@ -375,10 +432,18 @@ const getWalkingTime = (distance) => {
         ) : showLogin ? (
           <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} showNotification={showNotification}/>
         ) : showProfile ? (
-          <Profile user={user} onClose={handleCloseProfile} onUpdateUser={handleUpdateUser} onLogout={handleLogout}/>
+          <Profile 
+            user={user} 
+            onClose={handleCloseProfile} 
+            onUpdateUser={handleUpdateUser} 
+            onLogout={handleLogout}
+            showNotification={showNotification}
+            onViewSavedRoute={handleViewSavedRoute}
+          />
         ) : (
           <div className="map-content">
             <div className="map-container">
+            {isMapView &&
               <Map 
                 latitude={latitude} 
                 longitude={longitude} 
@@ -395,22 +460,28 @@ const getWalkingTime = (distance) => {
                 isLoadingFavorites={isLoadingFavorites}
                 onFavoriteToggle={handleFavoriteToggle}
                 polylineCoordinates={polylineCoordinates}
+                selectedSavedRoute={selectedSavedRoute}
               />
+            }
               <div className="amenities-menu">
                 <Amenities items={buildings} updateMap={handleMapUpdate} />
               </div>
               {activeMenu === 'directions' ? (
                 <div className="directions-menu">
                   <DirectionsMenu
-                    items={buildings} // Pass the items (buildings) to the DirectionsMenu
-                    updateMap={handleMapUpdate} // Pass the updateMap function
+                    items={buildings}
+                    updateMap={handleMapUpdate}
                     updateStart={handleStartUpdate}
                     start={userLocation}
                     destination={destination}
-                    closeDirections={() => setActiveMenu('search')} // Function to close directions
+                    closeDirections={() => setActiveMenu('search')}
                     handleRouting={handleRouting}
                     manhattanDistance={routeInfo.manhattanDistance}
                     walkingTime={routeInfo.walkingTime}
+                    selectedMode={selectedMode}
+                    user={user}
+                    polylineCoordinates={polylineCoordinates}
+                    showNotification={showNotification}
                   />
               </div>
               ) : (
@@ -431,6 +502,7 @@ const getWalkingTime = (distance) => {
         />
       )}
     </div>
+    </ErrorBoundary>
   );
 
 }

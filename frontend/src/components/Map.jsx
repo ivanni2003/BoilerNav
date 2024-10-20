@@ -6,7 +6,7 @@ import L from 'leaflet';
 import arrowIcon from '../img/up-arrow.png';
 import SearchBar from './SearchBar'; 
 
-import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
 
 const baseURL = "http://localhost:3001";
@@ -14,6 +14,30 @@ const buildingAPI = `${baseURL}/api/ways/buildings`;
 const nodeAPI = `${baseURL}/api/nodes`;
 const nodeIDAPI = `${baseURL}/api/nodes/id`;
 
+const DEFAULT_LAT = 40.4237;
+const DEFAULT_LON = -86.9212;
+const DEFAULT_ZOOM = 15;
+
+const MapEventHandler = ({ selectedSavedRoute }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (selectedSavedRoute && Array.isArray(selectedSavedRoute.polyline) && selectedSavedRoute.polyline.length > 1) {
+      try {
+        const bounds = L.latLngBounds(selectedSavedRoute.polyline);
+        if (bounds.isValid()) {
+          map.fitBounds(bounds);
+        } else {
+          console.error('Invalid bounds for the route:', selectedSavedRoute.polyline);
+        }
+      } catch (error) {
+        console.error('Error fitting bounds:', error);
+      }
+    }
+  }, [selectedSavedRoute, map]);
+
+  return null;
+};
 
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
@@ -187,7 +211,8 @@ const Map = ({ latitude,
   favoriteLocations,
   isLoadingFavorites,
   onFavoriteToggle,
-  polylineCoordinates }) => {
+  polylineCoordinates,
+  selectedSavedRoute }) => {
     const [showFloorPlan, setShowFloorPlan] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [floorPlans, setFloorPlans] = useState([]);
@@ -227,6 +252,35 @@ const Map = ({ latitude,
       }
     };
 
+    const mapCenter = [
+      latitude !== undefined ? latitude : DEFAULT_LAT,
+      longitude !== undefined ? longitude : DEFAULT_LON
+    ];
+    const mapZoom = zoom !== undefined ? zoom : DEFAULT_ZOOM;
+  
+
+    const renderSavedRoute = () => {
+      if (selectedSavedRoute && Array.isArray(selectedSavedRoute.polyline) && selectedSavedRoute.polyline.length > 1) {
+        console.log('Rendering saved route:', selectedSavedRoute);
+        return (
+          <Polyline 
+            positions={selectedSavedRoute.polyline} 
+            color="blue"
+          >
+            <Popup>
+              {selectedSavedRoute.endLocation?.name || 'Unknown Destination'}
+              <br />
+              Distance: {selectedSavedRoute.distance?.toFixed(2) || 'N/A'} miles
+              <br />
+              Duration: {selectedSavedRoute.duration?.toFixed(0) || 'N/A'} minutes
+            </Popup>
+          </Polyline>
+        );
+      }
+      console.warn('Unable to render saved route:', selectedSavedRoute);
+      return null;
+    };
+    
     return (
       <div className="map-wrapper">
         {!showFloorPlan && (
@@ -239,6 +293,8 @@ const Map = ({ latitude,
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
+      <MapEventHandler selectedSavedRoute={selectedSavedRoute} />
+      {renderSavedRoute()}
       {/* Add blue polyline nodes for the routing system */}
       {polylineCoordinates.length > 0 && (
         <Polyline positions={polylineCoordinates} color="blue" />

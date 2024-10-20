@@ -1,12 +1,8 @@
 import React, { useState } from 'react'
-import SearchBar from './SearchBar'
 import './DirectionsMenu.css'
 import axios from 'axios'
 
-const DirectionsMenu = ({ 
-  items, 
-  updateMap, 
-  updateStart, 
+const DirectionsMenu = ({
   start, 
   destination, 
   closeDirections, 

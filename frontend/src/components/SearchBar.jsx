@@ -1,18 +1,17 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
 import './SearchBar.css'
-import axios from 'axios'
 
 const baseURL = 'http://localhost:3001'
 
-const SearchBar = ({items, updateMap, updateStart, start, destination}) => {
+const SearchBar = ({items, updateMap, start, destination, searchStr}) => {
     
     const [search, setSearch] = useState('')
     const [hasStart, setHasStart] = useState(false) // whether start is not null
     const [hasDestination, setHasDestination] = useState(false) // whether destination is not null
     const [showDropdown, setShowDropdown] = useState(false)
 
-    // Note: start and dest will only be non-null if search component is used as part of directions menu
+    // might need to delete later
     useEffect(() => {
       if (start) {
           setSearch("Current Location")
@@ -35,7 +34,7 @@ const SearchBar = ({items, updateMap, updateStart, start, destination}) => {
 
     const handleChange = (e) => {
         setSearch(e.target.value)
-        setShowDropdown(true)
+        setShowDropdown(true);
     }
 
     const filteredItems = search 
@@ -58,7 +57,7 @@ const SearchBar = ({items, updateMap, updateStart, start, destination}) => {
             type="text"
             value={search}
             onChange={handleChange}
-            placeholder="Search For Destination"
+            placeholder={"Search For "  + searchStr}
             readOnly={hasDestination}
           />
           {showDropdown && !hasDestination &&   
@@ -69,7 +68,7 @@ const SearchBar = ({items, updateMap, updateStart, start, destination}) => {
                 {item.tags.name}
               </ul>
                 ))
-              ) : !hasStart && (
+              ) : !hasStart && search != "" && (
                 <ul className="item">No results found</ul>
               )}
               

@@ -26,11 +26,6 @@ function App() {
   const [isMapView, setIsMapView] = useState(true);
   const [selectedSavedRoute, setSelectedSavedRoute] = useState(null);
 
-  /* may or may need need these */
-  const [nodes, setNodes] = useState([]);
-  const [ways, setWays] = useState([]);
-  const [relations, setRelations] = useState([]);
-
   const [buildings, setBuildings] = useState([])
 
   const [latitude, setLatitude] = useState(40.4274);
@@ -294,12 +289,6 @@ function App() {
     setZoom(newZoom !== undefined ? newZoom : zoom);
   };
 
-  const handleStartUpdate = (building) => {  // start update within directions menu
-    console.log("startupdate")
-    setStart([building.buildingPosition.lat, building.buildingPosition.lon])
-    console.log("updated")
-  }
-
   const handleCreateSuccess = (userData) => {
     setUser({
       id: userData.id,
@@ -496,15 +485,12 @@ const getWalkingTime = (distance) => {
                 selectedSavedRoute={selectedSavedRoute}
               />
             }
-              <div className="amenities-menu">
+              <span className="amenities-menu">
                 <Amenities items={buildings} updateMap={handleMapUpdate} />
-              </div>
+              </span>
               {activeMenu === 'directions' ? (
-                <div className="directions-menu">
+                <span className="directions-menu">
                   <DirectionsMenu
-                    items={buildings}
-                    updateMap={handleMapUpdate}
-                    updateStart={handleStartUpdate}
                     start={userLocation}
                     destination={destination}
                     closeDirections={() => setActiveMenu('search')}
@@ -516,11 +502,17 @@ const getWalkingTime = (distance) => {
                     polylineCoordinates={polylineCoordinates}
                     showNotification={showNotification}
                   />
-              </div>
+              </span>
               ) : (
-                <div className="search-container">
-              <SearchBar items={buildings} updateMap={handleMapUpdate} updateStart={handleStartUpdate} start={null} destination={null} />
-              </div>
+                <div> 
+                  <span className="search-destination">
+                    <SearchBar items={buildings} updateMap={handleMapUpdate} start={null} destination={null} searchStr={"Destination"} />
+                  </span>
+                  <span className="search-routes">
+                    <SearchBar items={[]} updateMap={handleMapUpdate} start={null} destination={null} searchStr={"Routes"}/>
+                  </span>
+                </div>
+              
               )}
             </div>
           </div>

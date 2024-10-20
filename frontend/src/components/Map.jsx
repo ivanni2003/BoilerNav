@@ -292,11 +292,6 @@ const Map = ({ latitude,
     
     return (
       <div className="map-wrapper">
-        {!showFloorPlan && (
-        <div className="search-container">
-          <SearchBar items={buildings} updateMap={updateMap} />
-        </div>
-      )}
     <MapContainer center={[latitude, longitude]} zoom={zoom} zoomControl={false} className="map-container">
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -187,11 +187,20 @@ const Map = ({ latitude,
   favoriteLocations,
   isLoadingFavorites,
   onFavoriteToggle,
+  selectedMode,
   polylineCoordinates }) => {
     const [showFloorPlan, setShowFloorPlan] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [floorPlans, setFloorPlans] = useState([]);
   
+  var polylineColor = 'blue';
+  if (selectedMode === "bike") {
+    polylineColor = "green";
+  }
+  else if (selectedMode === "bus") {
+    polylineColor = "red";
+  }
+  console.log("line color:", polylineColor);
   const customIcon = L.divIcon({
     className: "custom-marker",
     html: `
@@ -241,7 +250,7 @@ const Map = ({ latitude,
       />
       {/* Add blue polyline nodes for the routing system */}
       {polylineCoordinates.length > 0 && (
-        <Polyline positions={polylineCoordinates} color="blue" />
+        <Polyline key={selectedMode} positions={updatedPolylineCoordinates || polylineCoordinates} color={polylineColor} />
       )}
       {polylineCoordinates.map((coords, index) => (
         <Marker key={index} position={coords}>
@@ -283,9 +292,9 @@ const Map = ({ latitude,
                     )}
                 </>
             )}
-            {updatedPolylineCoordinates && (
-              <Polyline positions={updatedPolylineCoordinates} color="blue" />
-            )}
+            {/* {updatedPolylineCoordinates && (
+              <Polyline positions={updatedPolylineCoordinates} color={polylineColor} />
+            )} */}
     </MapContainer>
     {showFloorPlan && (
         <FloorPlanView 

@@ -9,7 +9,7 @@ const TransportationMode = ({ selectedMode, onSelectMode }) => {
         className={selectedMode === 'footpath' ? 'active' : ''}
         onClick={() => onSelectMode('footpath')}
       >
-        Footpath
+        Walk
       </button>
       <button
         className={selectedMode === 'bike' ? 'active' : ''}

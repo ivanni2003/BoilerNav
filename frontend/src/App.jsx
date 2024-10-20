@@ -492,6 +492,7 @@ const getWalkingTime = (distance) => {
                 isLoadingFavorites={isLoadingFavorites}
                 onFavoriteToggle={handleFavoriteToggle}
                 polylineCoordinates={polylineCoordinates}
+                selectedMode={selectedMode}
                 selectedSavedRoute={selectedSavedRoute}
               />
             }

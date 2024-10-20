@@ -254,7 +254,24 @@ wayRouter.get(
     });
     const nodes = await NavNode.find({});
     const bikeWays = await NavWay.find({
-      type: { $in: ["cycleway", "bicycle", "shared_lane", "lane", "track"] }
+      type: { $in: [
+        "cycleway",
+        "bicycle",
+        "shared_lane",
+        "lane",
+        "track",
+        "path",
+        "footway",
+        "footpath",
+        "bridleway",
+        "living_street",
+        "residential",
+        "service",
+        "unclassified",
+        "tertiary",
+        "secondary",
+        "primary"
+      ] }
     });
     let startNode = getClosestNode(closeStartNodes, start.lat, start.lon);
     let endNode = getClosestNode(closeEndNodes, end.lat, end.lon);

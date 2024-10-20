@@ -11,11 +11,6 @@ async function fetchOverpassData() {
         node(40.4170, -86.9271, 40.4330, -86.9100); // Nodes with amenities
         way(40.4170, -86.9271, 40.4330, -86.9100); // Ways (roads)
         relation(40.4170, -86.9271, 40.4330, -86.9100); // Relations (routes)
-
-        // Bike ways (my attempt to fetch the missing bike ways)
-        way["highway"="cycleway"](40.4170, -86.9271, 40.4330, -86.9100); // Bicycle paths
-        way["bicycle"="yes"](40.4170, -86.9271, 40.4330, -86.9100); // Roads where bicycles are allowed
-        way["cycleway"](40.4170, -86.9271, 40.4330, -86.9100); // Any ways with cycleway tag
         );
         out body;
         >;

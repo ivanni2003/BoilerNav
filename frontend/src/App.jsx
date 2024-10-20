@@ -395,6 +395,7 @@ const getWalkingTime = (distance) => {
                 isLoadingFavorites={isLoadingFavorites}
                 onFavoriteToggle={handleFavoriteToggle}
                 polylineCoordinates={polylineCoordinates}
+                selectedMode={selectedMode}
               />
               <div className="amenities-menu">
                 <Amenities items={buildings} updateMap={handleMapUpdate} />

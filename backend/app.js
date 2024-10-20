@@ -12,6 +12,7 @@ const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const resetPasswordRouter = require('./controllers/resetPassword')
 const floorPlanRouter = require('./controllers/floorPlans');
+const routesRouter = require('./controllers/routes');
 
 
 const url = 'mongodb+srv://boilernav123:team13@boilernav.93a2g.mongodb.net/?retryWrites=true&w=majority&appName=BoilerNav'
@@ -24,6 +25,7 @@ app.use(cors());   // middleware to connect front & back
 app.use(express.json());    // ensures data sent in json
 
 app.use('/api/nodes', nodeRouter)
+app.use('/api/routes', routesRouter);
 app.use('/api/relations', relationRouter)
 app.use('/api/ways', wayRouter)
 app.use('/api/users', usersRouter)

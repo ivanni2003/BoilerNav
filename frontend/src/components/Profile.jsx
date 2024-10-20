@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Pencil, Check, Trash2, Minus, Eye, EyeOff } from 'lucide-react';
+import { Pencil, Check, Trash2, Minus, Eye, EyeOff, Map } from 'lucide-react';
 import './Profile.css';
 
-const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
+const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onViewSavedRoute }) => {
   const [editMode, setEditMode] = useState({
     name: false,
     email: false,
@@ -18,9 +18,11 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [favoriteLocations, setFavoriteLocations] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
+  const [savedRoutes, setSavedRoutes] = useState([]);
 
   useEffect(() => {
     fetchFavoriteLocations();
+    fetchSavedRoutes();
   }, []);
 
   const fetchFavoriteLocations = async () => {
@@ -35,6 +37,18 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
     }
   };
 
+  const fetchSavedRoutes = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3001/api/routes/${user.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setSavedRoutes(response.data);
+    } catch (error) {
+      console.error('Error fetching saved routes:', error);
+      setError('Failed to fetch saved routes');
+    }
+  };
+
   const handleRemoveFavorite = async (buildingId) => {
     try {
       await axios.delete(`http://localhost:3001/api/users/${user.id}/favorites/${buildingId}`, {
@@ -44,6 +58,19 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
     } catch (error) {
       console.error('Error removing favorite location:', error);
       setError('Failed to remove favorite location');
+    }
+  };
+
+  const handleRemoveRoute = async (routeId) => {
+    try {
+      await axios.delete(`http://localhost:3001/api/routes/${routeId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setSavedRoutes(prevRoutes => prevRoutes.filter(route => route._id !== routeId));
+      showNotification('Route removed successfully', 'success');
+    } catch (error) {
+      console.error('Error removing saved route:', error);
+      showNotification('Failed to remove saved route', 'error');
     }
   };
 
@@ -215,9 +242,11 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
         <button className="close-button" onClick={onClose}>×</button>
       </div>
       <div className="profile-content">
-        <div className="user-icon">
-          <span>{user.name && user.name[0] ? user.name[0].toUpperCase() : '?'}</span>
-        </div>
+      <div className="user-icon-container">
+          <div className="user-icon">
+            <span>{user.name && user.name[0] ? user.name[0].toUpperCase() : '?'}</span>
+          </div>
+      </div>
         <div className="user-info">
           {renderField("Full Name", "name")}
           {renderField("Username", "username")}
@@ -246,6 +275,31 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
             )}
           </div>
         </div>
+        <div className="saved-routes">
+        <h3>Saved Routes</h3>
+        <div className="saved-routes-list">
+          {savedRoutes.length > 0 ? (
+            savedRoutes.map((route) => (
+              <div key={route._id} className="saved-route-item">
+                <span>
+                  {route.startLocation?.name || 'Unknown'} to {route.endLocation?.name || 'Unknown'}
+                  {' '}({route.distance?.toFixed(2) || 'N/A'} miles, {route.duration?.toFixed(0) || 'N/A'} min)
+                </span>
+                <div className="route-actions">
+                  <button onClick={() => onViewSavedRoute(route)}>
+                    <Map size={16} />
+                  </button>
+                  <button onClick={() => handleRemoveRoute(route._id)}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="empty-routes-message">Your saved routes will appear here</p>
+          )}
+        </div>
+      </div>
         <div className="delete-account-section">
         {!showDeleteConfirmation ? (
           <button className="delete-account-button" onClick={() => setShowDeleteConfirmation(true)}>

@@ -22,6 +22,7 @@ function App() {
   const [favoriteLocations, setFavoriteLocations] = useState([]);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
+  const [isMapView, setIsMapView] = useState(true);
 
   /* may or may need need these */
   const [nodes, setNodes] = useState([]);
@@ -148,29 +149,35 @@ function App() {
     setShowCreateAccount(true);
     setShowLogin(false);
     setIsPopupOpen(false);
+    setIsMapView(false);
   };
 
   const handleCloseCreateAccount = () => {
     setShowCreateAccount(false);
+    setIsMapView(true);
   };
 
   const handleViewProfile = () => {
     setShowProfile(true);
     setIsPopupOpen(false);
+    setIsMapView(false);
   };
 
   const handleCloseProfile = () => {
     setShowProfile(false);
+    setIsMapView(true);
   };
 
   const handleLogin = () => {
     setShowLogin(true);
     setShowCreateAccount(false);
     setIsPopupOpen(false);
+    setIsMapView(false);
   };
 
   const handleCloseLogin = () => {
     setShowLogin(false);
+    setIsMapView(true);
   };
 
 
@@ -186,6 +193,7 @@ function App() {
     setShowCreateAccount(false);
     setShowLogin(false);
     setShowProfile(false);
+    setIsMapView(true);
   };
 
   const showNotification = (message, type) => {
@@ -365,7 +373,7 @@ const getWalkingTime = (distance) => {
         {showCreateAccount ? (
           <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} showNotification={showNotification}/>
         ) : showLogin ? (
-          <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} />
+          <Login onClose={handleCloseLogin} onLoginSuccess={handleLoginSuccess} showNotification={showNotification}/>
         ) : showProfile ? (
           <Profile user={user} onClose={handleCloseProfile} onUpdateUser={handleUpdateUser} onLogout={handleLogout}/>
         ) : (
@@ -415,7 +423,7 @@ const getWalkingTime = (distance) => {
           </div>
         )}
       </div>
-      <TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />
+      {isMapView && <TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
       {notification && (
         <Notification
           message={notification.message}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Pencil, Check, Trash2, Minus } from 'lucide-react';
+import { Pencil, Check, Trash2, Minus, Eye, EyeOff } from 'lucide-react';
 import './Profile.css';
 
 const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
@@ -8,13 +8,16 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
     name: false,
     email: false,
     major: false,
-    affiliation: false
+    affiliation: false,
+    username: false,
+    password: false
   });
 
-  const [editedUser, setEditedUser] = useState({ ...user });
+  const [editedUser, setEditedUser] = useState({ ...user, password: '' });
   const [error, setError] = useState('');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [favoriteLocations, setFavoriteLocations] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     fetchFavoriteLocations();
@@ -82,7 +85,6 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
     }
   };
 
-
   const affiliationOptions = [
     { value: "student", label: "Student" },
     { value: "faculty", label: "Faculty" },
@@ -107,10 +109,15 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
       }
       const response = await axios.put(`http://localhost:3001/api/users/${user.id}`, {
         [field]: editedUser[field]
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       if (response.status === 200) {
         onUpdateUser({ ...user, [field]: editedUser[field] });
         toggleEdit(field);
+        if (field === 'password') {
+          setEditedUser({ ...editedUser, password: '' });
+        }
       }
     } catch (error) {
       console.error('Error updating user:', error);
@@ -140,6 +147,34 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
           ) : (
             <>
               {affiliationOptions.find(option => option.value === user[field])?.label || user[field]}
+              <Pencil onClick={() => toggleEdit(field)} className="edit-icon" />
+            </>
+          )}
+        </div>
+      );
+    }
+
+    if (field === 'password') {
+      return (
+        <div className="user-info-field">
+          <strong>{label}:</strong> 
+          {editMode[field] ? (
+            <>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={editedUser[field]}
+                onChange={(e) => handleChange(e, field)}
+              />
+              {showPassword ? (
+                <EyeOff onClick={() => setShowPassword(false)} className="edit-icon" />
+              ) : (
+                <Eye onClick={() => setShowPassword(true)} className="edit-icon" />
+              )}
+              <Check onClick={() => handleSave(field)} className="edit-icon" />
+            </>
+          ) : (
+            <>
+              ••••••••
               <Pencil onClick={() => toggleEdit(field)} className="edit-icon" />
             </>
           )}
@@ -185,7 +220,8 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout }) => {
         </div>
         <div className="user-info">
           {renderField("Full Name", "name")}
-          <p><strong>Username:</strong> {user.username || 'N/A'}</p>
+          {renderField("Username", "username")}
+          {renderField("Password", "password")}
           {renderField("Email", "email")}
           {renderField("Major", "major")}
           {renderField("Affiliation", "affiliation")}

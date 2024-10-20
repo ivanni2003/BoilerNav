@@ -3,6 +3,19 @@ const usersRouter = require('express').Router();
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, process.env.SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};
+
 usersRouter.post('/', async (request, response) => {
   try {
     const { fullName, major, affiliation, username, password, email } = request.body;
@@ -38,39 +51,57 @@ usersRouter.post('/', async (request, response) => {
   }
 });
 
-usersRouter.put('/:id', async (request, response) => {
+usersRouter.put('/:id', authenticateToken, async (request, response) => {
   const { id } = request.params;
-  const { name, email, major, affiliation } = request.body;
+  const { name, email, major, affiliation, username, password } = request.body;
+
+  // Ensure the authenticated user is updating their own account
+  if (id !== request.user.id) {
+    return response.status(403).json({ error: 'You can only update your own account' });
+  }
 
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { fullName: name, email, major, affiliation },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedUser) {
+    const user = await User.findById(id);
+    if (!user) {
       return response.status(404).json({ error: 'User not found' });
     }
 
-    response.json(updatedUser);
+    // Update fields if they are provided
+    if (name) user.fullName = name;
+    if (email) user.email = email;
+    if (major) user.major = major;
+    if (affiliation) user.affiliation = affiliation;
+    if (username) {
+      // Check if the new username is already taken
+      const existingUser = await User.findOne({ username });
+      if (existingUser && existingUser._id.toString() !== id) {
+        return response.status(400).json({ error: 'Username is already taken' });
+      }
+      user.username = username;
+    }
+    if (password) {
+      const saltRounds = 10;
+      user.password = await bcrypt.hash(password, saltRounds);
+    }
+
+    const updatedUser = await user.save();
+
+    // Remove sensitive information before sending the response
+    const userForResponse = {
+      id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      major: updatedUser.major,
+      affiliation: updatedUser.affiliation
+    };
+
+    response.json(userForResponse);
   } catch (error) {
-    response.status(400).json({ error: error.message });
+    console.error('Error updating user:', error);
+    response.status(500).json({ error: 'An error occurred while updating the user' });
   }
 });
-
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (token == null) return res.sendStatus(401);
-
-  jwt.verify(token, process.env.SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
 
 usersRouter.delete('/:id', authenticateToken, async (request, response) => {
   try {

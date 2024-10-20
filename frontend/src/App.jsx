@@ -246,10 +246,42 @@ function App() {
   };
 
   const handleTitleClick = () => {
+    // Close all open components
     setShowCreateAccount(false);
     setShowLogin(false);
     setShowProfile(false);
+    setIsPopupOpen(false);
+  
+    // Reset map view
+    setLatitude(40.4274); // Default latitude
+    setLongitude(-86.9132); // Default longitude
+    setZoom(15); // Default zoom level
+  
+    // Clear any active routes or selections
+    setStart(null);
+    setDestination(null);
+    setPolylineCoordinates([]);
+    setSelectedSavedRoute(null);
+  
+    // Reset menu state
+    setActiveMenu('search');
+  
+    // Clear route info
+    setRouteInfo({ manhattanDistance: null, walkingTime: null });
+  
+    // Reset transportation mode
+    setSelectedMode('footpath');
+  
+    // Clear any notifications
+    setNotification(null);
+  
+    // Ensure map view is shown
     setIsMapView(true);
+  
+    // If you have any other state that needs resetting, do it here
+  
+    // Optionally, you could re-fetch buildings data if needed
+    fetchBuildings();
   };
 
   const showNotification = (message, type) => {

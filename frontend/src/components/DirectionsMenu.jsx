@@ -61,35 +61,39 @@ const DirectionsMenu = ({
 
   return (
     <div className="directions-menu">
-      <div className="search-bar">
-        <SearchBar items={items} updateMap={updateMap} updateStart={updateStart} start={start} destination={null} />
-      </div>
-      <div className="search-bar">
-        <SearchBar items={items} updateMap={updateMap} updateStart={updateStart} start={null} destination={destination} />
-      </div>
+      <input 
+        className="input-field" 
+        type="text" 
+        value={start ? "Current Location" : ""} 
+        placeholder="Start Location"
+        readOnly 
+      />
+      <input 
+        className="input-field" 
+        type="text" 
+        value={destination ? destination.tags.name : ""} 
+        placeholder="Destination"
+        readOnly 
+      />
       <div className="button-container">
         <button className="directions-button" onClick={closeDirections}>Close</button>
-        <button className="directions-button" onClick={() => handleRouting()}>Go</button>
+        <button className="directions-button" onClick={handleRouting}>Go</button>
       </div>
-      <div className="distance-info">
-        {manhattanDistance && walkingTime ? (
-          <>
-            <p style={{fontSize:"10px"}}><strong>Distance:</strong> {manhattanDistance} miles</p>
-            <p style={{fontSize:"10px"}}><strong>Est. Walking Time:</strong> {walkingTime} minutes</p>
-            <button 
-              className="save-route-button" 
-              onClick={saveRoute}
-              disabled={isSaving}
-            >
-              {isSaving ? 'Saving...' : 'Save Route as Favorite'}
-            </button>
-          </>
-        ) : (
-          <></>
-        )}
-      </div>
+      {manhattanDistance && walkingTime && (
+        <div className="distance-info">
+          <p><strong>Distance:</strong> {manhattanDistance} miles</p>
+          <p><strong>Est. Walking Time:</strong> {walkingTime} minutes</p>
+          <button 
+            className="save-route-button" 
+            onClick={saveRoute}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Saving...' : 'Save Route as Favorite'}
+          </button>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default DirectionsMenu

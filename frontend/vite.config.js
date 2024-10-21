@@ -9,4 +9,4 @@ export default defineConfig({
     globals: true,
     setupFiles: './setupTests.js'
   }
-})
+})  

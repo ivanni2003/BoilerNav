@@ -8,7 +8,7 @@ const DirectionsMenu = ({
   closeDirections, 
   handleRouting, 
   manhattanDistance, 
-  walkingTime,
+  travelTime,
   selectedMode,
   user,
   polylineCoordinates,
@@ -37,7 +37,7 @@ const DirectionsMenu = ({
           name: destination.tags.name || 'Unnamed Destination'
         },
         distance: manhattanDistance,
-        duration: walkingTime,
+        duration: travelTime,
         travelMode: selectedMode,
         polyline: polylineCoordinates.map(coord => ({ lat: coord[0], lon: coord[1] }))
       };
@@ -54,6 +54,14 @@ const DirectionsMenu = ({
       setIsSaving(false);
     }
   };
+
+  var transportation_string = "Walking";
+  if (selectedMode === "bike") {
+    transportation_string = "Biking"
+  }
+  else if (selectedMode === "bus") {
+    transportation_string = "Busing"
+  }
 
   return (
     <div className="directions-menu">
@@ -75,10 +83,10 @@ const DirectionsMenu = ({
         <button className="directions-button" onClick={closeDirections}>Close</button>
         <button className="directions-button" onClick={handleRouting}>Go</button>
       </div>
-      {manhattanDistance && walkingTime && (
+      {manhattanDistance && travelTime && (
         <div className="distance-info">
           <p><strong>Distance:</strong> {manhattanDistance} miles</p>
-          <p><strong>Est. Walking Time:</strong> {walkingTime} minutes</p>
+          <p><strong>Est. {transportation_string} Time:</strong> {travelTime} minutes</p>
           <button 
             className="save-route-button" 
             onClick={saveRoute}

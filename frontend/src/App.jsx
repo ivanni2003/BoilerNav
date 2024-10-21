@@ -492,11 +492,9 @@ const getTravelTime = (distance, selectedMode) => {
                 polylineCoordinates={polylineCoordinates}
                 selectedMode={selectedMode}
                 selectedSavedRoute={selectedSavedRoute}
+                handleMapUpdate={handleMapUpdate}
               />
             }
-              <span className="amenities-menu">
-                <Amenities items={buildings} updateMap={handleMapUpdate} />
-              </span>
               {activeMenu === 'directions' ? (
                 <span className="directions-menu">
                   <DirectionsMenu

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './Amenities.css'
 import axios from 'axios';
 
+const baseURL = 'http://localhost:3001'
+
 const Popup = ({isVisible, onClose, heading, items, updateMap}) => {
     if (!isVisible) {
         return null
@@ -19,7 +21,9 @@ const Popup = ({isVisible, onClose, heading, items, updateMap}) => {
                 <ul className="popup-items">
                     {items.length > 0 ? (
                         items.map((item, index) => (
-                            <ul className="popup-item" onClick={() => handleItemClick(item)} key={index}>{item.tags.name}</ul>
+                            <ul className="popup-item" onClick={() => handleItemClick(item)} key={index}>
+                                {item.tags.name ? item.tags.name : 'Unnamed'}
+                            </ul>
                         ))
                     ) : (
                         <ul>No parking garages found.</ul>
@@ -30,26 +34,41 @@ const Popup = ({isVisible, onClose, heading, items, updateMap}) => {
     )
 
 }
-const Amenities = ({items, updateMap}) => {
-    const [parkingGarages, setParkingGarages] = useState([])
+const Amenities = ({updateMap, markParkingLots}) => {
+    const [parkingLots, setParkingLots] = useState([])
+    const [namedParking, setNamedParking] = useState([])
     const [isParkingPopupVisible, setIsParkingPopupVisible] = useState(false)
 
+
     useEffect(() => {
-        setParkingGarages(items.filter(item => item.tags.building == 'parking'))
-    }, [items]);
+        const fetchParkingLots = async () => {
+            try {
+                const response = await axios.get(`${baseURL}/api/ways/parkinglots`);
+                setParkingLots(response.data); 
+                setNamedParking(response.data.filter(lot => lot.tags.name))
+            } catch (error) {
+                console.error(error);
+            }
+
+        };
+
+        fetchParkingLots();
+    }, []); 
 
     const handleParkingClick = () => {
         setIsParkingPopupVisible(true);
+        markParkingLots(parkingLots);
     };
 
     const closeParkingPopup = () => {
         setIsParkingPopupVisible(false);
+        markParkingLots([])
     };
 
     return (
         <div>
-            <button className='amenity-button' onClick={handleParkingClick}>Parking Garages</button>
-            <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Parking Garages"} items={parkingGarages} updateMap={updateMap}></Popup>
+            <button className='amenity-button' onClick={handleParkingClick}>View Parking</button>
+            <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Named Parking"} items={namedParking} updateMap={updateMap}></Popup>
         </div>
     );
 }

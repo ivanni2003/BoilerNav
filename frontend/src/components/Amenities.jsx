@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './Amenities.css'
 import axios from 'axios';
 
+const baseURL = 'http://localhost:3001'
+
 const Popup = ({isVisible, onClose, heading, items, updateMap}) => {
     if (!isVisible) {
         return null
@@ -19,7 +21,9 @@ const Popup = ({isVisible, onClose, heading, items, updateMap}) => {
                 <ul className="popup-items">
                     {items.length > 0 ? (
                         items.map((item, index) => (
-                            <ul className="popup-item" onClick={() => handleItemClick(item)} key={index}>{item.tags.name}</ul>
+                            <ul className="popup-item" onClick={() => handleItemClick(item)} key={index}>
+                                {item.tags.name ? item.tags.name : 'Unnamed'}
+                            </ul>
                         ))
                     ) : (
                         <ul>No parking garages found.</ul>
@@ -34,9 +38,20 @@ const Amenities = ({items, updateMap}) => {
     const [parkingGarages, setParkingGarages] = useState([])
     const [isParkingPopupVisible, setIsParkingPopupVisible] = useState(false)
 
+
     useEffect(() => {
-        setParkingGarages(items.filter(item => item.tags.building == 'parking'))
-    }, [items]);
+        const fetchParkingGarages = async () => {
+            try {
+                const response = await axios.get(`${baseURL}/api/ways/parkinglots`);
+                setParkingGarages(response.data); 
+            } catch (error) {
+                console.error(error);
+            }
+
+        };
+
+        fetchParkingGarages();
+    }, []); 
 
     const handleParkingClick = () => {
         setIsParkingPopupVisible(true);
@@ -48,7 +63,7 @@ const Amenities = ({items, updateMap}) => {
 
     return (
         <div>
-            <button className='amenity-button' onClick={handleParkingClick}>Parking Garages</button>
+            <button className='amenity-button' onClick={handleParkingClick}>Show Parking</button>
             <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Parking Garages"} items={parkingGarages} updateMap={updateMap}></Popup>
         </div>
     );

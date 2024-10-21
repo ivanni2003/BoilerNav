@@ -362,17 +362,26 @@ const getTotalDistance = (polylineCoordinates) => {
 };
 
 // get time in minutes to walk.
-const getWalkingTime = (distance) => {
+const getTravelTime = (distance, selectedMode) => {
 
-  const walkingSpeed = 3;
-  const time = distance / walkingSpeed;
+  var travelSpeed = 3;
+  if (selectedMode === "footpath") {
+    travelSpeed = 3;
+  }
+  else if (selectedMode === "bike") {
+    travelSpeed = 6;
+  }
+  else if (selectedMode === "bus") {
+    travelSpeed = 8;
+  }
+  const time = distance / travelSpeed;
   const timeInMinutes = time * 60;
 
   return timeInMinutes;
 
 };
 
-  const [routeInfo, setRouteInfo] = useState({ manhattanDistance: null, walkingTime: null });
+  const [routeInfo, setRouteInfo] = useState({ manhattanDistance: null, travelTime: null });
   const handleRouting = async () => {
     console.log("Start: ", start); // list of lat and lon
     console.log("Destination: ", destination); // building way
@@ -397,19 +406,19 @@ const getWalkingTime = (distance) => {
       setPolylineCoordinates(nodeCoordinates);
 
       const totalManhattanDistance = getTotalDistance(nodeCoordinates);
-      const walkingTime = getWalkingTime(totalManhattanDistance);
+      const travelTime = getTravelTime(totalManhattanDistance, selectedMode);
       //console.log(`total manhattan dist: ${totalManhattanDistance.toFixed(2)} miles`);
       //console.log(`est. walking Time: ${walkingTime.toFixed(2)} minutes`);
       
       setRouteInfo({
         manhattanDistance: totalManhattanDistance.toFixed(2),
-        walkingTime: walkingTime.toFixed(2),
+        travelTime: travelTime.toFixed(2),
       });
     } catch (error) {
       console.error("Error fetching route:", error);
       setRouteInfo({ 
         manhattanDistance: null, 
-        walkingTime: null
+        travelTime: null
        });
     }
   }
@@ -496,7 +505,7 @@ const getWalkingTime = (distance) => {
                     closeDirections={() => setActiveMenu('search')}
                     handleRouting={handleRouting}
                     manhattanDistance={routeInfo.manhattanDistance}
-                    walkingTime={routeInfo.walkingTime}
+                    travelTime={routeInfo.travelTime}
                     selectedMode={selectedMode}
                     user={user}
                     polylineCoordinates={polylineCoordinates}

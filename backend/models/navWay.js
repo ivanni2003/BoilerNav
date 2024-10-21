@@ -4,6 +4,7 @@ const navWaySchema = new mongoose.Schema({
   id: { type: Number, required: true, unique: true },
   nodes: [{ type: Number }],
   length: { type: Number },
+  connectedWays: [{ type: Number }],
   type: { type: String, default: "footpath" },
 });
 

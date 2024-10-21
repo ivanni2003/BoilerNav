@@ -34,37 +34,41 @@ const Popup = ({isVisible, onClose, heading, items, updateMap}) => {
     )
 
 }
-const Amenities = ({items, updateMap}) => {
-    const [parkingGarages, setParkingGarages] = useState([])
+const Amenities = ({updateMap, markParkingLots}) => {
+    const [parkingLots, setParkingLots] = useState([])
+    const [namedParking, setNamedParking] = useState([])
     const [isParkingPopupVisible, setIsParkingPopupVisible] = useState(false)
 
 
     useEffect(() => {
-        const fetchParkingGarages = async () => {
+        const fetchParkingLots = async () => {
             try {
                 const response = await axios.get(`${baseURL}/api/ways/parkinglots`);
-                setParkingGarages(response.data); 
+                setParkingLots(response.data); 
+                setNamedParking(response.data.filter(lot => lot.tags.name))
             } catch (error) {
                 console.error(error);
             }
 
         };
 
-        fetchParkingGarages();
+        fetchParkingLots();
     }, []); 
 
     const handleParkingClick = () => {
         setIsParkingPopupVisible(true);
+        markParkingLots(parkingLots);
     };
 
     const closeParkingPopup = () => {
         setIsParkingPopupVisible(false);
+        markParkingLots([])
     };
 
     return (
         <div>
-            <button className='amenity-button' onClick={handleParkingClick}>Show Parking</button>
-            <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Parking Garages"} items={parkingGarages} updateMap={updateMap}></Popup>
+            <button className='amenity-button' onClick={handleParkingClick}>View Parking</button>
+            <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Named Parking"} items={namedParking} updateMap={updateMap}></Popup>
         </div>
     );
 }

@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import L from 'leaflet';
 import arrowIcon from '../img/up-arrow.png';
-import SearchBar from './SearchBar'; 
+import Amenities from './Amenities'
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
@@ -244,11 +244,18 @@ const Map = ({ latitude,
   onFavoriteToggle,
   selectedMode,
   polylineCoordinates,
-  selectedSavedRoute }) => {
+  selectedSavedRoute, handleMapUpdate }) => {
     const [showFloorPlan, setShowFloorPlan] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [floorPlans, setFloorPlans] = useState([]);
-  
+    const [parkingLots, setParkingLots] = useState([])
+
+    const markParkingLots = (lots) => {
+      setParkingLots(lots)
+      console.log(parkingLots)
+
+    }
+
   var polylineColor = 'blue';
   if (selectedMode === "bike") {
     polylineColor = "green";
@@ -351,6 +358,10 @@ const Map = ({ latitude,
         isLoadingFavorites={isLoadingFavorites}
         onFavoriteToggle={onFavoriteToggle}
       />
+      {parkingLots.map((lot, index) => (
+          <Marker key={index} position={[lot.buildingPosition.lat, lot.buildingPosition.lon]}>
+          </Marker>
+        ))}
       <MapViewUpdater latitude={latitude} longitude={longitude} zoom={zoom} /> {/* Include the updater */}
       {userLocation && (
                 <>
@@ -378,6 +389,9 @@ const Map = ({ latitude,
               <Polyline positions={updatedPolylineCoordinates} color={polylineColor} />
             )} */}
     </MapContainer>
+    <span className="amenities-menu">
+      <Amenities updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
+    </span>
     {showFloorPlan && (
         <FloorPlanView 
           building={selectedBuilding}

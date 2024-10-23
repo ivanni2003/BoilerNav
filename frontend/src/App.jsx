@@ -9,7 +9,6 @@ import SearchBar from './components/SearchBar'
 import DirectionsMenu from './components/DirectionsMenu'
 import Notification from './components/Notification'
 import Profile from './components/Profile'
-import Amenities from './components/Amenities'
 import TransportationMode from './components/TransportationMode';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -23,7 +22,6 @@ function App() {
   const [favoriteLocations, setFavoriteLocations] = useState([]);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
-  const [isMapView, setIsMapView] = useState(true);
   const [selectedSavedRoute, setSelectedSavedRoute] = useState(null);
 
   const [buildings, setBuildings] = useState([])
@@ -38,6 +36,7 @@ function App() {
   const [heading, setHeading] = useState(null);
   const [altitude, setAltitude] = useState(null);
 
+  const [activeView, setActiveView] = useState('map');
   const [activeMenu, setActiveMenu] = useState('search');
   const [start, setStart] = useState(null)
   const [destination, setDestination] = useState(null)
@@ -473,8 +472,9 @@ const getTravelTime = (distance, selectedMode) => {
         ) : (
           <div className="map-content">
             <div className="map-container">
-            {isMapView &&
-              <Map 
+              {activeView == 'map' && (
+              <>
+                <Map 
                 latitude={latitude} 
                 longitude={longitude} 
                 zoom={zoom} 
@@ -493,48 +493,48 @@ const getTravelTime = (distance, selectedMode) => {
                 selectedMode={selectedMode}
                 selectedSavedRoute={selectedSavedRoute}
                 handleMapUpdate={handleMapUpdate}
+            />
+            {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
+            {notification && (
+            <Notification
+                message={notification.message}
+                type={notification.type}
+                onClose={() => setNotification(null)}
               />
-            }
-              {activeMenu === 'directions' ? (
-                <span className="directions-menu">
-                  <DirectionsMenu
-                    start={userLocation}
-                    destination={destination}
-                    closeDirections={() => setActiveMenu('search')}
-                    handleRouting={handleRouting}
-                    manhattanDistance={routeInfo.manhattanDistance}
-                    travelTime={routeInfo.travelTime}
-                    selectedMode={selectedMode}
-                    user={user}
-                    polylineCoordinates={polylineCoordinates}
-                    showNotification={showNotification}
-                  />
+            )}
+            {activeMenu === 'directions' ? (
+              <span className="directions-menu">
+              <DirectionsMenu
+                start={userLocation}
+                destination={destination}
+                closeDirections={() => setActiveMenu('search')}
+                handleRouting={handleRouting}
+                manhattanDistance={routeInfo.manhattanDistance}
+                travelTime={routeInfo.travelTime}
+                selectedMode={selectedMode}
+                user={user}
+                polylineCoordinates={polylineCoordinates}
+                showNotification={showNotification}
+              />
               </span>
-              ) : (
-                <div> 
-                  <span className="search-destination">
-                    <SearchBar items={buildings} updateMap={handleMapUpdate} start={null} destination={null} searchStr={"Destination"} />
-                  </span>
-                  <span className="search-routes">
-                    <SearchBar items={[]} updateMap={handleMapUpdate} start={null} destination={null} searchStr={"Routes"}/>
-                  </span>
-                </div>
-              
-              )}
+           ) : (
+            <div> 
+              <span className="search-destination">
+                <SearchBar items={buildings} updateMap={handleMapUpdate} markRooms={null} start={null} destination={null} searchStr={"Destination"} />
+              </span>
+              <span className="search-routes">
+                <SearchBar items={[]} updateMap={handleMapUpdate} markRooms={null} start={null} destination={null} searchStr={"Routes"} />
+              </span>
             </div>
-          </div>
-        )}
+              )}
+            </>
+          )}
+        </div>
       </div>
-      {isMapView && <TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
-      {notification && (
-        <Notification
-          message={notification.message}
-          type={notification.type}
-          onClose={() => setNotification(null)}
-        />
-      )}
+     )}
     </div>
-    </ErrorBoundary>
+  </div>
+  </ErrorBoundary>
   );
 
 }

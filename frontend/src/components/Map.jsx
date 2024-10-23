@@ -5,6 +5,7 @@ import './Map.css';
 import L from 'leaflet';
 import arrowIcon from '../img/up-arrow.png';
 import Amenities from './Amenities'
+import SearchBar from './SearchBar'
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
@@ -53,11 +54,20 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   }, [latitude, longitude, zoom, map]); 
 };
 
-const FloorPlanView = ({ building, floorPlans, onClose }) => {
+const FloorPlanView = ({ floorPlans, onClose }) => {
   const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans[0]);
+  const [rooms, setRooms] = useState([])
 
+  const markRooms = (room) => {
+    console.log("do smth when selected")
+  }
+  // NOTE: different search query required based on indoor data format
   return (
     <div className="floor-plan-fullscreen">
+      <div className="search-start"> 
+                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} start={null} destination={null} searchStr={"Start"} />
+                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} start={null} destination={null} searchStr={"End"} />
+      </div>
       <div className="floor-plan-header">
         <select 
           value={selectedFloorPlan.floorNumber} 
@@ -67,6 +77,7 @@ const FloorPlanView = ({ building, floorPlans, onClose }) => {
             <option key={fp.floorNumber} value={fp.floorNumber}>
               Floor {fp.floorNumber}
             </option>
+
           ))}
         </select>
         <button onClick={onClose}>×</button>
@@ -230,12 +241,10 @@ const Map = ({ latitude,
   longitude,
   zoom,
   buildings,
-  updateMap,
   userLocation,
   accuracy,
   altitude,
   heading,
-  viewIndoorPlan,
   getDirections,
   user,
   showNotification,

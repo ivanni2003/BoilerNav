@@ -4,7 +4,7 @@ import './SearchBar.css'
 
 const baseURL = 'http://localhost:3001'
 
-const SearchBar = ({items, updateMap, start, destination, searchStr}) => {
+const SearchBar = ({items, updateMap, markRooms, start, destination, searchStr}) => {
     
     const [search, setSearch] = useState('')
     const [hasStart, setHasStart] = useState(false) // whether start is not null
@@ -46,10 +46,16 @@ const SearchBar = ({items, updateMap, start, destination, searchStr}) => {
     : [];
 
     const handleItemClick = async (item) => {
-      updateMap(item.buildingPosition.lat, item.buildingPosition.lon, 20)
 
-      setSearch(item.tags.name);
-      setShowDropdown(false)
+      if (updateMap) {   // click behavior for outer map
+        updateMap(item.buildingPosition.lat, item.buildingPosition.lon, 20)
+
+        setSearch(item.tags.name);
+        setShowDropdown(false)
+      }
+      else {  //  click behavior for indoor map
+
+      }
     }
       return (
         <div>

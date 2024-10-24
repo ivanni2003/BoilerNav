@@ -1,0 +1,13 @@
+A. Identification and classification:
+    Test Case 2_13_2
+    System: Parking Module            Phase: 2      
+    Severity: 2
+
+B. Instructions:
+    1. Follow steps from 2_13_1.
+    2. Click view parking button
+    3. Close popup that appeared
+
+C. Expected Result:
+    1. Parking Lot amenities are marked and popup menu should appear with parking buildings
+    2. Parking Lot amenities are unmarked and popup is closed

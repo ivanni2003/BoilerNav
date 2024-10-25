@@ -106,7 +106,7 @@
 { "type": "Feature", "properties": { "id": 101, "Type": "Room", "RoomName": "B129", "LinkedTo": "99", "Floor": -1 }, "geometry": { "type": "Point", "coordinates": [ 40.42767, -86.91705 ] } },
 { "type": "Feature", "properties": { "id": 102, "Type": "Intersection", "RoomName": "Intersection", "LinkedTo": "99,103,135", "Floor": -1 }, "geometry": { "type": "Point", "coordinates": [ 40.42764, -86.91702 ] } },
 { "type": "Feature", "properties": { "id": 103, "Type": "Intersection", "RoomName": "Intersection", "LinkedTo": "102,104", "Floor": -1 }, "geometry": { "type": "Point", "coordinates": [ 40.42754, -86.91702 ] } },
-{ "type": "Feature", "properties": { "id": 104, "Type": "Intersection", "RoomName": "Intersection", "LinkedTo": "103,105", "Floor": -1 }, "geometry": { "type": "Point", "coordinates": [ 40.42754. -86.91715 ] } },
+{ "type": "Feature", "properties": { "id": 104, "Type": "Intersection", "RoomName": "Intersection", "LinkedTo": "103,105", "Floor": -1 }, "geometry": { "type": "Point", "coordinates": [ 40.42754, -86.91715 ] } },
 { "type": "Feature", "properties": { "id": 105, "Type": "StairUp", "RoomName": "StairUp", "LinkedTo": "104,8", "Floor": -1 }, "geometry": { "type": "Point", "coordinates": [ 40.42759, -86.91716 ] } },
 { "type": "Feature", "properties": { "id": 106, "Type": "StairDown", "RoomName": "StairDown", "LinkedTo": "7,108", "Floor": 1 }, "geometry": { "type": "Point", "coordinates": [ 40.42814, -86.91692 ] } },
 { "type": "Feature", "properties": { "id": 107, "Type": "StairUp", "RoomName": "StairUp", "LinkedTo": "108,151", "Floor": 1 }, "geometry": { "type": "Point", "coordinates": [ 40.42816, -86.91692 ] } },

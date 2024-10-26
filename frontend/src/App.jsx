@@ -397,6 +397,9 @@ const getTravelTime = (distance, selectedMode) => {
       else if (selectedMode === "bike") {
         routeQuery = `${baseURL}/api/ways/bike-route/${start[0]}/${start[1]}/${buildingPos.lat}/${buildingPos.lon}`;
       }
+      else if (selectedMode === "bus") {
+        routeQuery = `${baseURL}/api/ways/bus-route/${start[0]}/${start[1]}/${buildingPos.lat}/${buildingPos.lon}`;
+      }
       
       const routeNodesResponse = await axios.get(`${routeQuery}`);
       const routeNodes = routeNodesResponse.data;

@@ -296,6 +296,87 @@ wayRouter.get(
   },
 );
 
+wayRouter.get(
+  "/bus-route/:startLat/:startLon/:endLat/:endLon",
+  async (request, response) => {
+    // Convert the start and end coordinates from strings to numbers
+    let start = {};
+    let end = {};
+    try {
+      start = {
+        lat: parseFloat(request.params.startLat),
+        lon: parseFloat(request.params.startLon),
+      };
+      end = {
+        lat: parseFloat(request.params.endLat),
+        lon: parseFloat(request.params.endLon),
+      };
+    } catch (error) {
+      response.status(400).json({ error: "Invalid coordinates" });
+      return;
+    }
+    const searchRadiusMeters = 1000;
+    const searchRadiusDegrees = searchRadiusMeters / 111111;
+    // navNode lat and lon are named latitude and longitude
+    const closeStartNodes = await NavNode.find({
+      latitude: {
+        $gte: start.lat - searchRadiusDegrees,
+        $lte: start.lat + searchRadiusDegrees,
+      },
+      longitude: {
+        $gte: start.lon - searchRadiusDegrees,
+        $lte: start.lon + searchRadiusDegrees,
+      },
+    });
+    const closeEndNodes = await NavNode.find({
+      latitude: {
+        $gte: end.lat - searchRadiusDegrees,
+        $lte: end.lat + searchRadiusDegrees,
+      },
+      longitude: {
+        $gte: end.lon - searchRadiusDegrees,
+        $lte: end.lon + searchRadiusDegrees,
+      },
+    });
+    const nodes = await NavNode.find({});
+    const busWays = await NavWay.find({
+      type: { $in: [
+        "motorway",
+        "trunk",
+        "primary",
+        "secondary",
+        "tertiary",
+        "unclassified",
+        "residential",
+        "service",
+        "living_street",
+        "footpath"
+      ] }
+    });
+    let startNode = getClosestNode(closeStartNodes, start.lat, start.lon);
+    let endNode = getClosestNode(closeEndNodes, end.lat, end.lon);
+    if (startNode === null || endNode === null) {
+      let error = "Could not find nodes near given coordinates";
+      if (startNode === null) {
+        error += " (start)";
+      }
+      if (endNode === null) {
+        error += " (end)";
+      }
+      response.status(400).json({ error: error });
+      return;
+    }
+    // Start and end nodes need to be pointers to the nodes in the nodes array
+    startNode = nodes.find((node) => node.id === startNode.id);
+    endNode = nodes.find((node) => node.id === endNode.id);
+    console.log("Start Bus node:", startNode);
+    console.log("End Bus node:", endNode);
+    const path = pathBetweenNodes(startNode, endNode, nodes, busWays);
+
+    response.json(path);
+  },
+);
+
 wayRouter.get("/buildings", async (request, response) => {
   try {
     const buildings = await Way.find({ "tags.building": { $exists: true } });

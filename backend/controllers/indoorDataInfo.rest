@@ -1,0 +1,9 @@
+# GET Indoor Data by Building Name
+GET http://localhost:3001/api/indoordata/Lawson Hall (LWSN)
+
+# POST Request for geojson data, can use this to store geojson data to db
+POST http://localhost:3001/api/indoordata
+Content-Type: application/json
+{
+    // add geojson obj here
+}

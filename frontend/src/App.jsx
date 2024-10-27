@@ -11,6 +11,7 @@ import Notification from './components/Notification'
 import Profile from './components/Profile'
 import TransportationMode from './components/TransportationMode';
 import ErrorBoundary from './components/ErrorBoundary';
+import SavedLocationsList from './components/SavedLocationsList';
 
 const baseURL = 'http://localhost:3001'
 
@@ -23,6 +24,8 @@ function App() {
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
   const [selectedSavedRoute, setSelectedSavedRoute] = useState(null);
+  const [savedLocationsVersion, setSavedLocationsVersion] = useState(0);
+
 
   const [buildings, setBuildings] = useState([])
 
@@ -322,8 +325,10 @@ function App() {
   const handleFavoriteToggle = useCallback((buildingId, isFavorite, buildingData) => {
     setFavoriteLocations(prevFavorites => {
       if (isFavorite) {
+        setSavedLocationsVersion(prev => prev + 1); // Add this line
         return [...prevFavorites, buildingData];
       } else {
+        setSavedLocationsVersion(prev => prev + 1); // Add this line
         return prevFavorites.filter(fav => fav.buildingId !== buildingId);
       }
     });
@@ -521,14 +526,42 @@ const getTravelTime = (distance, selectedMode) => {
               />
               </span>
            ) : (
-            <div> 
-              <span className="search-destination">
-                <SearchBar items={buildings} updateMap={handleMapUpdate} markRooms={null} start={null} destination={null} searchStr={"Destination"} />
-              </span>
-              <span className="search-routes">
-                <SearchBar items={[]} updateMap={handleMapUpdate} markRooms={null} start={null} destination={null} searchStr={"Routes"} />
-              </span>
+            <div className="search-container">
+            <div className="search-box">
+              <SearchBar 
+                items={[]} 
+                updateMap={handleMapUpdate} 
+                markRooms={null} 
+                start={null} 
+                destination={null} 
+                searchStr={"Routes"} 
+              />
             </div>
+            <div className="search-box">
+              <SearchBar 
+                items={buildings} 
+                updateMap={handleMapUpdate} 
+                markRooms={null} 
+                start={null} 
+                destination={null} 
+                searchStr={"Destination"} 
+              />
+            </div>
+            <SavedLocationsList 
+              user={user}
+              userLocation={userLocation}
+              showNotification={showNotification}
+              handleRouting={handleRouting}
+              setStart={setStart}
+              setDestination={setDestination}
+              setActiveMenu={setActiveMenu}
+              onLoginClick={() => {
+                setShowLogin(true);
+                setIsPopupOpen(false);
+              }}
+              version={savedLocationsVersion}
+            />
+          </div>
               )}
             </>
           )}

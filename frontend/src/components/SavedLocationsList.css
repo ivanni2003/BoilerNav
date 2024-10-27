@@ -1,0 +1,114 @@
+.saved-locations-container {
+  margin-top: 10px;
+  width: 100%;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.saved-locations-header {
+  padding: 12px;
+  border-bottom: 1px solid #e5e5e5;
+  background-color: white;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.saved-locations-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.saved-locations-list {
+  overflow-y: auto;
+  background-color: white;
+}
+
+.saved-location-item {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.2s;
+}
+
+.saved-location-item:hover {
+  background-color: #f8f8f8;
+}
+
+.location-info {
+  flex: 1;
+}
+
+.location-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.location-icon {
+  color: #666;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.saved-location-item:hover .location-icon {
+  opacity: 1;
+}
+
+.login-prompt {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.login-prompt .login-icon {
+  color: #4CAF50;
+  margin-bottom: 10px;
+}
+
+.login-prompt p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.login-button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.login-button:hover {
+  background-color: #45a049;
+}
+
+.empty-message {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+.empty-message p {
+  margin: 8px 0;
+}
+
+.loading-message {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}

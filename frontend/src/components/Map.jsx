@@ -96,6 +96,7 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
   const [floorPlans, setFloorPlans] = useState([]);
 
   useEffect(() => {
+    console.log('Building ID:', building.id);
     if (user && !isLoadingFavorites) {
       setIsFavorite(favoriteLocations.some(fav => fav.buildingId === building.id.toString()));
     } else {

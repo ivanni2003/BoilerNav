@@ -1,0 +1,70 @@
+Test Case 211
+System: SavePersonalRoutes
+Phase: 2
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+- Test saving/unsaving routes through profile section
+- Verify user interface elements for route management
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Create a route between two locations
+4. Click "Save Route" button
+5. Navigate to profile section
+6. Attempt to delete the saved route
+
+C. Expected Result:
+1. Route should appear in saved routes section of profile
+2. Delete functionality should remove route from saved routes list
+3. UI should update immediately to reflect changes
+
+-------------------
+
+Test Case 212
+System: SavePersonalRoutes
+Phase: 2
+Route visualization verification
+Severity: 1
+
+A. Identification and classification
+- Test visual representation of saved routes
+- Verify route display functionality
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Navigate to profile section
+4. Click on a map icon next to the saved route
+5. Observe map visualization
+
+C. Expected Result:
+1. Clicking saved route should display it on the map
+2. Route should be drawn accurately between start and end points
+3. Map should zoom/pan to show entire route
+
+-------------------
+
+Test Case 213
+System: SavePersonalRoutes
+Phase: 2
+Main page route saving functionality
+Severity: 1
+
+A. Identification and classification
+- Test route saving from main map interface
+- Verify save button functionality
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Create a new route on the main map
+4. Look for save route button
+5. Click save route button
+
+C. Expected Result:
+1. Save button should be visible after route creation
+2. Clicking save should store route in database
+3. Route should appear in profile's saved routes section

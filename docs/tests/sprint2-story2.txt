@@ -1,0 +1,95 @@
+Test Case 221
+System: SavedLocationsAccess
+Phase: 2
+Verify saved locations display and routing from main page
+Severity: 1
+
+A. Identification and classification
+- Test accessibility of saved locations from main page
+- Verify routing functionality to saved locations
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Observe saved locations box on main page
+4. Click on a icon next to a saved location
+5. Verify route generation
+
+C. Expected Result:
+1. Saved locations box should be visible on main page
+2. Clicking a saved location should generate a route
+3. Route should start from current location to selected saved location
+
+-------------------
+
+Test Case 222
+System: SavedLocationsDelete
+Phase: 2
+Verify location removal synchronization
+Severity: 1
+
+A. Identification and classification
+- Test synchronization between profile deletion and main page display
+- Verify immediate UI updates
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Navigate to profile page
+4. Delete a saved location
+5. Return to main page
+6. Check saved locations box
+
+C. Expected Result:
+1. Location should be removed from profile page
+2. Deleted location should immediately disappear from main page saved locations box
+3. UI should update without requiring refresh
+
+-------------------
+
+Test Case 223
+System: SavedLocationsAdd
+Phase: 2
+Verify new location addition synchronization
+Severity: 1
+
+A. Identification and classification
+- Test synchronization when adding new saved locations
+- Verify immediate UI updates
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Click on a building on the map
+4. Save location from popup
+5. Check saved locations box on main page
+
+C. Expected Result:
+1. New location should appear in saved locations box
+2. UI should update immediately without refresh
+3. Location should be correctly labeled and clickable
+
+-------------------
+
+Test Case 224
+System: SavedLocationsRouting
+Phase: 2
+Verify route generation functionality
+Severity: 1
+
+A. Identification and classification
+- Test route generation from current location to saved location
+- Verify routing accuracy and display
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Enable location services
+4. Select a saved location from main page box
+5. Observe route generation
+
+C. Expected Result:
+1. Route should be generated automatically
+2. Route should start from current location
+3. Route should end at selected saved location
+4. Route should be displayed clearly on map

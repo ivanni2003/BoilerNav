@@ -84,6 +84,9 @@ const FloorPlanView = ({ floorPlans, onClose }) => {
       </div>
       <div className="floor-plan-content">
         <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
+        <svg width="255" height="660">
+          <path fill="none" d="M198 533 185 525 159 495 140 465 179 450" stroke-width="2" stroke="black" />
+        </svg>
       </div>
     </div>
   );

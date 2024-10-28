@@ -387,15 +387,6 @@ const Map = ({ latitude,
                             {accuracy && accuracy <= 100 ? <>Accuracy: {accuracy} m</> : <>Turn on your precise location</>}
                           </Popup>
                     </Marker>
-                    {accuracy && (
-                        <Circle
-                            center={userLocation}
-                            radius={accuracy} // Accuracy in meters
-                            color="blue"
-                            fillColor="blue"
-                            fillOpacity={.2}
-                        />
-                    )}
                 </>
             )}
             {/* {updatedPolylineCoordinates && (

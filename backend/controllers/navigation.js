@@ -1,6 +1,5 @@
 const navigationRouter = require("express").Router();
-const { findShortestPath } = require('../findPath'); // Import pathfinding utility
-const nodesData = require('../Node0.geojson');
+const { findShortestPath } = require('../IndoorNav'); // Import pathfinding utility
 
 navigationRouter.get('/path', async (req, res) => {
     const { start, end } = req.query;
@@ -11,7 +10,7 @@ navigationRouter.get('/path', async (req, res) => {
   
     try {
       // Call the pathfinding function (implement this in a separate utility file)
-      const { route, distance } = findShortestPath(nodesData, start, end);
+      const { route, distance } = findShortestPath("../Node0.geojson", start, end);
   
       if (route) {
         res.json({ route, distance }); // Send back the route array for frontend rendering

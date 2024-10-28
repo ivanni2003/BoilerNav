@@ -124,8 +124,31 @@ async function findPath(geoJsonPath, startNode, endNode) {
 }
 
 // Usage example
-findPath("./Node0.geojson", 1, 10)
-    .then(({ path, totalDistance }) => console.log("Path:", path, "Total Distance (m):", totalDistance))
-    .catch((error) => console.error("Error:", error));
+//findPath("./Node0.geojson", 1, 10)
+//    .then(({ path, totalDistance }) => console.log("Path:", path, "Total Distance (m):", totalDistance))
+//    .catch((error) => console.error("Error:", error));
+
+if (require.main === module) {
+    // This code only runs when you execute 'node IndoorNav.js' directly
+
+    // Access command-line arguments
+    const args = process.argv.slice(2);
+
+    // Check if both arguments are provided
+    if (args.length < 2 || args.length > 2) {
+        console.error("Error: Please provide both arguments (arg1 and arg2).");
+        process.exit(1); // Exit the program with an error code
+    }
+
+    // If both arguments exist, assign them
+    const startNode = args[0] ? Number(args[0]) : 1; // Default to 1 if no argument
+    const endNode = args[1] ? Number(args[1]) : 3;   // Default to 3 if no argument
+
+    findPath("./Node0.geojson", startNode, endNode)
+        .then(({ path, totalDistance }) => console.log("Path:", path, "Total Distance (m):", totalDistance))
+        .catch((error) => console.error("Error:", error));
+
+    // Continue with the rest of your code
+}
 
 module.exports = findPath;

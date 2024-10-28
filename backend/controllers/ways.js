@@ -73,16 +73,16 @@ const waysBetweenNodes = (startNode, endNode, nodes, ways) => {
   if (startNode.ways.length === 0 || endNode.ways.length === 0) {
     return [];
   }
-  // If startNode has more than one way, it is an intersection, and the distance each way is 0
-  // And each of the node's way can be added to the way queue
-  // Else, need to measure the distance between start node and the ends of its way
-  // And add the connected ways to the way queue
+  // If startNode has more than one way, it is an intersection, and the
+  // distance each way is 0 And each of the node's way can be added to the
+  // way queue Else, need to measure the distance between start node and the
+  // ends of its way And add the connected ways to the way queue
   let wayQueue = [];
   let endWays = [];
   if (startNode.ways.length > 1) {
     // Convert way ids to way objects from the passed ways array
     wayQueue = startNode.ways.map((wayId) => {
-      const way = ways.find((way) => way.id === wayId),
+      const way = ways.find((way) => way.id === wayId);
       way.distance = 0;
       way.previous = null;
       return way;
@@ -91,24 +91,33 @@ const waysBetweenNodes = (startNode, endNode, nodes, ways) => {
     const startWay = ways.find((way) => way.id === startNode.ways[0]);
     startWay.distance = 0;
     startWay.previous = null;
-    const connectedWays = startWay.connectedWays.map((wayId) => ways.find((way) => way.id === wayId));
-    // const startWayNodes = startWay.nodes.map((nodeId) => nodes.find((node) => node.id === nodeId));
-    // Find which connected way is connected to which end of the start way
+    const connectedWays = startWay.connectedWays.map((wayId) =>
+      ways.find((way) => way.id === wayId),
+    );
+    // const startWayNodes = startWay.nodes.map((nodeId) =>
+    // nodes.find((node) => node.id === nodeId)); Find which connected way
+    // is connected to which end of the start way
     const startWayEndNode1 = startWayNodes[0];
     const startWayEndNode2 = startWayNodes[startWayNodes.length - 1];
     const EndNodeDistance1 = Math.sqrt(
       ((startWayEndNode1.latitude - endNode.latitude) * 111111) ** 2 +
-      ((startWayEndNode1.longitude - endNode.longitude) * 111111) ** 2
+        ((startWayEndNode1.longitude - endNode.longitude) * 111111) ** 2,
     );
     const EndNodeDistance2 = startWay.length - EndNodeDistance1;
     connectedWays.forEach((way) => {
       const wayNodeEndNodeID1 = way.nodes[0];
       const wayNodeEndNodeID2 = way.nodes[way.nodes.length - 1];
-      if (wayNodeEndNodeID1 === startWayEndNode1.id || wayNodeEndNodeID2 === startWayEndNode1.id) {
+      if (
+        wayNodeEndNodeID1 === startWayEndNode1.id ||
+        wayNodeEndNodeID2 === startWayEndNode1.id
+      ) {
         way.distance = EndNodeDistance1;
         way.previous = startWay;
         wayQueue.push(way);
-      } else if (wayNodeEndNodeID1 === startWayEndNode2.id || wayNodeEndNodeID2 === startWayEndNode2.id) {
+      } else if (
+        wayNodeEndNodeID1 === startWayEndNode2.id ||
+        wayNodeEndNodeID2 === startWayEndNode2.id
+      ) {
         way.distance = EndNodeDistance2;
         way.previous = startWay;
         wayQueue.push(way);
@@ -117,7 +126,7 @@ const waysBetweenNodes = (startNode, endNode, nodes, ways) => {
       }
     });
   }
-}
+};
 
 const pathBetweenNodes = (startNode, endNode, nodes, ways) => {
   startNode.distance = 0;
@@ -403,18 +412,20 @@ wayRouter.get(
     });
     const nodes = await NavNode.find({});
     const busWays = await NavWay.find({
-      type: { $in: [
-        "motorway",
-        "trunk",
-        "primary",
-        "secondary",
-        "tertiary",
-        "unclassified",
-        "residential",
-        "service",
-        "living_street",
-        "footpath"
-      ] }
+      type: {
+        $in: [
+          "motorway",
+          "trunk",
+          "primary",
+          "secondary",
+          "tertiary",
+          "unclassified",
+          "residential",
+          "service",
+          "living_street",
+          "footpath",
+        ],
+      },
     });
     let startNode = getClosestNode(closeStartNodes, start.lat, start.lon);
     let endNode = getClosestNode(closeEndNodes, end.lat, end.lon);

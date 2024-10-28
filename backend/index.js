@@ -15,7 +15,7 @@ app.listen(PORT, async () => {
   try {
     // await saveData(); // Leave commented out, don't want to fetch every time
     // await updateBuildingPositions(); // Leave commented out
-    await preprocessNavWays(); // Leave commented out
+    // await preprocessNavWays(); // Leave commented out
   } catch (exception) {
     console.error("Fetch Data Error:" + exception);
   }

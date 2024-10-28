@@ -38,12 +38,16 @@ const SearchBar = ({items, updateMap, markRooms, start, destination, searchStr})
     }
 
     const filteredItems = search 
-    ? items.filter(item => 
-        item.tags && 
-        item.tags.name && // Note: need to check this since there are microsoft building footprints marked as buildings w/no name for some reason
-        item.tags.name.toLowerCase().includes(search.toLowerCase())
-    ).slice(0, 20) 
-    : [];
+  ? items.filter(item => {
+      if (updateMap) {
+        return item.tags && 
+               item.tags.name && 
+               item.tags.name.toLowerCase().includes(search.toLowerCase());
+      } else {
+        return item.toLowerCase().includes(search.toLowerCase()); // Adjusted for item structure
+      }
+    }).slice(0, 20) 
+  : [];
 
     const handleItemClick = async (item) => {
 
@@ -54,7 +58,7 @@ const SearchBar = ({items, updateMap, markRooms, start, destination, searchStr})
         setShowDropdown(false)
       }
       else {  //  click behavior for indoor map
-
+        markRooms(item)
       }
     }
       return (
@@ -69,10 +73,15 @@ const SearchBar = ({items, updateMap, markRooms, start, destination, searchStr})
           {showDropdown && !hasDestination &&   
             <div className="dropdown">            
                 {filteredItems.length > 0 ?  (
-                filteredItems.map((item) => (
-                <ul className="item" key={item.id} onClick={() => handleItemClick(item)} style={{ cursor: 'pointer' }}>
-                {item.tags.name}
-              </ul>
+                filteredItems.map((item, index) => (
+                  <ul 
+                    className="item" 
+                    key={index} 
+                    onClick={() => handleItemClick(item)} 
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {updateMap ? item.tags.name : item} {/* Adjust rendering based on updateMap */}
+                  </ul>
                 ))
               ) : !hasStart && search != "" && (
                 <ul className="item">No results found</ul>

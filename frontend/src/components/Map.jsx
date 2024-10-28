@@ -43,9 +43,9 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
 
-  var SouthWestCoords = [40.40815, -86.95308];
-  var NorthEastCoords = [40.44628, -86.89712];
-  var WL_Bounds = [SouthWestCoords, NorthEastCoords]; 
+  let SouthWestCoords = [40.40815, -86.95308];
+  let NorthEastCoords = [40.44628, -86.89712];
+  let WL_Bounds = [SouthWestCoords, NorthEastCoords]; 
   map.setMaxBounds(WL_Bounds);
   map.setMinZoom(15);
 
@@ -54,17 +54,44 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   }, [latitude, longitude, zoom, map]); 
 };
 
-const FloorPlanView = ({ floorPlans, onClose }) => {
+const FloorPlanView = ({ building, floorPlans, onClose}) => {
   const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans[0]);
   const [rooms, setRooms] = useState([])
 
-  const markRooms = (room) => {
-    console.log("do smth when selected")
+  useEffect(() => {
+    async function fetchAndSetRooms() {
+      const response = await axios.get(`${baseURL}/api/indoordata/${building.tags.name}`)
+      const indoorData = response.data
+      //console.log(response.data)
+      //console.log(selectedFloorPlan)
+    
+      // Note: account for basement, 1, 2, 3, 4 for now. Need to change either floor plan or data to align and account for ground floors
+      const filteredRooms = indoorData.features.filter(room => {
+        const roomFloor = room.properties.Floor; 
+
+        return (
+          //room.properties.Type == "Room" && // only searching for rooms
+          (selectedFloorPlan.floorNumber === 'Basement' && roomFloor === -1) || 
+          (selectedFloorPlan.floorNumber === '1' && roomFloor === 0) || 
+          (selectedFloorPlan.floorNumber === '2' && roomFloor === 1) || 
+          (selectedFloorPlan.floorNumber === '3' && roomFloor === 2) || 
+          (selectedFloorPlan.floorNumber === '4' && roomFloor === 3) 
+        );
+      });
+
+      setRooms(filteredRooms.map(room => room.properties.RoomName));
+    }
+    fetchAndSetRooms()
+    console.log(rooms)
+  }, [selectedFloorPlan, building]);
+
+  const markRooms = (room) => { // implement marking/highlighting room in some way
+    alert(`You selected ${room}, Do smth here`)
   }
-  // NOTE: different search query required based on indoor data format
+
   return (
     <div className="floor-plan-fullscreen">
-      <div className="search-start"> 
+      <div className="floor-plan-search"> 
                 <SearchBar items={rooms} updateMap={null} markRooms={markRooms} start={null} destination={null} searchStr={"Start"} />
                 <SearchBar items={rooms} updateMap={null} markRooms={markRooms} start={null} destination={null} searchStr={"End"} />
       </div>

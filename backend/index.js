@@ -2,7 +2,7 @@ const app = require("./app");
 require("dotenv").config();
 const saveData = require("./fetchOverpassData"); // for fetching osm data
 const updateBuildingPositions = require("./updateBuildingPositions");
-const preProcessNavWays = require("./preprocessNavWays");
+const preprocessNavWays = require("./preprocessNavWays");
 
 /* Note: this is the file ran when npm run dev is typed, this file imports
 everything from app, hierarchy is index->app->...
@@ -15,7 +15,7 @@ app.listen(PORT, async () => {
   try {
     // await saveData(); // Leave commented out, don't want to fetch every time
     // await updateBuildingPositions(); // Leave commented out
-    // await preProcessNavWays(); // Leave commented out
+    await preprocessNavWays(); // Leave commented out
   } catch (exception) {
     console.error("Fetch Data Error:" + exception);
   }

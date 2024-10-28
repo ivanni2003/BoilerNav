@@ -237,6 +237,50 @@ const DebugWaysRenderer = ({ ways, nodes }) => {
   });
 };
 
+const DebugNavWaysRenderer = ({ ways, nodes }) => {
+  return ways.map((way, index) => {
+    const nodeIDs = way.nodes;
+    const wayNodes = nodeIDs.map((nodeID) => {
+      const node = nodes.find((node) => node.id === nodeID);
+      if (!node) {
+        // console.log(`Node with ID ${nodeID} not found`);
+        return null;
+      }
+      return [node.latitude, node.longitude];
+    });
+    const filteredWayNodes = wayNodes.filter((node) => node !== null);
+    return <Polyline key={index} positions={filteredWayNodes} color="red" />;
+  });
+};
+
+const DebugNodeGraphRenderer = ({ nodes }) => {
+  // Nodes from nodeGraph follow this structure:
+  // {
+  //  id: Number,
+  //  connectedNodes: [Number],
+  //  latitude: Number,
+  //  longitude: Number
+  //  visited: boolean
+  // }
+  const lineList = [];
+  nodes.forEach((node) => {
+    const connectedNodes = node.connectedNodes.map((connectedNodeID) => {
+      const connectedNode = nodes.find((node) => node.id === connectedNodeID);
+      if (!connectedNode) {
+        // console.log(`Node with ID ${connectedNodeID} not found`);
+        return null;
+      }
+      return [connectedNode.latitude, connectedNode.longitude];
+    });
+    const filteredConnectedNodes = connectedNodes.filter((node) => node !== null);
+    filteredConnectedNodes.forEach((connectedNode) => {
+      lineList.push([[node.latitude, node.longitude], connectedNode]);
+    });
+  });
+  return lineList.map((line, index) => {
+      return <Polyline key={index} positions={line} color="red" />;
+  });
+};
 
 const Map = ({ latitude,
   longitude,
@@ -266,6 +310,41 @@ const Map = ({ latitude,
 
     }
 
+  // DEBUG: Fetch navNodes and navWays for rendering
+  // Comment out if not needed
+  // const [navNodes, setNavNodes] = useState([]);
+  // const [navWays, setNavWays] = useState([]);
+  // const [nodeGraph, setNodeGraph] = useState([]);
+  // useEffect(() => {
+  //   const fetchNavNodes = async () => {
+  //     try {
+  //       const response = await axios.get(`${baseURL}/api/navNodes`);
+  //       setNavNodes(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching navNodes:', error);
+  //     }
+  //   };
+  //   const fetchNavWays = async () => {
+  //     try {
+  //       const response = await axios.get(`${baseURL}/api/navWays`);
+  //       setNavWays(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching navWays:', error);
+  //     }
+  //   };
+  //   const fetchNodeGraph = async () => {
+  //     try {
+  //       const response = await axios.get(`${baseURL}/api/navNodes/nodeGraph`);
+  //       setNodeGraph(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching nodeGraph:', error);
+  //     }
+  //   };
+  //   fetchNavNodes();
+  //   fetchNavWays();
+  //   fetchNodeGraph();
+  // }, []);
+  
   var polylineColor = 'blue';
   if (selectedMode === "bike") {
     polylineColor = "green";

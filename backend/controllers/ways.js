@@ -19,7 +19,9 @@ wayRouter.get("/buildings", async (request, response) => {
 
 // GET parking lots that are buildings
 wayRouter.get("/parkinglots", async (request, response) => {
-  const parkingLots = await Way.find({ "tags.amenity": { $exists: true, $eq: "parking" } });
+  const parkingLots = await Way.find({
+    "tags.amenity": { $exists: true, $eq: "parking" },
+  });
   response.json(parkingLots);
 });
 
@@ -64,9 +66,66 @@ const getClosestNode = (nodes, lat, lon) => {
   return closestNode;
 };
 
+const waysBetweenNodes = (startNode, endNode, nodes, ways) => {
+  if (startNode === null || endNode === null) {
+    return [];
+  }
+  if (startNode.ways.length === 0 || endNode.ways.length === 0) {
+    return [];
+  }
+  // If startNode has more than one way, it is an intersection, and the distance each way is 0
+  // And each of the node's way can be added to the way queue
+  // Else, need to measure the distance between start node and the ends of its way
+  // And add the connected ways to the way queue
+  let wayQueue = [];
+  let endWays = [];
+  if (startNode.ways.length > 1) {
+    // Convert way ids to way objects from the passed ways array
+    wayQueue = startNode.ways.map((wayId) => {
+      const way = ways.find((way) => way.id === wayId),
+      way.distance = 0;
+      way.previous = null;
+      return way;
+    });
+  } else {
+    const startWay = ways.find((way) => way.id === startNode.ways[0]);
+    startWay.distance = 0;
+    startWay.previous = null;
+    const connectedWays = startWay.connectedWays.map((wayId) => ways.find((way) => way.id === wayId));
+    // const startWayNodes = startWay.nodes.map((nodeId) => nodes.find((node) => node.id === nodeId));
+    // Find which connected way is connected to which end of the start way
+    const startWayEndNode1 = startWayNodes[0];
+    const startWayEndNode2 = startWayNodes[startWayNodes.length - 1];
+    const EndNodeDistance1 = Math.sqrt(
+      ((startWayEndNode1.latitude - endNode.latitude) * 111111) ** 2 +
+      ((startWayEndNode1.longitude - endNode.longitude) * 111111) ** 2
+    );
+    const EndNodeDistance2 = startWay.length - EndNodeDistance1;
+    connectedWays.forEach((way) => {
+      const wayNodeEndNodeID1 = way.nodes[0];
+      const wayNodeEndNodeID2 = way.nodes[way.nodes.length - 1];
+      if (wayNodeEndNodeID1 === startWayEndNode1.id || wayNodeEndNodeID2 === startWayEndNode1.id) {
+        way.distance = EndNodeDistance1;
+        way.previous = startWay;
+        wayQueue.push(way);
+      } else if (wayNodeEndNodeID1 === startWayEndNode2.id || wayNodeEndNodeID2 === startWayEndNode2.id) {
+        way.distance = EndNodeDistance2;
+        way.previous = startWay;
+        wayQueue.push(way);
+      } else {
+        console.error("Connected way not connected to start way");
+      }
+    });
+  }
+}
+
 const pathBetweenNodes = (startNode, endNode, nodes, ways) => {
   startNode.distance = 0;
-  const unvisited = new Set(nodes);
+  const unvisited = new Set();
+  // Add the start node to the unvisited set
+  unvisited.add(startNode);
+  startNode.previous = null;
+  startNode.distance = 0;
   let iterations = 0;
   while (unvisited.size > 0) {
     iterations += 1;
@@ -124,6 +183,7 @@ const pathBetweenNodes = (startNode, endNode, nodes, ways) => {
       // console.log("Neighbor distance: " + neighbor.distance);
       if (neighbor.distance === undefined) {
         neighbor.distance = Infinity;
+        unvisited.add(neighbor);
       }
       if (distance < neighbor.distance) {
         neighbor.distance = distance;
@@ -160,7 +220,7 @@ wayRouter.get(
       response.status(400).json({ error: "Invalid coordinates" });
       return;
     }
-    const searchRadiusMeters = 1000;
+    const searchRadiusMeters = 100;
     const searchRadiusDegrees = searchRadiusMeters / 111111;
     // navNode lat and lon are named latitude and longitude
     const closeStartNodes = await NavNode.find({
@@ -254,25 +314,28 @@ wayRouter.get(
     });
     const nodes = await NavNode.find({});
     const bikeWays = await NavWay.find({
-      type: { $in: [
-        "cycleway",
-        "bicycle",
-        "shared_lane",
-        "lane",
-        "track",
-        "path",
-        "footway",
-        "footpath",
-        "bridleway",
-        "living_street",
-        "residential",
-        "service",
-        "unclassified",
-        "tertiary",
-        "secondary",
-        "primary"
-      ] }
+      type: {
+        $in: [
+          "cycleway",
+          "bicycle",
+          "shared_lane",
+          "lane",
+          "track",
+          "path",
+          "footway",
+          "footpath",
+          "bridleway",
+          "living_street",
+          "residential",
+          "service",
+          "unclassified",
+          "tertiary",
+          "secondary",
+          "primary",
+        ],
+      },
     });
+    console.log("# of bike ways: " + bikeWays.length);
     let startNode = getClosestNode(closeStartNodes, start.lat, start.lon);
     let endNode = getClosestNode(closeEndNodes, end.lat, end.lon);
     if (startNode === null || endNode === null) {

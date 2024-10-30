@@ -14,6 +14,8 @@ const resetPasswordRouter = require("./controllers/resetPassword");
 const floorPlanRouter = require("./controllers/floorPlans");
 const routesRouter = require("./controllers/routes");
 const indoorDataRouter = require("./controllers/indoorDataInfo");
+const indoorNavRouter = require('./controllers/navigation')
+
 
 const url =
   "mongodb+srv://boilernav123:team13@boilernav.93a2g.mongodb.net/?retryWrites=true&w=majority&appName=BoilerNav";
@@ -34,5 +36,17 @@ app.use("/api/login", loginRouter);
 app.use("/api/reset-password", resetPasswordRouter);
 app.use("/api/floorplans", floorPlanRouter);
 app.use("/api/indoordata", indoorDataRouter);
+
+
+app.use('/api/nodes', nodeRouter)
+app.use('/api/routes', routesRouter);
+app.use('/api/relations', relationRouter)
+app.use('/api/ways', wayRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
+app.use('/api/reset-password', resetPasswordRouter)
+app.use('/api/floorplans', floorPlanRouter);
+app.use('/api/indoordata', indoorDataRouter)
+app.use('/api/indoornav', indoorNavRouter)
 
 module.exports = app;

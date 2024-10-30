@@ -1,0 +1,26 @@
+const navigationRouter = require("express").Router();
+const findPath  = require('../IndoorNav'); // Import pathfinding utility
+
+navigationRouter.get('/path', async (req, res) => {
+    const { start, end } = req.query;
+  
+    if (!start || !end) {
+      return res.status(400).json({ message: "Start and end nodes are required" });
+    }
+  
+    try {
+      // Call the pathfinding function (implement this in a separate utility file)
+      const { route, distance } = await findPath("./Node0.geojson", start, end);
+      //console.log(route);
+  
+      if (route) {
+        res.json({ route, distance }); // Send back the route array for frontend rendering
+      } else {
+        res.status(404).json({ message: "No path found" });
+      }
+    } catch (error) {
+      console.error("Error finding path:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+module.exports = navigationRouter;

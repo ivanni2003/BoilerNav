@@ -40,6 +40,45 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
   return null;
 };
 
+const FloorPlan = ({ startNode, endNode, }) => {
+  const [pathD, setPathD] = useState('');
+
+  useEffect(() => {
+    const fetchPath = async () => {
+      try {
+        const response = await fetch(`http://localhost:3001/api/indoornav/path?start=${startNode}&end=${endNode}`);
+        const data = await response.json();
+        //console.log(response);
+        console.log(data);
+        
+
+        if (data.route) {
+          console.log("Path data received:", data.route);
+
+    // Construct the 'd' attribute string
+          const dString = data.route.reduce((acc, { x, y }, idx) => {
+            return idx === 0 ? `M ${x} ${y}` : `${acc} L ${x} ${y}`;
+          }, '');
+
+          console.log("SVG Path Data (d attribute):", dString);
+          setPathD(dString);
+        }
+      } catch (error) {
+        console.error("Failed to fetch path data:", error);
+      }
+    };
+
+    fetchPath();
+  }, [startNode, endNode]);
+
+  return (
+    <svg width="255" height="660">
+      <path fill="none" d={pathD} strokeWidth="2" stroke="black" />
+    </svg>
+  );
+};
+
+
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
 
@@ -111,6 +150,7 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
       </div>
       <div className="floor-plan-content">
         <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
+        <FloorPlan startNode={1} endNode={39} />
       </div>
     </div>
   );
@@ -490,15 +530,6 @@ const Map = ({ latitude,
                             {accuracy && accuracy <= 100 ? <>Accuracy: {accuracy} m</> : <>Turn on your precise location</>}
                           </Popup>
                     </Marker>
-                    {accuracy && (
-                        <Circle
-                            center={userLocation}
-                            radius={accuracy} // Accuracy in meters
-                            color="blue"
-                            fillColor="blue"
-                            fillOpacity={.2}
-                        />
-                    )}
                 </>
             )}
             {/* {updatedPolylineCoordinates && (

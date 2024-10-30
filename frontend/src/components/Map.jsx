@@ -72,8 +72,8 @@ const FloorPlan = ({ startNode, endNode, }) => {
   }, [startNode, endNode]);
 
   return (
-    <svg width="255" height="660">
-      <path fill="none" d={pathD} strokeWidth="2" stroke="black" />
+    <svg width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
+      <path fill="none" d={pathD} strokeWidth="1" stroke="black" />
     </svg>
   );
 };
@@ -150,9 +150,9 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
       </div>
       <div className="floor-plan-content">
         <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
-        <FloorPlan startNode={1} endNode={39} />
+        <FloorPlan startNode={11} endNode={12} />
       </div>
-    </div>
+    </div> 
   );
 };
 

@@ -36,8 +36,8 @@ function buildGraph(features) {
 
 function latLonToXY(lat, lon) {
     // Here, you need to adjust the min/max values according to your data
-    canvasWidth = 255;
-    canvasHeight = 660;
+    canvasWidth = 180;
+    canvasHeight = 467;
     //const minLat = 40.427; // Minimum latitude
     //const maxLat = 40.428; // Maximum latitude
     //const minLon = -86.917; // Minimum longitude
@@ -52,7 +52,7 @@ function latLonToXY(lat, lon) {
     //40.42820, -86.91722
     //40.42732, -86.91682
     const x = ((lon - minLon) / (maxLon - minLon)) * canvasWidth; // Scale to canvas width
-    const y = ((maxLat - lat) / (maxLat - minLat)) * canvasHeight; // Scale to canvas height, inverted for y-axis
+    const y = ((maxLat - lat) / (maxLat - minLat)) * canvasHeight + 18; // Scale to canvas height, inverted for y-axis
     return { x, y };
 }
 
@@ -151,7 +151,7 @@ if (require.main === module) {
     const endNode = args[1] ? Number(args[1]) : 3;   // Default to 3 if no argument
 
     findPath("./Node0.geojson", startNode, endNode)
-        .then(({ path, totalDistance }) => console.log("Path:", path, "Total Distance (m):", totalDistance))
+        .then(({ route, distance }) => console.log("Path:", route, "Total Distance (m):", distance))
         .catch((error) => console.error("Error:", error));
 
     // Continue with the rest of your code

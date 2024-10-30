@@ -97,7 +97,7 @@ function dijkstra(graph, features, startNode, endNode) {
                 node = prevNode;
             }
             totalDistance *= 1000;
-            return { path, totalDistance };
+            return {route: path, distance: totalDistance };
         }
 
         graph.get(currentNode).forEach((neighbor) => {
@@ -120,7 +120,13 @@ function dijkstra(graph, features, startNode, endNode) {
 async function findPath(geoJsonPath, startNode, endNode) {
     const features = await loadGeoJSON(geoJsonPath);
     const graph = buildGraph(features);
-    return dijkstra(graph, features, startNode, endNode);
+    const start = Number(startNode);
+    const end = Number(endNode);
+
+    if (!graph.has(start) || !graph.has(end)) {
+        throw new Error("Start or end node not found in the graph.");
+    }
+    return dijkstra(graph, features, start, end);
 }
 
 // Usage example

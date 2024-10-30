@@ -34,5 +34,19 @@ router.post('/', (req, res) => {
   });
 });
 
+router.post('/:token', (req, res) => {
+  const { token } = request.params;
+  const { newPassword } = req.body;
+  //check if token and or password are bad
+  //create database or something for tokens and add to above.
+  //maybe need user id for changing the password
+
+  //check token against database of some kind?
+  //if bad then send bad token thing
+  //if good then change password
+  //if worked then send OK
+  //if not worked then send Not OK
+})
+
 
 module.exports = router;  // Export the router

@@ -19,7 +19,9 @@ wayRouter.get("/buildings", async (request, response) => {
 
 // GET parking lots that are buildings
 wayRouter.get("/parkinglots", async (request, response) => {
-  const parkingLots = await Way.find({ "tags.amenity": { $exists: true, $eq: "parking" } });
+  const parkingLots = await Way.find({
+    "tags.amenity": { $exists: true, $eq: "parking" },
+  });
   response.json(parkingLots);
 });
 
@@ -64,9 +66,250 @@ const getClosestNode = (nodes, lat, lon) => {
   return closestNode;
 };
 
+const pathBetweenWays = (startNode, endNode, nodes, ways) => {
+  if (startNode === null || endNode === null) {
+    return [];
+  }
+  if (startNode.ways.length === 0 || endNode.ways.length === 0) {
+    return [];
+  }
+  // If startNode has more than one way, it is an intersection, and the
+  // distance each way is 0 And each of the node's way can be added to the
+  // way queue Else, need to measure the distance between start node and the
+  // ends of its way And add the connected ways to the way queue
+  let wayQueue = [];
+  let endWays = [];
+  if (startNode.ways.length > 1) {
+    // Convert way ids to way objects from the passed ways array
+    wayQueue = startNode.ways.map((wayId) => {
+      const way = ways.find((way) => way.id === wayId);
+      way.distance = 0;
+      way.previous = null;
+      return way;
+    });
+  } else {
+    const startWay = ways.find((way) => way.id === startNode.ways[0]);
+    startWay.distance = 0;
+    startWay.previous = null;
+    const connectedWays = startWay.connectedWays.map((wayId) =>
+      ways.find((way) => way.id === wayId),
+    );
+    // const startWayNodes = startWay.nodes.map((nodeId) =>
+    // nodes.find((node) => node.id === nodeId)); Find which connected way
+    // is connected to which end of the start way
+    const startWayEndNode1 = startWayNodes[0];
+    const startWayEndNode2 = startWayNodes[startWayNodes.length - 1];
+    const EndNodeDistance1 = Math.sqrt(
+      ((startWayEndNode1.latitude - endNode.latitude) * 111111) ** 2 +
+        ((startWayEndNode1.longitude - endNode.longitude) * 111111) ** 2,
+    );
+    const EndNodeDistance2 = startWay.length - EndNodeDistance1;
+    connectedWays.forEach((way) => {
+      const wayNodeEndNodeID1 = way.nodes[0];
+      const wayNodeEndNodeID2 = way.nodes[way.nodes.length - 1];
+      if (
+        wayNodeEndNodeID1 === startWayEndNode1.id ||
+        wayNodeEndNodeID2 === startWayEndNode1.id
+      ) {
+        way.distance = EndNodeDistance1;
+        way.previous = startWay;
+        wayQueue.push(way);
+      } else if (
+        wayNodeEndNodeID1 === startWayEndNode2.id ||
+        wayNodeEndNodeID2 === startWayEndNode2.id
+      ) {
+        way.distance = EndNodeDistance2;
+        way.previous = startWay;
+        wayQueue.push(way);
+      } else {
+        console.error("Connected way not connected to start way");
+      }
+    });
+  }
+  // Add endNode's ways to the endWays array
+  endNode.ways.forEach((wayId) => {
+    endWays.push(wayId);
+  });
+  let finalWay = null;
+  while (wayQueue.length > 0) {
+    const currentWay = wayQueue.shift();
+    if (endWays.includes(currentWay.id)) {
+      // Found the end way
+      finalWay = currentWay;
+      break;
+    }
+    // Add connected ways to the way queue
+    currentWay.connectedWays.forEach((wayId) => {
+      const way = ways.find((w) => w.id === wayId);
+      if (!way) {
+        console.error("Connected way not found");
+        return;
+      }
+      if (
+        way.distance === undefined ||
+        way.distance > currentWay.distance + way.length
+      ) {
+        way.distance = currentWay.distance + way.length;
+        way.previous = currentWay;
+        wayQueue.push(way);
+      }
+    });
+  }
+  if (finalWay === null) {
+    return [];
+  }
+  if (finalWay.previous === null) {
+    // Route only exists in one way
+    // TODO
+    return [];
+  }
+  let currentWay = finalWay;
+  const wayPath = [];
+  while (currentWay) {
+    wayPath.unshift(currentWay);
+    currentWay = currentWay.previous;
+  }
+  // For the first way, may start in the middle of it, so needs to be pathed
+  // individually
+  const firstWay = wayPath[0];
+  let secondWay = wayPath[1];
+  const firstWayEndNodeID1 = firstWay.nodes[0];
+  const firstWayEndNodeID2 = firstWay.nodes[firstWay.nodes.length - 1];
+  const secondWayEndNodeID1 = secondWay.nodes[0];
+  const secondWayEndNodeID2 = secondWay.nodes[secondWay.nodes.length - 1];
+  let routeReversed = false;
+  if (
+    firstWayEndNodeID1 === secondWayEndNodeID1 ||
+    firstWayEndNodeID1 === secondWayEndNodeID2
+  ) {
+    // The route starts at startNode and travels against the way direction
+    routeReversed = true;
+  } else if (
+    firstWayEndNodeID2 === secondWayEndNodeID1 ||
+    firstWayEndNodeID2 === secondWayEndNodeID2
+  ) {
+    // The route starts at startNode and travels with the way direction
+    routeReversed = false;
+  } else {
+    console.error("Connecting node not found in first way");
+    return [];
+  }
+  const path = [];
+  if (routeReversed) {
+    // Start at the end of the first way and find the startNode
+    let i = firstWay.nodes.length - 1;
+    while (firstWay.nodes[i] !== startNode.id && i > -1) {
+      i -= 1;
+    }
+    if (i === -1) {
+      console.error("Start node not found in first way");
+      return [];
+    }
+    for (let j = i; j >= 0; j--) {
+      path.push(nodes.find((node) => node.id === firstWay.nodes[j]));
+    }
+  } else {
+    // Start at the start of the first way and find the startNode
+    let i = 0;
+    while (firstWay.nodes[i] !== startNode.id && i < firstWay.nodes.length) {
+      i += 1;
+    }
+    if (i === firstWay.nodes.length) {
+      console.error("Start node not found in first way");
+      return [];
+    }
+    for (let j = i; j < firstWay.nodes.length; j++) {
+      path.push(nodes.find((node) => node.id === firstWay.nodes[j]));
+    }
+  }
+  let finalConnectingNodeID = null;
+  // Do the same thing for the rest of the ways
+  // (Except now routing definitely doesn't start in the middle of a way)
+  for (let i = 1; i < wayPath.length - 1; i++) {
+    const currentWay = wayPath[i];
+    const nextWay = wayPath[i + 1];
+    const currentWayEndNodeID1 = currentWay.nodes[0];
+    const currentWayEndNodeID2 = currentWay.nodes[currentWay.nodes.length - 1];
+    const nextWayEndNodeID1 = nextWay.nodes[0];
+    const nextWayEndNodeID2 = nextWay.nodes[nextWay.nodes.length - 1];
+    let routeReversed = false;
+    if (
+      currentWayEndNodeID1 === nextWayEndNodeID1 ||
+      currentWayEndNodeID1 === nextWayEndNodeID2
+    ) {
+      // The route starts at startNode and travels against the way direction
+      routeReversed = true;
+      finalConnectingNodeID = currentWayEndNodeID1;
+    } else if (
+      currentWayEndNodeID2 === nextWayEndNodeID1 ||
+      currentWayEndNodeID2 === nextWayEndNodeID2
+    ) {
+      // The route starts at startNode and travels with the way direction
+      routeReversed = false;
+      finalConnectingNodeID = currentWayEndNodeID2;
+    } else {
+      console.error("Connecting node not found");
+      return [];
+    }
+    if (routeReversed) {
+      // Start at the end of the current way
+      for (let j = currentWay.nodes.length - 1; j >= 0; j--) {
+        path.push(nodes.find((node) => node.id === currentWay.nodes[j]));
+      }
+    } else {
+      // Start at the start of the current way
+      for (let j = 0; j < currentWay.nodes.length; j++) {
+        path.push(nodes.find((node) => node.id === currentWay.nodes[j]));
+      }
+    }
+  }
+  // Now add the final way, which may end in the middle of it
+  const finalWayEndNodeID1 = finalWay.nodes[0];
+  const finalWayEndNodeID2 = finalWay.nodes[finalWay.nodes.length - 1];
+  if (finalWayEndNodeID1 === finalConnectingNodeID) {
+    // The route travels with the way direction
+    routeReversed = false;
+  } else if (finalWayEndNodeID2 === endNode.id) {
+    // The route travels against the way direction
+    routeReversed = true;
+  } else {
+    console.error("End node not found in final way");
+    return [];
+  }
+  if (routeReversed) {
+    // Start at the end of the final way and find the endNode
+    let i = finalWay.nodes.length - 1;
+    while (finalWay.nodes[i] !== endNode.id && i > -1) {
+      path.push(nodes.find((node) => node.id === finalWay.nodes[i]));
+      i -= 1;
+    }
+    if (i === -1) {
+      console.error("End node not found in final way");
+      return [];
+    }
+  } else {
+    // Start at the start of the final way and find the endNode
+    let i = 0;
+    while (finalWay.nodes[i] !== endNode.id && i < finalWay.nodes.length) {
+      path.push(nodes.find((node) => node.id === finalWay.nodes[i]));
+      i += 1;
+    }
+    if (i === finalWay.nodes.length) {
+      console.error("End node not found in final way");
+      return [];
+    }
+  }
+  path.push(endNode);
+  return path;
+};
+
 const pathBetweenNodes = (startNode, endNode, nodes, ways) => {
   startNode.distance = 0;
-  const unvisited = new Set(nodes);
+  const unvisited = new Set();
+  // Add the start node to the unvisited set
+  unvisited.add(startNode);
+  startNode.previous = null;
+  startNode.distance = 0;
   let iterations = 0;
   while (unvisited.size > 0) {
     iterations += 1;
@@ -124,6 +367,7 @@ const pathBetweenNodes = (startNode, endNode, nodes, ways) => {
       // console.log("Neighbor distance: " + neighbor.distance);
       if (neighbor.distance === undefined) {
         neighbor.distance = Infinity;
+        unvisited.add(neighbor);
       }
       if (distance < neighbor.distance) {
         neighbor.distance = distance;
@@ -160,7 +404,7 @@ wayRouter.get(
       response.status(400).json({ error: "Invalid coordinates" });
       return;
     }
-    const searchRadiusMeters = 1000;
+    const searchRadiusMeters = 100;
     const searchRadiusDegrees = searchRadiusMeters / 111111;
     // navNode lat and lon are named latitude and longitude
     const closeStartNodes = await NavNode.find({
@@ -205,7 +449,7 @@ wayRouter.get(
     console.log(startNode);
     console.log("End node:");
     console.log(endNode);
-    const path = pathBetweenNodes(startNode, endNode, nodes, ways);
+    const path = pathBetweenWays(startNode, endNode, nodes, ways);
     response.json(path);
   },
 );
@@ -254,25 +498,28 @@ wayRouter.get(
     });
     const nodes = await NavNode.find({});
     const bikeWays = await NavWay.find({
-      type: { $in: [
-        "cycleway",
-        "bicycle",
-        "shared_lane",
-        "lane",
-        "track",
-        "path",
-        "footway",
-        "footpath",
-        "bridleway",
-        "living_street",
-        "residential",
-        "service",
-        "unclassified",
-        "tertiary",
-        "secondary",
-        "primary"
-      ] }
+      type: {
+        $in: [
+          "cycleway",
+          "bicycle",
+          "shared_lane",
+          "lane",
+          "track",
+          "path",
+          "footway",
+          "footpath",
+          "bridleway",
+          "living_street",
+          "residential",
+          "service",
+          "unclassified",
+          "tertiary",
+          "secondary",
+          "primary",
+        ],
+      },
     });
+    console.log("# of bike ways: " + bikeWays.length);
     let startNode = getClosestNode(closeStartNodes, start.lat, start.lon);
     let endNode = getClosestNode(closeEndNodes, end.lat, end.lon);
     if (startNode === null || endNode === null) {
@@ -340,18 +587,20 @@ wayRouter.get(
     });
     const nodes = await NavNode.find({});
     const busWays = await NavWay.find({
-      type: { $in: [
-        "motorway",
-        "trunk",
-        "primary",
-        "secondary",
-        "tertiary",
-        "unclassified",
-        "residential",
-        "service",
-        "living_street",
-        "footpath"
-      ] }
+      type: {
+        $in: [
+          "motorway",
+          "trunk",
+          "primary",
+          "secondary",
+          "tertiary",
+          "unclassified",
+          "residential",
+          "service",
+          "living_street",
+          "footpath",
+        ],
+      },
     });
     let startNode = getClosestNode(closeStartNodes, start.lat, start.lon);
     let endNode = getClosestNode(closeEndNodes, end.lat, end.lon);

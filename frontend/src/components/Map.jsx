@@ -82,9 +82,9 @@ const FloorPlan = ({ startNode, endNode, }) => {
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
 
-  var SouthWestCoords = [40.40815, -86.95308];
-  var NorthEastCoords = [40.44628, -86.89712];
-  var WL_Bounds = [SouthWestCoords, NorthEastCoords]; 
+  let SouthWestCoords = [40.40815, -86.95308];
+  let NorthEastCoords = [40.44628, -86.89712];
+  let WL_Bounds = [SouthWestCoords, NorthEastCoords]; 
   map.setMaxBounds(WL_Bounds);
   map.setMinZoom(15);
 
@@ -93,17 +93,44 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   }, [latitude, longitude, zoom, map]); 
 };
 
-const FloorPlanView = ({ floorPlans, onClose }) => {
+const FloorPlanView = ({ building, floorPlans, onClose}) => {
   const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans[0]);
   const [rooms, setRooms] = useState([])
 
-  const markRooms = (room) => {
-    console.log("do smth when selected")
+  useEffect(() => {
+    async function fetchAndSetRooms() {
+      const response = await axios.get(`${baseURL}/api/indoordata/${building.tags.name}`)
+      const indoorData = response.data
+      //console.log(response.data)
+      //console.log(selectedFloorPlan)
+    
+      // Note: account for basement, 1, 2, 3, 4 for now. Need to change either floor plan or data to align and account for ground floors
+      const filteredRooms = indoorData.features.filter(room => {
+        const roomFloor = room.properties.Floor; 
+
+        return (
+          //room.properties.Type == "Room" && // only searching for rooms
+          (selectedFloorPlan.floorNumber === 'Basement' && roomFloor === -1) || 
+          (selectedFloorPlan.floorNumber === '1' && roomFloor === 0) || 
+          (selectedFloorPlan.floorNumber === '2' && roomFloor === 1) || 
+          (selectedFloorPlan.floorNumber === '3' && roomFloor === 2) || 
+          (selectedFloorPlan.floorNumber === '4' && roomFloor === 3) 
+        );
+      });
+
+      setRooms(filteredRooms.map(room => room.properties.RoomName));
+    }
+    fetchAndSetRooms()
+    console.log(rooms)
+  }, [selectedFloorPlan, building]);
+
+  const markRooms = (room) => { // implement marking/highlighting room in some way
+    alert(`You selected ${room}, Do smth here`)
   }
-  // NOTE: different search query required based on indoor data format
+
   return (
     <div className="floor-plan-fullscreen">
-      <div className="search-start"> 
+      <div className="floor-plan-search"> 
                 <SearchBar items={rooms} updateMap={null} markRooms={markRooms} start={null} destination={null} searchStr={"Start"} />
                 <SearchBar items={rooms} updateMap={null} markRooms={markRooms} start={null} destination={null} searchStr={"End"} />
       </div>
@@ -277,6 +304,50 @@ const DebugWaysRenderer = ({ ways, nodes }) => {
   });
 };
 
+const DebugNavWaysRenderer = ({ ways, nodes }) => {
+  return ways.map((way, index) => {
+    const nodeIDs = way.nodes;
+    const wayNodes = nodeIDs.map((nodeID) => {
+      const node = nodes.find((node) => node.id === nodeID);
+      if (!node) {
+        // console.log(`Node with ID ${nodeID} not found`);
+        return null;
+      }
+      return [node.latitude, node.longitude];
+    });
+    const filteredWayNodes = wayNodes.filter((node) => node !== null);
+    return <Polyline key={index} positions={filteredWayNodes} color="red" />;
+  });
+};
+
+const DebugNodeGraphRenderer = ({ nodes }) => {
+  // Nodes from nodeGraph follow this structure:
+  // {
+  //  id: Number,
+  //  connectedNodes: [Number],
+  //  latitude: Number,
+  //  longitude: Number
+  //  visited: boolean
+  // }
+  const lineList = [];
+  nodes.forEach((node) => {
+    const connectedNodes = node.connectedNodes.map((connectedNodeID) => {
+      const connectedNode = nodes.find((node) => node.id === connectedNodeID);
+      if (!connectedNode) {
+        // console.log(`Node with ID ${connectedNodeID} not found`);
+        return null;
+      }
+      return [connectedNode.latitude, connectedNode.longitude];
+    });
+    const filteredConnectedNodes = connectedNodes.filter((node) => node !== null);
+    filteredConnectedNodes.forEach((connectedNode) => {
+      lineList.push([[node.latitude, node.longitude], connectedNode]);
+    });
+  });
+  return lineList.map((line, index) => {
+      return <Polyline key={index} positions={line} color="red" />;
+  });
+};
 
 const Map = ({ latitude,
   longitude,
@@ -306,6 +377,41 @@ const Map = ({ latitude,
 
     }
 
+  // DEBUG: Fetch navNodes and navWays for rendering
+  // Comment out if not needed
+  // const [navNodes, setNavNodes] = useState([]);
+  // const [navWays, setNavWays] = useState([]);
+  // const [nodeGraph, setNodeGraph] = useState([]);
+  // useEffect(() => {
+  //   const fetchNavNodes = async () => {
+  //     try {
+  //       const response = await axios.get(`${baseURL}/api/navNodes`);
+  //       setNavNodes(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching navNodes:', error);
+  //     }
+  //   };
+  //   const fetchNavWays = async () => {
+  //     try {
+  //       const response = await axios.get(`${baseURL}/api/navWays`);
+  //       setNavWays(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching navWays:', error);
+  //     }
+  //   };
+  //   const fetchNodeGraph = async () => {
+  //     try {
+  //       const response = await axios.get(`${baseURL}/api/navNodes/nodeGraph`);
+  //       setNodeGraph(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching nodeGraph:', error);
+  //     }
+  //   };
+  //   fetchNavNodes();
+  //   fetchNavWays();
+  //   fetchNodeGraph();
+  // }, []);
+  
   var polylineColor = 'blue';
   if (selectedMode === "bike") {
     polylineColor = "green";

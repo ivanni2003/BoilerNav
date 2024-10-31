@@ -1,7 +1,11 @@
 const wayRouter = require("express").Router();
 const NavNode = require("../models/navNode");
 const NavWay = require("../models/navWay");
+<<<<<<< HEAD
 const OsmNode = require("../models/osmNode");
+=======
+const Node = require("../models/osmNode");
+>>>>>>> 88c670c210519571430dfd51b0df0c2d4c0402a3
 const Way = require("../models/osmWay");
 
 /* endpoints here */
@@ -58,7 +62,11 @@ wayRouter.get("/bikeracks", async (request, response) => {
       { "tags.bicycle_parking": { $exists: true } },
     ],
   });
+<<<<<<< HEAD
   const bikeRacksNodes = await OsmNode.find({
+=======
+  const bikeRacksNodes = await Node.find({
+>>>>>>> 88c670c210519571430dfd51b0df0c2d4c0402a3
     $or: [
       { "tags.amenity": "bicycle_parking" },
       { "tags.bicycle_parking": { $exists: true } },

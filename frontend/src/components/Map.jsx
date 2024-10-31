@@ -6,6 +6,7 @@ import L from 'leaflet';
 import arrowIcon from '../img/up-arrow.png';
 import Amenities from './Amenities'
 import SearchBar from './SearchBar'
+import BusStops from './BusStops'
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
@@ -370,11 +371,16 @@ const Map = ({ latitude,
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [floorPlans, setFloorPlans] = useState([]);
     const [parkingLots, setParkingLots] = useState([])
+    const [busStops, setBusStops] = useState([]);
 
     const markParkingLots = (lots) => {
       setParkingLots(lots)
       console.log(parkingLots)
 
+    }
+
+    const markBusStops = (stops) => {
+      setBusStops(stops)
     }
 
   // DEBUG: Fetch navNodes and navWays for rendering
@@ -419,7 +425,23 @@ const Map = ({ latitude,
   else if (selectedMode === "bus") {
     polylineColor = "red";
   }
-  console.log("line color:", polylineColor);
+
+  useEffect(() => {
+    if (selectedMode === "bus") {
+      const fetchBusStops = async () => {
+        try {
+          const response = await axios.get(`${baseURL}/api/nodes/bus-stops`);
+          setBusStops(response.data);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      fetchBusStops();
+    } else {
+      setBusStops([]);
+    }
+  }, [selectedMode]);
+  
   const customIcon = L.divIcon({
     className: "custom-marker",
     html: `
@@ -518,6 +540,23 @@ const Map = ({ latitude,
           <Marker key={index} position={[lot.buildingPosition.lat, lot.buildingPosition.lon]}>
           </Marker>
         ))}
+      {busStops.map((stop, index) => (
+        <Marker
+          key={index}
+          position={[stop.lat, stop.lon]}
+          icon={L.divIcon({
+            className: "custom-marker",
+            html: `<div style="background-color: red; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>`,
+            iconAnchor: [10, 10]
+          })}
+        >
+          <Popup>
+            {stop.tags.name || 'Bus Stop'} <br />
+            Operator: {stop.tags.operator || 'Operator'} <br />
+            Bench: {stop.tags.bench || 'Bench Status Unknown'} <br />
+          </Popup>
+        </Marker>
+      ))}
       <MapViewUpdater latitude={latitude} longitude={longitude} zoom={zoom} /> {/* Include the updater */}
       {userLocation && (
                 <>
@@ -538,6 +577,7 @@ const Map = ({ latitude,
     </MapContainer>
     <span className="amenities-menu">
       <Amenities updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
+      <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
     </span>
     {showFloorPlan && (
         <FloorPlanView 

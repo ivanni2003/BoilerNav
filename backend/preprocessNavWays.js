@@ -12,6 +12,7 @@ async function saveData() {
     $or: [
       { "tags.highway": "footway" },
       { "tags.highway": "steps" },
+      { "tags.highway": "bus_stop" },
       { "tags.footway": { $exists: true } },
       { "tags.foot": "designated" },
     ],

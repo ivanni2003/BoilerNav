@@ -150,7 +150,7 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
       </div>
       <div className="floor-plan-content">
         <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
-        <FloorPlan startNode={11} endNode={12} />
+        <FloorPlan startNode={145} endNode={12} />
       </div>
     </div> 
   );

@@ -3,6 +3,10 @@ const formData = require('form-data');
 const Mailgun = require('mailgun.js');
 const router = express.Router();  // Create a new router instance
 const mailgun = new Mailgun(formData);
+const crypto = require('crypto');
+const Token = require('../models/token');
+const User = require('../models/user');
+const bcrypt = require('bcrypt');
 
 // Correct client initialization (no 'url' property needed)
 const mg = mailgun.client({
@@ -14,25 +18,72 @@ const mg = mailgun.client({
 
 // Define a route for sending the email
 // In ResetPassword.js
-router.post('/', (req, res) => {
-  const resetLink="localhost:5173"
+router.post('/', async (req, res) => {
   const { email } = req.body;
-  mg.messages.create('sandbox19bae2ebb0364a398da14766ce80414c.mailgun.org', {
-    from: "Excited User <mailgun@sandbox19bae2ebb0364a398da14766ce80414c.mailgun.org>",
-    to: [email],  // Use email from request body
-    subject: "Password Reset",
-    text: "You requested a password reset.",
-    html: '<h1>Password Reset Instructions</h1><br><body><p>Click to reset your password: </p><a href="http://' + resetLink + '">Link</a></body>'
-  })
-  .then(msg => {
-    console.log(msg);
-    res.status(200).json({ message: "Email sent successfully!" });
-  })
-  .catch(err => {
-    console.error(err);
-    res.status(500).json({ message: "Error sending email." });
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  const token = array[0];
+  const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+  const expirationTime = Date.now() + 3600000;
+  const tokenDoc = new Token({
+    email,
+    token,
+    expiresAt: expirationTime
   });
+  const d = new Date();
+  const hour = ((d.getHours() + 1) % 24).toString().padStart(2, '0');
+  const minute = d.getMinutes().toString().padStart(2, '0');
+  try {
+    // Save the token in the database
+    await tokenDoc.save();
+
+    // Send the email if token saved successfully
+    const msg = await mg.messages.create('sandbox19bae2ebb0364a398da14766ce80414c.mailgun.org', {
+      from: "Excited User <mailgun@sandbox19bae2ebb0364a398da14766ce80414c.mailgun.org>",
+      to: [email],
+      subject: "Password Reset",
+      text: "You requested a password reset.",
+      html: `<h1>Password Reset Instructions</h1><br>
+             <body>
+               <p>Click to reset your password:</p>
+               <a href="${resetLink}">Link</a>
+               <p>This link expires in 1 hour at ${new Date(expirationTime).toLocaleTimeString()}</p>
+             </body>`
+    });
+
+    //console.log(msg);
+    return res.status(200).json({ message: "Email sent successfully!" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error saving token or sending email." });
+  }
 });
+
+router.post('/reset-password', async (req, res) => {
+  const { token, newPassword } = req.body;
+  //check if token and or password are bad
+  //create database or something for tokens and add to above.
+  //maybe need user id for changing the password
+  const tokenDoc = await Token.findOne({ token });
+  if (!tokenDoc || tokenDoc.expiresAt < Date.now()) {
+    return res.status(400).json({ message: "Invalid or expired token." });
+  }
+  const email = tokenDoc.email;
+  const userDoc = await User.findOne({email});
+  if (!userDoc) {
+    return res.status(400).json({ message: "Invalid email." });
+  }
+  const saltRounds = 10;
+  userDoc.password = await bcrypt.hash(newPassword, saltRounds);
+  const updatedUser = await userDoc.save();
+  //check token against database of some kind?
+  //if bad then send bad token thing
+  //if good then change password
+  //if worked then send OK
+  //if not worked then send Not OK
+  await Token.deleteOne({ token });
+  res.status(200).json({ message: "Password reset successful!" });
+})
 
 
 module.exports = router;  // Export the router

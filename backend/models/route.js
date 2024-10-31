@@ -16,7 +16,8 @@ const routeSchema = new mongoose.Schema({
   duration: Number,
   travelMode: String,
   polyline: [{ lat: Number, lon: Number }],
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  isPublic: { type: Boolean }
 });
 
 module.exports = mongoose.model('Route', routeSchema);

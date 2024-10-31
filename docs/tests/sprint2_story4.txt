@@ -1,0 +1,75 @@
+Test Case 241
+System: RoutePrivacyButton
+Phase: 2
+Verify presence and location of privacy toggle button
+Severity: 1
+
+A. Identification and classification
+- Test the existence of privacy toggle button in profile section
+- Verify button visibility and placement
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Navigate to profile page
+4. Locate the route privacy toggle button in the saved routes section
+5. Verify button visibility with and without saved routes
+
+C. Expected Result:
+1. Privacy toggle button should be visible in profile's saved routes section
+2. Button should be clearly labeled regarding privacy function
+3. Button should be visually consistent with other UI elements
+
+-------------------
+
+Test Case 242
+System: RoutePrivacyFunctionality
+Phase: 2
+Verify privacy functionality for other users
+Severity: 1
+
+A. Identification and classification
+- Test that private routes are not visible to other users
+- Verify privacy settings are enforced
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Set up two test accounts (User A and User B)
+3. Log in as User A
+4. Save several routes and make them private using the toggle
+5. Log out and log in as User B
+6. Attempt to access User A's routes through the map search bar
+7. Log back in as User A to verify routes are still accessible
+
+C. Expected Result:
+1. User B should not see any of User A's private routes
+2. Private routes should remain accessible to User A
+3. System should handle privacy requests securely
+4. No private route data should leak to unauthorized users
+
+-------------------
+
+Test Case 243
+System: RoutePrivacyTooltip
+Phase: 2
+Verify privacy button tooltip functionality
+Severity: 1
+
+A. Identification and classification
+- Test the hover tooltip for the privacy toggle button
+- Verify correct tooltip message
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Navigate to profile page
+4. Locate the "i" sign next to the privacy toggle button
+5. Hover mouse over the "i" sign
+6. Verify tooltip appears with correct message
+7. Move mouse away and verify tooltip disappears
+
+C. Expected Result:
+1. "i" sign should be visible next to privacy toggle button
+2. Hovering should display tooltip instantly
+3. Tooltip should read "by default, your saved routes are public"
+4. Tooltip should be clearly visible and properly positioned

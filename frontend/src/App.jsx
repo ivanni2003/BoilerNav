@@ -97,7 +97,16 @@ function App() {
     );
   };
 
+  const clearRoute = () => {
+    setPolylineCoordinates([]);
+    setStart(null);
+    setDestination(null);
+    setRouteInfo({ manhattanDistance: null, travelTime: null });
+    setSelectedSavedRoute(null);
+  };
+
   const handleViewSavedRoute = (route) => {
+    clearRoute();
   console.log('Raw saved route:', route);
   
   if (!route || !Array.isArray(route.polyline) || route.polyline.length < 2) {
@@ -259,6 +268,8 @@ function App() {
     setDestination(null);
     setPolylineCoordinates([]);
     setSelectedSavedRoute(null);
+
+    clearRoute();
   
     // Reset menu state
     setActiveMenu('search');
@@ -335,6 +346,7 @@ function App() {
   }, []);
 
   const handleGetDirections = (building) => {  // get direction menu within popup
+    clearRoute();
     setStart(userLocation)  // start is curr. location by default
     setDestination(building)
     setActiveMenu('directions');
@@ -512,7 +524,10 @@ const getTravelTime = (distance, selectedMode) => {
               <DirectionsMenu
                 start={userLocation}
                 destination={destination}
-                closeDirections={() => setActiveMenu('search')}
+                closeDirections={() => {
+                  clearRoute();
+                  setActiveMenu('search');
+                }}
                 handleRouting={handleRouting}
                 manhattanDistance={routeInfo.manhattanDistance}
                 travelTime={routeInfo.travelTime}
@@ -520,6 +535,10 @@ const getTravelTime = (distance, selectedMode) => {
                 user={user}
                 polylineCoordinates={polylineCoordinates}
                 showNotification={showNotification}
+                onViewSavedRoute={(route) => {
+                  handleViewSavedRoute(route);
+                  setActiveMenu('search');
+                }}
               />
               </span>
            ) : (

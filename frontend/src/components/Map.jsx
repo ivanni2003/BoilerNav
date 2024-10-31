@@ -6,10 +6,7 @@ import L from 'leaflet';
 import arrowIcon from '../img/up-arrow.png';
 import Amenities from './Amenities'
 import SearchBar from './SearchBar'
-<<<<<<< HEAD
 import BusStops from './BusStops'
-=======
->>>>>>> 88c670c210519571430dfd51b0df0c2d4c0402a3
 import MapOptions from './MapOptions'
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
@@ -416,10 +413,7 @@ const Map = ({ latitude,
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [floorPlans, setFloorPlans] = useState([]);
     const [parkingLots, setParkingLots] = useState([])
-<<<<<<< HEAD
     const [busStops, setBusStops] = useState([]);
-=======
->>>>>>> 88c670c210519571430dfd51b0df0c2d4c0402a3
     const [bikeRacks, setBikeRacks] = useState([]);
 
     const markParkingLots = (lots) => {

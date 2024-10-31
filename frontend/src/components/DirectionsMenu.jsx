@@ -14,7 +14,8 @@ const DirectionsMenu = ({
   user,
   polylineCoordinates,
   showNotification,
-  onViewSavedRoute
+  onViewSavedRoute,
+  updatePublicRoutes
 }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
@@ -141,6 +142,7 @@ const DirectionsMenu = ({
       setHasBeenSaved(true);
       setIsDuplicate(true);
       setExistingRoute(response.data);
+      updatePublicRoutes();
     } catch (error) {
       if (error.response?.status === 409) {
         showNotification('This route is already saved in your favorites', 'info');

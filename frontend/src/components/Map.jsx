@@ -6,6 +6,8 @@ import L from 'leaflet';
 import arrowIcon from '../img/up-arrow.png';
 import Amenities from './Amenities'
 import SearchBar from './SearchBar'
+import BusStops from './BusStops'
+import MapOptions from './MapOptions'
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
@@ -131,8 +133,8 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
   return (
     <div className="floor-plan-fullscreen">
       <div className="floor-plan-search"> 
-                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} start={null} destination={null} searchStr={"Start"} />
-                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} start={null} destination={null} searchStr={"End"} />
+                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} viewSavedRoute={null} start={null} destination={null} searchStr={"Start"} />
+                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} viewSavedRoute={null} start={null} destination={null} searchStr={"End"} />
       </div>
       <div className="floor-plan-header">
         <select 
@@ -239,6 +241,17 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
   );
 };
 
+const BikeRackPopupContent = ({ rack }) => {
+  return (
+    <div>
+      <h2>Bike Rack</h2>
+      {rack.tags && rack.tags.bicycle_parking && <p>Type: {rack.tags.bicycle_parking}</p>}
+      {rack.tags && rack.tags.capacity && <p>Capacity: {rack.tags.capacity}</p>}
+      {rack.tags && rack.tags.covered && <p>Covered: {rack.tags.covered}</p>}
+      {rack.tags && rack.tags.fee && <p>Fee: {rack.tags.fee}</p>}
+    </div>
+  );
+}
 
 const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
   const buildingPathOptions = {
@@ -268,6 +281,34 @@ const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, sho
         favoriteLocations={favoriteLocations}
         isLoadingFavorites={isLoadingFavorites}
         onFavoriteToggle={onFavoriteToggle}/>
+      </Popup>
+    </CircleMarker>
+  });
+}
+
+const BikeRacksRenderer = ({ bikeRacks, isBikeRacksVisible }) => {
+  if (!isBikeRacksVisible) {
+    return null;
+  }
+  const bikeRackPathOptions = {
+    color: 'blue',
+    fillColor: 'blue',
+  };
+  return bikeRacks.map((rack, index) => {
+    let position;
+    if (rack.buildingPosition) {
+      position = [rack.buildingPosition.lat, rack.buildingPosition.lon];
+    } else {
+      position = [rack.lat, rack.lon];
+    }
+    return <CircleMarker
+      key={index}
+      center={position}
+      radius={2}
+      pathOptions={bikeRackPathOptions}
+      >
+      <Popup>
+        <BikeRackPopupContent rack={rack} />
       </Popup>
     </CircleMarker>
   });
@@ -365,16 +406,24 @@ const Map = ({ latitude,
   onFavoriteToggle,
   selectedMode,
   polylineCoordinates,
-  selectedSavedRoute, handleMapUpdate }) => {
+  selectedSavedRoute, 
+  handleMapUpdate,
+  mapOptions }) => {
     const [showFloorPlan, setShowFloorPlan] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [floorPlans, setFloorPlans] = useState([]);
     const [parkingLots, setParkingLots] = useState([])
+    const [busStops, setBusStops] = useState([]);
+    const [bikeRacks, setBikeRacks] = useState([]);
 
     const markParkingLots = (lots) => {
       setParkingLots(lots)
       console.log(parkingLots)
 
+    }
+
+    const markBusStops = (stops) => {
+      setBusStops(stops)
     }
 
   // DEBUG: Fetch navNodes and navWays for rendering
@@ -412,6 +461,18 @@ const Map = ({ latitude,
   //   fetchNodeGraph();
   // }, []);
   
+  useEffect(() => {
+    const fetchBikeRacks = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/api/ways/bikeracks`);
+        setBikeRacks(response.data);
+      } catch (error) {
+        console.error('Error fetching bike racks:', error);
+      }
+    };
+    fetchBikeRacks();
+  }, []);
+
   var polylineColor = 'blue';
   if (selectedMode === "bike") {
     polylineColor = "green";
@@ -419,7 +480,23 @@ const Map = ({ latitude,
   else if (selectedMode === "bus") {
     polylineColor = "red";
   }
-  console.log("line color:", polylineColor);
+
+  useEffect(() => {
+    if (selectedMode === "bus") {
+      const fetchBusStops = async () => {
+        try {
+          const response = await axios.get(`${baseURL}/api/nodes/bus-stops`);
+          setBusStops(response.data);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      fetchBusStops();
+    } else {
+      setBusStops([]);
+    }
+  }, [selectedMode]);
+  
   const customIcon = L.divIcon({
     className: "custom-marker",
     html: `
@@ -514,10 +591,28 @@ const Map = ({ latitude,
         isLoadingFavorites={isLoadingFavorites}
         onFavoriteToggle={onFavoriteToggle}
       />
+      <BikeRacksRenderer bikeRacks={bikeRacks} isBikeRacksVisible={mapOptions.isBikeRacksVisible} />
       {parkingLots.map((lot, index) => (
           <Marker key={index} position={[lot.buildingPosition.lat, lot.buildingPosition.lon]}>
           </Marker>
         ))}
+      {busStops.map((stop, index) => (
+        <Marker
+          key={index}
+          position={[stop.lat, stop.lon]}
+          icon={L.divIcon({
+            className: "custom-marker",
+            html: `<div style="background-color: red; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>`,
+            iconAnchor: [10, 10]
+          })}
+        >
+          <Popup>
+            {stop.tags.name || 'Bus Stop'} <br />
+            Operator: {stop.tags.operator || 'Operator'} <br />
+            Bench: {stop.tags.bench || 'Bench Status Unknown'} <br />
+          </Popup>
+        </Marker>
+      ))}
       <MapViewUpdater latitude={latitude} longitude={longitude} zoom={zoom} /> {/* Include the updater */}
       {userLocation && (
                 <>
@@ -537,7 +632,9 @@ const Map = ({ latitude,
             )} */}
     </MapContainer>
     <span className="amenities-menu">
+      <MapOptions mapOptions={mapOptions} />
       <Amenities updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
+      <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
     </span>
     {showFloorPlan && (
         <FloorPlanView 

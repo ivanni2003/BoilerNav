@@ -21,3 +21,6 @@ GET http://localhost:3001/api/nodes/bbox/40.42/-86.9/40.421/-86.8
 
 ### Get many nodes by bounding box and by type
 GET http://localhost:3001/api/nodes/bbox/40.42/-86.9/40.421/-86.8/node
+
+### Get all bus stops
+GET http://localhost:3001/api/nodes/bus-stops

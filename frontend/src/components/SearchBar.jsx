@@ -4,7 +4,7 @@ import './SearchBar.css'
 
 const baseURL = 'http://localhost:3001'
 
-const SearchBar = ({items, updateMap, markRooms, start, destination, searchStr}) => {
+const SearchBar = ({items, updateMap, markRooms, viewSavedRoute, start, destination, searchStr}) => {
     
     const [search, setSearch] = useState('')
     const [hasStart, setHasStart] = useState(false) // whether start is not null
@@ -43,8 +43,11 @@ const SearchBar = ({items, updateMap, markRooms, start, destination, searchStr})
         return item.tags && 
                item.tags.name && 
                item.tags.name.toLowerCase().includes(search.toLowerCase());
-      } else {
-        return item.toLowerCase().includes(search.toLowerCase()); // Adjusted for item structure
+      } else if (viewSavedRoute) {
+        return (`${item.startLocation.name} to ${item.endLocation.name}`).toLowerCase().includes(search.toLowerCase()) 
+      }
+      else {
+        return item.toLowerCase().includes(search.toLowerCase()); 
       }
     }).slice(0, 20) 
   : [];
@@ -57,6 +60,9 @@ const SearchBar = ({items, updateMap, markRooms, start, destination, searchStr})
         setSearch(item.tags.name);
         setShowDropdown(false)
       }
+      else if (viewSavedRoute) {
+        viewSavedRoute(item)
+      } 
       else {  //  click behavior for indoor map
         markRooms(item)
       }
@@ -80,7 +86,10 @@ const SearchBar = ({items, updateMap, markRooms, start, destination, searchStr})
                     onClick={() => handleItemClick(item)} 
                     style={{ cursor: 'pointer' }}
                   >
-                    {updateMap ? item.tags.name : item} {/* Adjust rendering based on updateMap */}
+                    {updateMap ? item.tags.name : 
+                      viewSavedRoute 
+                        ? `${item.startLocation.name} to ${item.endLocation.name}` 
+                          : item} {/* based on usage of search bar */}
                   </ul>
                 ))
               ) : !hasStart && search != "" && (

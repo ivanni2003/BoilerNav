@@ -1,7 +1,8 @@
 const wayRouter = require("express").Router();
-const Way = require("../models/osmWay");
 const NavNode = require("../models/navNode");
 const NavWay = require("../models/navWay");
+const OsmNode = require("../models/osmNode");
+const Way = require("../models/osmWay");
 
 /* endpoints here */
 
@@ -50,6 +51,23 @@ wayRouter.get("/id/:ids", async (request, response) => {
   response.json(ways);
 });
 
+wayRouter.get("/bikeracks", async (request, response) => {
+  const bikeRacksWays = await Way.find({
+    $or: [
+      { "tags.amenity": "bicycle_parking" },
+      { "tags.bicycle_parking": { $exists: true } },
+    ],
+  });
+  const bikeRacksNodes = await OsmNode.find({
+    $or: [
+      { "tags.amenity": "bicycle_parking" },
+      { "tags.bicycle_parking": { $exists: true } },
+    ],
+  });
+  const bikeRacks = bikeRacksWays.concat(bikeRacksNodes);
+  response.json(bikeRacks);
+});
+
 const getClosestNode = (nodes, lat, lon) => {
   // console.log(nodes.length);
   let closestNode = null;
@@ -94,14 +112,18 @@ const pathBetweenWays = (startNode, endNode, nodes, ways) => {
     const connectedWays = startWay.connectedWays.map((wayId) =>
       ways.find((way) => way.id === wayId),
     );
-    // const startWayNodes = startWay.nodes.map((nodeId) =>
-    // nodes.find((node) => node.id === nodeId)); Find which connected way
-    // is connected to which end of the start way
+    const startWayNodes = startWay.nodes.map((nodeId) =>
+      nodes.find((node) => node.id === nodeId),
+    );
+    // Find which connected way is connected to which end of the start way
     const startWayEndNode1 = startWayNodes[0];
     const startWayEndNode2 = startWayNodes[startWayNodes.length - 1];
     const EndNodeDistance1 = Math.sqrt(
-      ((startWayEndNode1.latitude - endNode.latitude) * 111111) ** 2 +
-        ((startWayEndNode1.longitude - endNode.longitude) * 111111) ** 2,
+      ((startWayEndNode1.latitude - startNode.latitude) * 111111) ** 2 +
+        ((startWayEndNode1.longitude - startNode.longitude) *
+          111111 *
+          Math.cos(startNode.latitude)) **
+          2,
     );
     const EndNodeDistance2 = startWay.length - EndNodeDistance1;
     connectedWays.forEach((way) => {
@@ -269,11 +291,11 @@ const pathBetweenWays = (startNode, endNode, nodes, ways) => {
   if (finalWayEndNodeID1 === finalConnectingNodeID) {
     // The route travels with the way direction
     routeReversed = false;
-  } else if (finalWayEndNodeID2 === endNode.id) {
+  } else if (finalWayEndNodeID2 === finalConnectingNodeID) {
     // The route travels against the way direction
     routeReversed = true;
   } else {
-    console.error("End node not found in final way");
+    console.error("Connecting node not found in final way");
     return [];
   }
   if (routeReversed) {
@@ -543,6 +565,53 @@ wayRouter.get(
   },
 );
 
+const getClosestBusStop = async (lat, lon, searchRadiusDegrees) => {
+  const busStops = await OsmNode.find({
+    lat: { $gte: lat - searchRadiusDegrees, $lte: lat + searchRadiusDegrees },
+    lon: { $gte: lon - searchRadiusDegrees, $lte: lon + searchRadiusDegrees },
+    "tags.highway": "bus_stop",
+  });
+
+  if (!busStops.length) return null;
+
+  let closestBusStop = null;
+  let closestDistance = Infinity;
+  busStops.forEach((node) => {
+    if (node.tags && node.tags.highway === "bus_stop") {
+      const distance = Math.sqrt((node.lat - lat) ** 2 + (node.lon - lon) ** 2);
+      console.log(distance, closestDistance);
+      if (distance < closestDistance) {
+        closestBusStop = node;
+        closestDistance = distance;
+      }
+    }
+  });
+
+  // Now convert the closest bus stop to a corresponding navNode
+  const tolerance = 0.1; // Adjust tolerance as needed
+  const navBusStop = await NavNode.findOne({
+    latitude: {
+      $gte: closestBusStop.lat - tolerance,
+      $lte: closestBusStop.lat + tolerance,
+    },
+    longitude: {
+      $gte: closestBusStop.lon - tolerance,
+      $lte: closestBusStop.lon + tolerance,
+    },
+  });
+
+  if (!navBusStop) {
+    console.error(
+      "No matching NavNode found for bus stop OsmNode:",
+      closestBusStop,
+    );
+    return null;
+  }
+
+  console.log("Closest Bus Stop: ", navBusStop);
+  return navBusStop;
+};
+
 wayRouter.get(
   "/bus-route/:startLat/:startLon/:endLat/:endLon",
   async (request, response) => {
@@ -602,27 +671,39 @@ wayRouter.get(
         ],
       },
     });
-    let startNode = getClosestNode(closeStartNodes, start.lat, start.lon);
-    let endNode = getClosestNode(closeEndNodes, end.lat, end.lon);
-    if (startNode === null || endNode === null) {
-      let error = "Could not find nodes near given coordinates";
-      if (startNode === null) {
-        error += " (start)";
-      }
-      if (endNode === null) {
-        error += " (end)";
-      }
-      response.status(400).json({ error: error });
+
+    const startBusStop = await getClosestBusStop(
+      start.lat,
+      start.lon,
+      99999999,
+    );
+    const endBusStop = await getClosestBusStop(end.lat, end.lon, 99999999);
+
+    if (startBusStop === null || endBusStop === null) {
+      console.log(startBusStop, endBusStop);
+      response
+        .status(400)
+        .json({ error: "No bus stops were found, try checking the db" });
       return;
     }
-    // Start and end nodes need to be pointers to the nodes in the nodes array
-    startNode = nodes.find((node) => node.id === startNode.id);
-    endNode = nodes.find((node) => node.id === endNode.id);
-    console.log("Start Bus node:", startNode);
-    console.log("End Bus node:", endNode);
-    const path = pathBetweenNodes(startNode, endNode, nodes, busWays);
 
-    response.json(path);
+    const footpathToBusStop = pathBetweenNodes(
+      getClosestNode(closeStartNodes, start.lat, start.lon),
+      startBusStop,
+      nodes,
+      busWays,
+    );
+
+    const busPath = pathBetweenNodes(startBusStop, endBusStop, nodes, busWays);
+
+    const footpathToEnd = pathBetweenNodes(
+      endBusStop,
+      getClosestNode(closeEndNodes, end.lat, end.lon),
+      nodes,
+      busWays,
+    );
+
+    response.json([...footpathToBusStop, ...busPath, ...footpathToEnd]);
   },
 );
 

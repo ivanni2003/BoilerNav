@@ -26,8 +26,8 @@ function App() {
   const [selectedSavedRoute, setSelectedSavedRoute] = useState(null);
   const [savedLocationsVersion, setSavedLocationsVersion] = useState(0);
 
-
   const [buildings, setBuildings] = useState([])
+  const [publicRoutes, setPublicRoutes] = useState([])
 
   const [latitude, setLatitude] = useState(40.4274);
   const [longitude, setLongitude] = useState(-86.9132);
@@ -46,6 +46,15 @@ function App() {
   const [polylineCoordinates, setPolylineCoordinates] = useState([]);
 
   const [selectedMode, setSelectedMode] = useState('footpath'); // footpath route-type default
+
+  const [isRerouteEnabled, setIsRerouteEnabled] = useState(true);
+  const [isBikeRacksVisible, setIsBikeRacksVisible] = useState(false);
+  const mapOptions = {
+    isRerouteEnabled: isRerouteEnabled,
+    setIsRerouteEnabled: setIsRerouteEnabled,
+    isBikeRacksVisible: isBikeRacksVisible,
+    setIsBikeRacksVisible: setIsBikeRacksVisible
+  };
 
   const handleSelectMode = (mode) => {
     setSelectedMode(mode); // Update the selected mode
@@ -73,6 +82,16 @@ function App() {
       }
   };
 
+  const fetchPublicRoutes = async () => {
+    console.log("fetch routes")
+    try {
+      const response = await axios.get(`${baseURL}/api/routes/public`);
+      setPublicRoutes(response.data); 
+    } catch (error) {
+      console.log(error); 
+    }
+  };
+
   const fetchFavoriteLocations = useCallback(async (userId, token) => {
     setIsLoadingFavorites(true);
     try {
@@ -96,8 +115,33 @@ function App() {
       typeof coord[1] === 'number'
     );
   };
+  
+  const calculateDistanceFromRoute = (userLocation, polylineCoordinates) => {
+    if (userLocation === null || polylineCoordinates === null || polylineCoordinates.length === 0) {
+      return null;
+    }
+    const userLat = userLocation[0];
+    const userLon = userLocation[1];
+    let minDistance = Infinity;
+    for (let i = 0; i < polylineCoordinates.length; i++) {
+      const routeLat = polylineCoordinates[i][0];
+      const routeLon = polylineCoordinates[i][1];
+      const distance = ((userLat - routeLat) * 111111) ** 2 + ((userLon - routeLon) * 111111 * Math.cos(userLat)) ** 2;
+      minDistance = Math.min(minDistance, distance);
+    }
+    return Math.sqrt(minDistance);
+  };
+
+  const clearRoute = () => {
+    setPolylineCoordinates([]);
+    setStart(null);
+    setDestination(null);
+    setRouteInfo({ manhattanDistance: null, travelTime: null });
+    setSelectedSavedRoute(null);
+  };
 
   const handleViewSavedRoute = (route) => {
+    clearRoute();
   console.log('Raw saved route:', route);
   
   if (!route || !Array.isArray(route.polyline) || route.polyline.length < 2) {
@@ -135,7 +179,7 @@ function App() {
 
   setSelectedSavedRoute(transformedRoute);
   setShowProfile(false);
-  setIsMapView(true);
+  //setIsMapView(true);
   
   // Use the first point of the polyline for initial map centering
   handleMapUpdate(transformedPolyline[0][0], transformedPolyline[0][1], 15);
@@ -150,6 +194,7 @@ function App() {
     // Fetch buildings only when showLogin is false
     if (!showLogin) {
       fetchBuildings();
+      fetchPublicRoutes();
     }
 
     // Geolocation watching
@@ -181,6 +226,20 @@ function App() {
     };
   }, [showLogin]); // Dependency array includes showLogin
 
+  // Check if the user needs to be rerouted if they are off course
+  useEffect(() => {
+    if (!isRerouteEnabled) return;
+    const distanceFromRoute = calculateDistanceFromRoute(userLocation, polylineCoordinates);
+    console.log("Distance from route: ", distanceFromRoute);
+    if (distanceFromRoute !== null && (distanceFromRoute > accuracy || distanceFromRoute > 100)) {
+      console.log("User is off course. Rerouting...");
+      // Re-route if user is off course
+      showNotification('Rerouting...', 'info');
+      setStart(userLocation);
+      handleRouting();
+    }
+  }, [userLocation]);
+
   const fetchUserData = async (token) => {
     try {
       const response = await axios.get(`${baseURL}/api/users/me`, {
@@ -202,35 +261,35 @@ function App() {
     setShowCreateAccount(true);
     setShowLogin(false);
     setIsPopupOpen(false);
-    setIsMapView(false);
+    //setIsMapView(false);
   };
 
   const handleCloseCreateAccount = () => {
     setShowCreateAccount(false);
-    setIsMapView(true);
+    //setIsMapView(true);   Not entirely sure these are needed, causing exceptions in console
   };
 
   const handleViewProfile = () => {
     setShowProfile(true);
     setIsPopupOpen(false);
-    setIsMapView(false);
+    //setIsMapView(false);
   };
 
   const handleCloseProfile = () => {
     setShowProfile(false);
-    setIsMapView(true);
+    //setIsMapView(true);
   };
 
   const handleLogin = () => {
     setShowLogin(true);
     setShowCreateAccount(false);
     setIsPopupOpen(false);
-    setIsMapView(false);
+    //setIsMapView(false);
   };
 
   const handleCloseLogin = () => {
     setShowLogin(false);
-    setIsMapView(true);
+   // setIsMapView(true);
   };
 
 
@@ -259,6 +318,8 @@ function App() {
     setDestination(null);
     setPolylineCoordinates([]);
     setSelectedSavedRoute(null);
+
+    clearRoute();
   
     // Reset menu state
     setActiveMenu('search');
@@ -273,7 +334,7 @@ function App() {
     setNotification(null);
   
     // Ensure map view is shown
-    setIsMapView(true);
+    //setIsMapView(true);
   
     // If you have any other state that needs resetting, do it here
   
@@ -335,6 +396,7 @@ function App() {
   }, []);
 
   const handleGetDirections = (building) => {  // get direction menu within popup
+    clearRoute();
     setStart(userLocation)  // start is curr. location by default
     setDestination(building)
     setActiveMenu('directions');
@@ -476,6 +538,7 @@ const getTravelTime = (distance, selectedMode) => {
             onLogout={handleLogout}
             showNotification={showNotification}
             onViewSavedRoute={handleViewSavedRoute}
+            updatePublicRoutes={fetchPublicRoutes}
           />
         ) : (
           <div className="map-content">
@@ -501,6 +564,7 @@ const getTravelTime = (distance, selectedMode) => {
                 selectedMode={selectedMode}
                 selectedSavedRoute={selectedSavedRoute}
                 handleMapUpdate={handleMapUpdate}
+                mapOptions={mapOptions}
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
             {notification && (
@@ -515,7 +579,10 @@ const getTravelTime = (distance, selectedMode) => {
               <DirectionsMenu
                 start={userLocation}
                 destination={destination}
-                closeDirections={() => setActiveMenu('search')}
+                closeDirections={() => {
+                  clearRoute();
+                  setActiveMenu('search');
+                }}
                 handleRouting={handleRouting}
                 manhattanDistance={routeInfo.manhattanDistance}
                 travelTime={routeInfo.travelTime}
@@ -523,15 +590,21 @@ const getTravelTime = (distance, selectedMode) => {
                 user={user}
                 polylineCoordinates={polylineCoordinates}
                 showNotification={showNotification}
+                onViewSavedRoute={(route) => {
+                  handleViewSavedRoute(route);
+                  setActiveMenu('search');
+                }}
+                updatePublicRoutes={fetchPublicRoutes}
               />
               </span>
            ) : (
             <div className="search-container">
             <div className="search-box">
               <SearchBar 
-                items={[]} 
-                updateMap={handleMapUpdate} 
+                items={publicRoutes} 
+                updateMap={null} 
                 markRooms={null} 
+                viewSavedRoute={handleViewSavedRoute}
                 start={null} 
                 destination={null} 
                 searchStr={"Routes"} 
@@ -542,6 +615,7 @@ const getTravelTime = (distance, selectedMode) => {
                 items={buildings} 
                 updateMap={handleMapUpdate} 
                 markRooms={null} 
+                viewSavedRoute={null}
                 start={null} 
                 destination={null} 
                 searchStr={"Destination"} 

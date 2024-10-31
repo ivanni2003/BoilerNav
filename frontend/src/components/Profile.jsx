@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Pencil, Check, Trash2, Minus, Eye, EyeOff, Map } from 'lucide-react';
+import { Pencil, Check, Trash2, Minus, Eye, EyeOff, Map, Lock, Unlock, Info  } from 'lucide-react';
 import './Profile.css';
 
-const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onViewSavedRoute }) => {
+const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onViewSavedRoute, updatePublicRoutes }) => {
   const [editMode, setEditMode] = useState({
     name: false,
     email: false,
@@ -19,11 +19,60 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   const [favoriteLocations, setFavoriteLocations] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [savedRoutes, setSavedRoutes] = useState([]);
+  const [isAllRoutesPublic, setIsAllRoutesPublic] = useState(true);
+  const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState(false);
 
   useEffect(() => {
     fetchFavoriteLocations();
     fetchSavedRoutes();
   }, []);
+  useEffect(() => {
+    if (savedRoutes.length > 0) {
+      const allPublic = savedRoutes.every(route => route.isPublic);
+      setIsAllRoutesPublic(allPublic);
+    }
+  }, [savedRoutes]);
+
+  const handleGlobalPrivacyToggle = async () => {
+    setIsUpdatingPrivacy(true);
+    const newPrivacyStatus = !isAllRoutesPublic;
+
+    try {
+      // Update all routes in the database
+      const updatePromises = savedRoutes.map(route =>
+        axios.patch(
+          `http://localhost:3001/api/routes/${route._id}/privacy`,
+          { isPublic: newPrivacyStatus },
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          }
+        )
+      );
+
+      await Promise.all(updatePromises);
+
+      // Update local state
+      setSavedRoutes(prevRoutes =>
+        prevRoutes.map(route => ({
+          ...route,
+          isPublic: newPrivacyStatus
+        }))
+      );
+
+      updatePublicRoutes() // update public routes available for search
+      setIsAllRoutesPublic(newPrivacyStatus);
+      
+      showNotification(
+        `All routes are now ${newPrivacyStatus ? 'public' : 'private'}`,
+        'success'
+      );
+    } catch (error) {
+      console.error('Error updating routes privacy:', error);
+      showNotification('Failed to update routes privacy', 'error');
+    } finally {
+      setIsUpdatingPrivacy(false);
+    }
+  };
 
   const fetchFavoriteLocations = async () => {
     try {
@@ -276,15 +325,51 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
           </div>
         </div>
         <div className="saved-routes">
-        <h3>Saved Routes</h3>
+        <div className="saved-routes-header">
+          <h3>Saved Routes</h3>
+          <div className="global-privacy-control">
+            <div className="privacy-toggle-container">
+              <button
+                className={`privacy-toggle-button ${isUpdatingPrivacy ? 'disabled' : ''}`}
+                onClick={handleGlobalPrivacyToggle}
+                disabled={isUpdatingPrivacy || savedRoutes.length === 0}
+                title={`Make all routes ${isAllRoutesPublic ? 'private' : 'public'}`}
+              >
+                {isAllRoutesPublic ? (
+                  <>
+                    <Unlock size={16} />
+                    <span>All Routes Public</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock size={16} />
+                    <span>All Routes Private</span>
+                  </>
+                )}
+              </button>
+              <div className="info-tooltip-container">
+                <Info 
+                  size={16} 
+                  className="info-icon"
+                  aria-label="Privacy information"
+                />
+                <div className="info-tooltip">
+                  By default, your saved routes are public
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="saved-routes-list">
           {savedRoutes.length > 0 ? (
             savedRoutes.map((route) => (
               <div key={route._id} className="saved-route-item">
-                <span>
-                  {route.startLocation?.name || 'Unknown'} to {route.endLocation?.name || 'Unknown'}
-                  {' '}({route.distance?.toFixed(2) || 'N/A'} miles, {route.duration?.toFixed(0) || 'N/A'} min)
-                </span>
+                <div className="route-info">
+                  <span>
+                    {route.startLocation?.name || 'Unknown'} to {route.endLocation?.name || 'Unknown'}
+                    {' '}({route.distance?.toFixed(2) || 'N/A'} miles, {route.duration?.toFixed(0) || 'N/A'} min)
+                  </span>
+                </div>
                 <div className="route-actions">
                   <button onClick={() => onViewSavedRoute(route)}>
                     <Map size={16} />

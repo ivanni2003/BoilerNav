@@ -131,8 +131,8 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
   return (
     <div className="floor-plan-fullscreen">
       <div className="floor-plan-search"> 
-                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} start={null} destination={null} searchStr={"Start"} />
-                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} start={null} destination={null} searchStr={"End"} />
+                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} viewSavedRoute={null} start={null} destination={null} searchStr={"Start"} />
+                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} viewSavedRoute={null} start={null} destination={null} searchStr={"End"} />
       </div>
       <div className="floor-plan-header">
         <select 

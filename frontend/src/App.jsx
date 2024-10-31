@@ -26,8 +26,8 @@ function App() {
   const [selectedSavedRoute, setSelectedSavedRoute] = useState(null);
   const [savedLocationsVersion, setSavedLocationsVersion] = useState(0);
 
-
   const [buildings, setBuildings] = useState([])
+  const [publicRoutes, setPublicRoutes] = useState([])
 
   const [latitude, setLatitude] = useState(40.4274);
   const [longitude, setLongitude] = useState(-86.9132);
@@ -71,6 +71,16 @@ function App() {
       } catch (error) {
         console.log(error); 
       }
+  };
+
+  const fetchPublicRoutes = async () => {
+    console.log("fetch routes")
+    try {
+      const response = await axios.get(`${baseURL}/api/routes/public`);
+      setPublicRoutes(response.data); 
+    } catch (error) {
+      console.log(error); 
+    }
   };
 
   const fetchFavoriteLocations = useCallback(async (userId, token) => {
@@ -144,7 +154,7 @@ function App() {
 
   setSelectedSavedRoute(transformedRoute);
   setShowProfile(false);
-  setIsMapView(true);
+  //setIsMapView(true);
   
   // Use the first point of the polyline for initial map centering
   handleMapUpdate(transformedPolyline[0][0], transformedPolyline[0][1], 15);
@@ -159,6 +169,7 @@ function App() {
     // Fetch buildings only when showLogin is false
     if (!showLogin) {
       fetchBuildings();
+      fetchPublicRoutes();
     }
 
     // Geolocation watching
@@ -211,35 +222,35 @@ function App() {
     setShowCreateAccount(true);
     setShowLogin(false);
     setIsPopupOpen(false);
-    setIsMapView(false);
+    //setIsMapView(false);
   };
 
   const handleCloseCreateAccount = () => {
     setShowCreateAccount(false);
-    setIsMapView(true);
+    //setIsMapView(true);   Not entirely sure these are needed, causing exceptions in console
   };
 
   const handleViewProfile = () => {
     setShowProfile(true);
     setIsPopupOpen(false);
-    setIsMapView(false);
+    //setIsMapView(false);
   };
 
   const handleCloseProfile = () => {
     setShowProfile(false);
-    setIsMapView(true);
+    //setIsMapView(true);
   };
 
   const handleLogin = () => {
     setShowLogin(true);
     setShowCreateAccount(false);
     setIsPopupOpen(false);
-    setIsMapView(false);
+    //setIsMapView(false);
   };
 
   const handleCloseLogin = () => {
     setShowLogin(false);
-    setIsMapView(true);
+   // setIsMapView(true);
   };
 
 
@@ -284,7 +295,7 @@ function App() {
     setNotification(null);
   
     // Ensure map view is shown
-    setIsMapView(true);
+    //setIsMapView(true);
   
     // If you have any other state that needs resetting, do it here
   
@@ -488,6 +499,7 @@ const getTravelTime = (distance, selectedMode) => {
             onLogout={handleLogout}
             showNotification={showNotification}
             onViewSavedRoute={handleViewSavedRoute}
+            updatePublicRoutes={fetchPublicRoutes}
           />
         ) : (
           <div className="map-content">
@@ -542,15 +554,17 @@ const getTravelTime = (distance, selectedMode) => {
                   handleViewSavedRoute(route);
                   setActiveMenu('search');
                 }}
+                updatePublicRoutes={fetchPublicRoutes}
               />
               </span>
            ) : (
             <div className="search-container">
             <div className="search-box">
               <SearchBar 
-                items={[]} 
-                updateMap={handleMapUpdate} 
+                items={publicRoutes} 
+                updateMap={null} 
                 markRooms={null} 
+                viewSavedRoute={handleViewSavedRoute}
                 start={null} 
                 destination={null} 
                 searchStr={"Routes"} 
@@ -561,6 +575,7 @@ const getTravelTime = (distance, selectedMode) => {
                 items={buildings} 
                 updateMap={handleMapUpdate} 
                 markRooms={null} 
+                viewSavedRoute={null}
                 start={null} 
                 destination={null} 
                 searchStr={"Destination"} 

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Pencil, Check, Trash2, Minus, Eye, EyeOff, Map, Lock, Unlock, Info  } from 'lucide-react';
 import './Profile.css';
 
-const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onViewSavedRoute }) => {
+const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onViewSavedRoute, updatePublicRoutes }) => {
   const [editMode, setEditMode] = useState({
     name: false,
     email: false,
@@ -59,7 +59,9 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
         }))
       );
 
+      updatePublicRoutes() // update public routes available for search
       setIsAllRoutesPublic(newPrivacyStatus);
+      
       showNotification(
         `All routes are now ${newPrivacyStatus ? 'public' : 'private'}`,
         'success'

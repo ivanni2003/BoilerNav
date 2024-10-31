@@ -94,14 +94,18 @@ const pathBetweenWays = (startNode, endNode, nodes, ways) => {
     const connectedWays = startWay.connectedWays.map((wayId) =>
       ways.find((way) => way.id === wayId),
     );
-    // const startWayNodes = startWay.nodes.map((nodeId) =>
-    // nodes.find((node) => node.id === nodeId)); Find which connected way
-    // is connected to which end of the start way
+    const startWayNodes = startWay.nodes.map((nodeId) =>
+      nodes.find((node) => node.id === nodeId),
+    );
+    // Find which connected way is connected to which end of the start way
     const startWayEndNode1 = startWayNodes[0];
     const startWayEndNode2 = startWayNodes[startWayNodes.length - 1];
     const EndNodeDistance1 = Math.sqrt(
-      ((startWayEndNode1.latitude - endNode.latitude) * 111111) ** 2 +
-        ((startWayEndNode1.longitude - endNode.longitude) * 111111) ** 2,
+      ((startWayEndNode1.latitude - startNode.latitude) * 111111) ** 2 +
+        ((startWayEndNode1.longitude - startNode.longitude) *
+          111111 *
+          Math.cos(startNode.latitude)) **
+          2,
     );
     const EndNodeDistance2 = startWay.length - EndNodeDistance1;
     connectedWays.forEach((way) => {

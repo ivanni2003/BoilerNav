@@ -47,6 +47,15 @@ function App() {
 
   const [selectedMode, setSelectedMode] = useState('footpath'); // footpath route-type default
 
+  const [isRerouteEnabled, setIsRerouteEnabled] = useState(true);
+  const [isBikeRacksVisible, setIsBikeRacksVisible] = useState(false);
+  const mapOptions = {
+    isRerouteEnabled: isRerouteEnabled,
+    setIsRerouteEnabled: setIsRerouteEnabled,
+    isBikeRacksVisible: isBikeRacksVisible,
+    setIsBikeRacksVisible: setIsBikeRacksVisible
+  };
+
   const handleSelectMode = (mode) => {
     setSelectedMode(mode); // Update the selected mode
   };
@@ -105,6 +114,22 @@ function App() {
       typeof coord[0] === 'number' && 
       typeof coord[1] === 'number'
     );
+  };
+  
+  const calculateDistanceFromRoute = (userLocation, polylineCoordinates) => {
+    if (userLocation === null || polylineCoordinates === null || polylineCoordinates.length === 0) {
+      return null;
+    }
+    const userLat = userLocation[0];
+    const userLon = userLocation[1];
+    let minDistance = Infinity;
+    for (let i = 0; i < polylineCoordinates.length; i++) {
+      const routeLat = polylineCoordinates[i][0];
+      const routeLon = polylineCoordinates[i][1];
+      const distance = ((userLat - routeLat) * 111111) ** 2 + ((userLon - routeLon) * 111111 * Math.cos(userLat)) ** 2;
+      minDistance = Math.min(minDistance, distance);
+    }
+    return Math.sqrt(minDistance);
   };
 
   const clearRoute = () => {
@@ -200,6 +225,20 @@ function App() {
       navigator.geolocation.clearWatch(watchId);
     };
   }, [showLogin]); // Dependency array includes showLogin
+
+  // Check if the user needs to be rerouted if they are off course
+  useEffect(() => {
+    if (!isRerouteEnabled) return;
+    const distanceFromRoute = calculateDistanceFromRoute(userLocation, polylineCoordinates);
+    console.log("Distance from route: ", distanceFromRoute);
+    if (distanceFromRoute !== null && (distanceFromRoute > accuracy || distanceFromRoute > 100)) {
+      console.log("User is off course. Rerouting...");
+      // Re-route if user is off course
+      showNotification('Rerouting...', 'info');
+      setStart(userLocation);
+      handleRouting();
+    }
+  }, [userLocation]);
 
   const fetchUserData = async (token) => {
     try {
@@ -525,6 +564,7 @@ const getTravelTime = (distance, selectedMode) => {
                 selectedMode={selectedMode}
                 selectedSavedRoute={selectedSavedRoute}
                 handleMapUpdate={handleMapUpdate}
+                mapOptions={mapOptions}
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
             {notification && (

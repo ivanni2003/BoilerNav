@@ -7,6 +7,7 @@ import arrowIcon from '../img/up-arrow.png';
 import Amenities from './Amenities'
 import SearchBar from './SearchBar'
 import BusStops from './BusStops'
+import MapOptions from './MapOptions'
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
@@ -240,6 +241,17 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
   );
 };
 
+const BikeRackPopupContent = ({ rack }) => {
+  return (
+    <div>
+      <h2>Bike Rack</h2>
+      {rack.tags && rack.tags.bicycle_parking && <p>Type: {rack.tags.bicycle_parking}</p>}
+      {rack.tags && rack.tags.capacity && <p>Capacity: {rack.tags.capacity}</p>}
+      {rack.tags && rack.tags.covered && <p>Covered: {rack.tags.covered}</p>}
+      {rack.tags && rack.tags.fee && <p>Fee: {rack.tags.fee}</p>}
+    </div>
+  );
+}
 
 const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
   const buildingPathOptions = {
@@ -269,6 +281,34 @@ const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, sho
         favoriteLocations={favoriteLocations}
         isLoadingFavorites={isLoadingFavorites}
         onFavoriteToggle={onFavoriteToggle}/>
+      </Popup>
+    </CircleMarker>
+  });
+}
+
+const BikeRacksRenderer = ({ bikeRacks, isBikeRacksVisible }) => {
+  if (!isBikeRacksVisible) {
+    return null;
+  }
+  const bikeRackPathOptions = {
+    color: 'blue',
+    fillColor: 'blue',
+  };
+  return bikeRacks.map((rack, index) => {
+    let position;
+    if (rack.buildingPosition) {
+      position = [rack.buildingPosition.lat, rack.buildingPosition.lon];
+    } else {
+      position = [rack.lat, rack.lon];
+    }
+    return <CircleMarker
+      key={index}
+      center={position}
+      radius={2}
+      pathOptions={bikeRackPathOptions}
+      >
+      <Popup>
+        <BikeRackPopupContent rack={rack} />
       </Popup>
     </CircleMarker>
   });
@@ -366,12 +406,15 @@ const Map = ({ latitude,
   onFavoriteToggle,
   selectedMode,
   polylineCoordinates,
-  selectedSavedRoute, handleMapUpdate }) => {
+  selectedSavedRoute, 
+  handleMapUpdate,
+  mapOptions }) => {
     const [showFloorPlan, setShowFloorPlan] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [floorPlans, setFloorPlans] = useState([]);
     const [parkingLots, setParkingLots] = useState([])
     const [busStops, setBusStops] = useState([]);
+    const [bikeRacks, setBikeRacks] = useState([]);
 
     const markParkingLots = (lots) => {
       setParkingLots(lots)
@@ -418,6 +461,18 @@ const Map = ({ latitude,
   //   fetchNodeGraph();
   // }, []);
   
+  useEffect(() => {
+    const fetchBikeRacks = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/api/ways/bikeracks`);
+        setBikeRacks(response.data);
+      } catch (error) {
+        console.error('Error fetching bike racks:', error);
+      }
+    };
+    fetchBikeRacks();
+  }, []);
+
   var polylineColor = 'blue';
   if (selectedMode === "bike") {
     polylineColor = "green";
@@ -536,6 +591,7 @@ const Map = ({ latitude,
         isLoadingFavorites={isLoadingFavorites}
         onFavoriteToggle={onFavoriteToggle}
       />
+      <BikeRacksRenderer bikeRacks={bikeRacks} isBikeRacksVisible={mapOptions.isBikeRacksVisible} />
       {parkingLots.map((lot, index) => (
           <Marker key={index} position={[lot.buildingPosition.lat, lot.buildingPosition.lon]}>
           </Marker>
@@ -576,6 +632,7 @@ const Map = ({ latitude,
             )} */}
     </MapContainer>
     <span className="amenities-menu">
+      <MapOptions mapOptions={mapOptions} />
       <Amenities updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
       <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
     </span>

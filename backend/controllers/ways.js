@@ -1,7 +1,8 @@
 const wayRouter = require("express").Router();
-const Way = require("../models/osmWay");
 const NavNode = require("../models/navNode");
 const NavWay = require("../models/navWay");
+const Node = require("../models/osmNode");
+const Way = require("../models/osmWay");
 
 /* endpoints here */
 
@@ -48,6 +49,23 @@ wayRouter.get("/id/:ids", async (request, response) => {
   });
   const ways = await Way.find({ id: { $in: ids } });
   response.json(ways);
+});
+
+wayRouter.get("/bikeracks", async (request, response) => {
+  const bikeRacksWays = await Way.find({
+    $or: [
+      { "tags.amenity": "bicycle_parking" },
+      { "tags.bicycle_parking": { $exists: true } },
+    ],
+  });
+  const bikeRacksNodes = await Node.find({
+    $or: [
+      { "tags.amenity": "bicycle_parking" },
+      { "tags.bicycle_parking": { $exists: true } },
+    ],
+  });
+  const bikeRacks = bikeRacksWays.concat(bikeRacksNodes);
+  response.json(bikeRacks);
 });
 
 const getClosestNode = (nodes, lat, lon) => {
@@ -273,11 +291,11 @@ const pathBetweenWays = (startNode, endNode, nodes, ways) => {
   if (finalWayEndNodeID1 === finalConnectingNodeID) {
     // The route travels with the way direction
     routeReversed = false;
-  } else if (finalWayEndNodeID2 === endNode.id) {
+  } else if (finalWayEndNodeID2 === finalConnectingNodeID) {
     // The route travels against the way direction
     routeReversed = true;
   } else {
-    console.error("End node not found in final way");
+    console.error("Connecting node not found in final way");
     return [];
   }
   if (routeReversed) {

@@ -59,4 +59,15 @@ nodeRouter.get(
   },
 );
 
+// GET bus stops
+nodeRouter.get("/bus-stops", async (request, response) => {
+  const busStops = await Node.find({
+    $or: [
+      { "tags.highway": "bus_stop" }
+    ]
+  });
+  // console.log(busStops)
+  response.json(busStops);
+});
+
 module.exports = nodeRouter;

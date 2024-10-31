@@ -12,6 +12,7 @@ function ResetPassword() {
   // Extract token from query params
   const query = new URLSearchParams(location.search);
   const token = query.get('token');
+  console.log(token);
 
   useEffect(() => {
     // Check if the token is present
@@ -27,8 +28,9 @@ function ResetPassword() {
       setErrorMessage('Please enter a new password.');
       return; // Stop the submission process
     }
+    console.log("post");
     try {
-      await axios.post('http://localhost:3001/reset-password', { token, newPassword });
+      await axios.post('http://localhost:3001/api/reset-password/reset-password', { token, newPassword });
       alert('Password reset successful!');
       navigate('/');
     } catch (error) {

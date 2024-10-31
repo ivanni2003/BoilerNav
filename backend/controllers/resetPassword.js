@@ -5,6 +5,8 @@ const router = express.Router();  // Create a new router instance
 const mailgun = new Mailgun(formData);
 const crypto = require('crypto');
 const Token = require('../models/token');
+const User = require('../models/user');
+const bcrypt = require('bcrypt');
 
 // Correct client initialization (no 'url' property needed)
 const mg = mailgun.client({
@@ -49,7 +51,7 @@ router.post('/', async (req, res) => {
              </body>`
     });
 
-    console.log(msg);
+    //console.log(msg);
     return res.status(200).json({ message: "Email sent successfully!" });
   } catch (error) {
     console.error(error);
@@ -57,20 +59,30 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.post('/:token', (req, res) => {
-  const { token } = request.params;
-  const { newPassword } = req.body;
+router.post('/reset-password', async (req, res) => {
+  const { token, newPassword } = req.body;
   //check if token and or password are bad
   //create database or something for tokens and add to above.
   //maybe need user id for changing the password
-
-  
-
+  const tokenDoc = await Token.findOne({ token });
+  if (!tokenDoc || tokenDoc.expiresAt < Date.now()) {
+    return res.status(400).json({ message: "Invalid or expired token." });
+  }
+  const email = tokenDoc.email;
+  const userDoc = await User.findOne({email});
+  if (!userDoc) {
+    return res.status(400).json({ message: "Invalid email." });
+  }
+  const saltRounds = 10;
+  userDoc.password = await bcrypt.hash(newPassword, saltRounds);
+  const updatedUser = await userDoc.save();
   //check token against database of some kind?
   //if bad then send bad token thing
   //if good then change password
   //if worked then send OK
   //if not worked then send Not OK
+  await Token.deleteOne({ token });
+  res.status(200).json({ message: "Password reset successful!" });
 })
 
 

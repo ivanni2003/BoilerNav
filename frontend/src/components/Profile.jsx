@@ -280,6 +280,57 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
     );
   };
 
+  const RenderRouteDurationInput = ({route}) => {
+    const [duration, setDuration] = useState(route.duration || '');
+    const handleDurationChange = (e) => {
+      setDuration(e.target.value);
+    };
+    const handleUpdateDuration = async () => {
+      let durationAsNumber = -1;
+      try {
+        durationAsNumber = parseFloat(duration);
+      } catch (error) {
+        console.error('Error parsing duration:', error);
+        showNotification('Invalid duration value', 'error');
+        return;
+      }
+      if (durationAsNumber < 0) {
+        showNotification('Duration must be a positive number', 'error');
+        return;
+      }
+      try {
+        const updatedRoute = await axios.patch(
+          `http://localhost:3001/api/routes/${route._id}/duration`,
+          { duration: durationAsNumber },
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          }
+        );
+        setSavedRoutes(prevRoutes =>
+          prevRoutes.map(r => (r._id === route._id ? updatedRoute.data : r))
+        );
+        showNotification('Route duration updated successfully', 'success');
+      } catch (error) {
+        console.error('Error updating route duration:', error);
+        showNotification('Failed to update route duration', 'error');
+      }
+    }
+    return (
+      <div className="route-duration">
+        <input
+          type="number"
+          value={duration}
+          onChange={handleDurationChange}
+          placeholder="Duration (minutes)"
+          style={{ width: '60px' }}
+        />
+        <button onClick={handleUpdateDuration}>
+          <Check size={16} />
+        </button>
+      </div>
+    );
+  }
+
   if (!user) {
     return <div className="profile-container">Loading user data...</div>;
   }
@@ -378,6 +429,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
                     <Trash2 size={16} />
                   </button>
                 </div>
+                <RenderRouteDurationInput route={route} />
               </div>
             ))
           ) : (

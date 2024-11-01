@@ -47,7 +47,8 @@ const SearchBar = ({items, updateMap, markRooms, viewSavedRoute, start, destinat
         return (`${item.startLocation.name} to ${item.endLocation.name}`).toLowerCase().includes(search.toLowerCase()) 
       }
       else {
-        return item.properties.RoomName.toLowerCase().includes(search.toLowerCase()); 
+        console.log(item)
+        return item.room.properties.RoomName.toLowerCase().includes(search.toLowerCase()); 
       }
     }).slice(0, 20) 
   : [];
@@ -90,7 +91,7 @@ const SearchBar = ({items, updateMap, markRooms, viewSavedRoute, start, destinat
                     {updateMap ? item.tags.name : 
                       viewSavedRoute 
                         ? `${item.startLocation.name} to ${item.endLocation.name}` 
-                          : item.properties.RoomName} {/* based on usage of search bar */}
+                          : item.room.properties.RoomName} {/* based on usage of search bar */}
                   </ul>
                 ))
               ) : !hasStart && search != "" && (

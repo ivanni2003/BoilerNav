@@ -100,7 +100,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
                         key={index}
                         cx={room.x} 
                         cy={room.y} 
-                        r="500"       
+                        r="10"       
                         fill="blue"  
                     />
                 ))}

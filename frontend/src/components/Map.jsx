@@ -8,6 +8,8 @@ import Amenities from './Amenities'
 import SearchBar from './SearchBar'
 import BusStops from './BusStops'
 import MapOptions from './MapOptions'
+import DirectionsMenu from './DirectionsMenu'
+import InteriorPopupContent from './InteriorPopupContent';
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
@@ -20,28 +22,6 @@ const nodeIDAPI = `${baseURL}/api/nodes/id`;
 const DEFAULT_LAT = 40.4237;
 const DEFAULT_LON = -86.9212;
 const DEFAULT_ZOOM = 15;
-
-const RoomButton = ({ x, y, onClick }) => {
-  return (
-    <button 
-      onClick={onClick} 
-      style={{
-        position: 'absolute',
-        top: `${y}px`,
-        left: `${x}px`,
-        transform: 'translate(-50%, -50%)',
-        width: '10px', // Diameter of the circle
-        height: '10px',
-        backgroundColor: 'yellow',
-        opacity: 0.8,
-        borderRadius: '50%',
-        border: '1px solid black',
-        cursor: 'pointer',
-        zIndex: 10
-      }}
-    />
-  );
-};
 
 const MapEventHandler = ({ selectedSavedRoute }) => {
   const map = useMap();
@@ -64,7 +44,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
   return null;
 };
 
-  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRooms}) => {
+  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRooms, handleRoomClick}) => {
     const [pathD, setPathD] = useState('');
 
     useEffect(() => {
@@ -125,10 +105,12 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
           fill="yellow"
           stroke="black"
           strokeWidth="1"
-          onClick={() => alert(
-            data.room.properties.RoomName + "\n" +
-            data.room.properties.Type + "\n"
-          )}
+          onClick={() => handleRoomClick(data)
+          //   alert(
+          //   data.room.properties.RoomName + "\n" + 
+          //   data.room.properties.Type + "\n" 
+          // )
+        }
           style={{ cursor: 'pointer' }}
         />
         ))}
@@ -162,6 +144,40 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
   const [time, setTime] = useState(null);
   const [markedRooms, setMarkedRooms] = useState([]);
   const imageRef = useRef(null); // Ref to access image dimensions
+  const [showDirectionsMenu, setShowDirectionsMenu] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null); // Store selected room data for DirectionsMenu
+  const [showPopup, setShowPopup] = useState(false);
+  const [start, setStart] = useState("StairUp"); // State for start location
+  const [destination, setDestination] = useState(null); // State for destination location
+
+  const handleRoomClick = (room) => {
+    setSelectedRoom(room);
+    setShowPopup(true); // Show the popup
+    setShowDirectionsMenu(true) //  show the directions Menu 
+  }
+
+  const handleStartClick = () => {
+    setStart(selectedRoom.room); // Set the selected room as the destination
+    console.log("Set start location for:", start);
+    console.log("Set destination location for:", destination);
+    setShowPopup(false);
+  };
+
+  const handleDestinationClick = () => {
+    setDestination(selectedRoom.room); // Set the selected room as the destination
+    console.log("Set start location for:", start);
+    console.log("Set destination location for:", destination);
+    setShowPopup(false);
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+  };
+
+  const handleCloseDirectionsMenu = () => {
+    setShowDirectionsMenu(false);
+    setSelectedRoom(null);
+  };
 
   useEffect(() => {
     async function fetchAndSetRooms() {
@@ -175,11 +191,14 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
           .filter(room => {
             const roomFloor = room.properties.Floor;
             return (
-              (selectedFloorPlan.floorNumber === 'Basement' && roomFloor === -1) ||
-              (selectedFloorPlan.floorNumber === '1' && roomFloor === 0) ||
-              (selectedFloorPlan.floorNumber === '2' && roomFloor === 1) ||
-              (selectedFloorPlan.floorNumber === '3' && roomFloor === 2) ||
-              (selectedFloorPlan.floorNumber === '4' && roomFloor === 3)
+              room.properties.Type === "Room" &&
+              (
+                (selectedFloorPlan.floorNumber === 'Basement' && roomFloor === -1) ||
+                (selectedFloorPlan.floorNumber === '1' && roomFloor === 0) ||
+                (selectedFloorPlan.floorNumber === '2' && roomFloor === 1) ||
+                (selectedFloorPlan.floorNumber === '3' && roomFloor === 2) ||
+                (selectedFloorPlan.floorNumber === '4' && roomFloor === 3)
+              )
             );
           })
           .map(async room => {
@@ -241,9 +260,37 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
         <img ref={imageRef} src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
         
         {/* Path handler for interior */}
-        <FloorPlan startNode={11} endNode={20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} />
+        <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} handleRoomClick={handleRoomClick} 
+        />
+        {showPopup && selectedRoom && (
+        <InteriorPopupContent
+          roomName={selectedRoom.room.properties.RoomName}
+          onStartClick={handleStartClick}
+          onDestinationClick={handleDestinationClick}
+          onClose={handleClosePopup}
+        />
+      )}
 
       </div>
+
+      {showDirectionsMenu && selectedRoom && (
+        <DirectionsMenu
+          start={start} // Assuming current location for start
+          destination={destination} // Pass selected room data as destination
+          closeDirections={handleCloseDirectionsMenu}
+          handleRouting={() => { /* Define the routing function if needed */ }}
+          manhattanDistance={distance}
+          travelTime={time}
+          selectedMode="walking" // You can dynamically set this based on user choice
+          user={{}} // Replace with actual user object if needed
+          polylineCoordinates={[]}
+          showNotification={(message, type) => alert(`${type}: ${message}`)}
+          onViewSavedRoute={(route) => console.log('View saved route:', route)}
+          updatePublicRoutes={() => console.log('Update public routes')}
+          isInterior={true}
+        />
+      )}
+
     </div> 
   );
 };

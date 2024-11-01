@@ -303,7 +303,7 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
   const [floorPlans, setFloorPlans] = useState([]);
 
   useEffect(() => {
-    console.log('Building ID:', building.id);
+    // console.log('Building ID:', building.id);
     if (user && !isLoadingFavorites) {
       setIsFavorite(favoriteLocations.some(fav => fav.buildingId === building.id.toString()));
     } else {
@@ -695,7 +695,7 @@ const Map = ({ latitude,
           </Polyline>
         );
       }
-      console.warn('Unable to render saved route:', selectedSavedRoute);
+      // console.warn('Unable to render saved route:', selectedSavedRoute);
       return null;
     };
     

@@ -81,7 +81,8 @@ function dijkstra(graph, features, startNode, endNode) {
             while (node !== null) {
                 const { coordinates: [lon, lat] } = features.find(f => f.properties.id === node).geometry;
                 const {x, y} = latLonToXY(lat,lon);
-                path.unshift({x,y});
+                const floor = features.find(f => f.properties.id === node).properties.Floor;
+                path.unshift({x,y, floor});
                 const prevNode = parent.get(node) || null;
                 if (prevNode !== null) {
                     const { coordinates: [lon1, lat1] } = features.find(f => f.properties.id === node).geometry;
@@ -145,13 +146,13 @@ if (require.main === module) {
         console.error("Error: Please provide both arguments (arg1 and arg2).");
         process.exit(1); // Exit the program with an error code
     }
-
+    const avgMsRate = 1.3;
     // If both arguments exist, assign them
     const startNode = args[0] ? Number(args[0]) : 1; // Default to 1 if no argument
     const endNode = args[1] ? Number(args[1]) : 3;   // Default to 3 if no argument
 
     findPath("./Node0.geojson", startNode, endNode)
-        .then(({ route, distance }) => console.log("Path:", route, "Total Distance (m):", distance))
+        .then(({ route, distance }) => console.log("Path:", route, "Total Distance (m):", (distance).toFixed(2), "Total Time (minutes):", ((distance / avgMsRate) / 60).toFixed(2)))
         .catch((error) => console.error("Error:", error));
 
     // Continue with the rest of your code

@@ -42,30 +42,43 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
   return null;
 };
 
-const FloorPlan = ({ startNode, endNode, setDistancetime, markedRooms}) => {
-  const [pathD, setPathD] = useState('');
+  const FloorPlan = ({ startNode, endNode, setDistancetime, floorNumber, markedRooms}) => {
+    const [pathD, setPathD] = useState('');
 
-  useEffect(() => {
-    const fetchPath = async () => {
-      try {
-        const response = await fetch(`http://localhost:3001/api/indoornav/path?start=${startNode}&end=${endNode}`);
-        const data = await response.json();
-        //console.log(response);
-        console.log(data);
-        
+    useEffect(() => {
+      const fetchPath = async () => {
+        try {
+          const response = await fetch(`http://localhost:3001/api/indoornav/path?start=${startNode}&end=${endNode}`);
+          const data = await response.json();
+          //console.log(response);
+          console.log(data);
+          
 
-        if (data.route) {
-          console.log("Path data received:", data.route);
-          //average meters/second walk speed
-          const avgMsRate = 1.3;
-          const distance = (data.distance).toFixed(2);;
-          //meters per second
-          const time = ((distance / avgMsRate) / 60).toFixed(2);;
-          setDistancetime(distance, time)
-    // Construct the 'd' attribute string
-          const dString = data.route.reduce((acc, { x, y }, idx) => {
-            return idx === 0 ? `M ${x} ${y}` : `${acc} L ${x} ${y}`;
-          }, '');
+          if (data.route) {
+            console.log("Path data received:", data.route);
+            //average meters/second walk speed
+            const avgMsRate = 1.3;
+            const distance = (data.distance).toFixed(2);
+            //meters per second
+            const time = ((distance / avgMsRate) / 60).toFixed(2);
+            setDistancetime(distance, time)
+            // Construct the 'd' attribute string
+
+            const floorMappings = { 'Basement': -1, '1': 0, '2': 1, '3': 2 };
+            const roomFloor = floorMappings[floorNumber] ?? 0;
+            let lastFloor = null;
+            const dString = data.route.reduce((acc, { x, y, floor }) => {
+              // If this point is on a new floor, start a new path with 'M'
+              if (roomFloor === floor) {
+                const command = lastFloor === floor ? `L ${x} ${y}` : `M ${x} ${y}`;
+                lastFloor = floor; // Update last floor seen
+                return `${acc} ${command}`;
+              }
+              return acc;
+            }, '');
+            console.log("dString: ", dString);
+            console.log("roomFloor: ", roomFloor)
+            console.log("floorNumber:", floorNumber)
 
           console.log("SVG Path Data (d attribute):", dString);
           setPathD(dString);
@@ -75,8 +88,8 @@ const FloorPlan = ({ startNode, endNode, setDistancetime, markedRooms}) => {
       }
     };
 
-    fetchPath();
-  }, [startNode, endNode]);
+      fetchPath();
+    }, [startNode, endNode, floorNumber]);
 
   return (
     <div>
@@ -192,17 +205,17 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
               Floor {fp.floorNumber}
             </option>
 
-          ))}
-        </select>
-        <button onClick={onClose}>×</button>
-      </div>
-      <div className="floor-plan-content">
-        <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
-        <FloorPlan startNode={1} endNode={4} setDistancetime={setDistancetime}/>
-      </div>
-    </div> 
-  );
-};
+            ))}
+          </select>
+          <button onClick={onClose}>×</button>
+        </div>
+        <div className="floor-plan-content">
+          <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
+          <FloorPlan startNode={79} endNode={150} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber}/>
+        </div>
+      </div> 
+    );
+  };
 
 const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
   const [isFavorite, setIsFavorite] = useState(false);

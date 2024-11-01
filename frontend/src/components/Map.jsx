@@ -83,21 +83,7 @@ const FloorPlan = ({ startNode, endNode, setDistancetime, markedRooms}) => {
       <svg width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
         <path fill="none" d={pathD} strokeWidth="1" stroke="black" />
       </svg>
-      <svg width="100%" height="100%">
-                  {markedRooms.map((pos, index) => (
-                      <circle
-                          key={index}
-                          cx={pos.x} // x-coordinate from latLonToXY
-                          cy={pos.y} // y-coordinate from latLonToXY
-                          r={5} // radius of the circle
-                          fill="red" // color of the circle
-                      />
-                  ))}
-        </svg>
     </div>
-    
-    
-    
   );
 };
 
@@ -176,8 +162,9 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
     alert(`You selected ${room}, Do smth here`)
     const location = latLonToXY(room.geometry.coordinates[0], room.geometry.coordinates[1])
     console.log(location)
-    setMarkedRooms(markedRooms.append(location))
-    console.log(marked)
+    const newMarkedRooms = [...markedRooms, location];
+    setMarkedRooms(newMarkedRooms); // Update state with the new array
+    console.log(newMarkedRooms); // Log the new array
 
   }
   const setDistancetime = (newDistance, newTime) => {

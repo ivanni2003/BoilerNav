@@ -238,6 +238,7 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
                 <SearchBar items={rooms} updateMap={null} markRooms={markRooms} viewSavedRoute={null} start={null} destination={null} searchStr={"Start"} />
                 <SearchBar items={rooms} updateMap={null} markRooms={markRooms} viewSavedRoute={null} start={null} destination={null} searchStr={"End"} />
                 <div>
+                  <br></br>
                   <p>{distance !== null ? `Distance: ${distance} meters` : 'Distance not calculated'}</p>
                   <p>{time !== null ? `Time: ${time} minutes` : 'Time not calculated'}</p>
                 </div>

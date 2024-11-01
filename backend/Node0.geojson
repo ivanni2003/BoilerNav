@@ -31,7 +31,7 @@
 { "type": "Feature", "properties": { "id": 26, "Type": "Room", "RoomName": "1204", "LinkedTo": "74", "Floor": 0 }, "geometry": { "type": "Point", "coordinates": [ -86.91692, 40.42806 ] } },
 { "type": "Feature", "properties": { "id": 27, "Type": "Room", "RoomName": "1203", "LinkedTo": "74", "Floor": 0 }, "geometry": { "type": "Point", "coordinates": [ -86.91690, 40.42807 ] } },
 { "type": "Feature", "properties": { "id": 28, "Type": "Room", "RoomName": "1202", "LinkedTo": "75", "Floor": 0 }, "geometry": { "type": "Point", "coordinates": [ -86.91692, 40.42809 ] } },
-{ "type": "Feature", "properties": { "id": 29, "Type": "Room", "RoomName": "1200", "LinkedTo": "75", "Floor": 0 }, "geometry": { "type": "Point", "coordinates": [ -86.91690, 40.42819 ] } },
+{ "type": "Feature", "properties": { "id": 29, "Type": "Room", "RoomName": "1200", "LinkedTo": "75", "Floor": 0 }, "geometry": { "type": "Point", "coordinates": [ -86.91690, 40.42810 ] } },
 { "type": "Feature", "properties": { "id": 30, "Type": "Room", "RoomName": "1201", "LinkedTo": "75", "Floor": 0 }, "geometry": { "type": "Point", "coordinates": [ -86.91689, 40.42809 ] } },
 { "type": "Feature", "properties": { "id": 31, "Type": "Room", "RoomName": "1158", "LinkedTo": "60", "Floor": 0 }, "geometry": { "type": "Point", "coordinates": [ -86.91704, 40.42798 ] } },
 { "type": "Feature", "properties": { "id": 32, "Type": "Room", "RoomName": "1160", "LinkedTo": "60", "Floor": 0 }, "geometry": { "type": "Point", "coordinates": [ -86.91706, 40.42798 ] } },

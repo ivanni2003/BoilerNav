@@ -17,7 +17,7 @@ const BusStops = ({updateMap, markBusStops}) => {
                 setBusStops(response.data); 
                 setNamedBusStops(response.data.filter(stop => stop.tags.name));
             } catch (error) {
-                console.error(error);
+                // console.error(error);
             }
 
         };

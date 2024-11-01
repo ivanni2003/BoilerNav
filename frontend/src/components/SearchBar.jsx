@@ -64,6 +64,7 @@ const SearchBar = ({items, updateMap, markRooms, viewSavedRoute, start, destinat
         viewSavedRoute(item)
       } 
       else {  //  click behavior for indoor map
+        console.log("markRooms:", item)
         markRooms(item)
       }
     }

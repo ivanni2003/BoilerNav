@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import L from 'leaflet';
@@ -19,6 +19,28 @@ const nodeIDAPI = `${baseURL}/api/nodes/id`;
 const DEFAULT_LAT = 40.4237;
 const DEFAULT_LON = -86.9212;
 const DEFAULT_ZOOM = 15;
+
+const RoomButton = ({ x, y, onClick }) => {
+  return (
+    <button 
+      onClick={onClick} 
+      style={{
+        position: 'absolute',
+        top: `${y}px`,
+        left: `${x}px`,
+        transform: 'translate(-50%, -50%)',
+        width: '10px', // Diameter of the circle
+        height: '10px',
+        backgroundColor: 'yellow',
+        opacity: 0.8,
+        borderRadius: '50%',
+        border: '1px solid black',
+        cursor: 'pointer',
+        zIndex: 10
+      }}
+    />
+  );
+};
 
 const MapEventHandler = ({ selectedSavedRoute }) => {
   const map = useMap();
@@ -41,7 +63,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
   return null;
 };
 
-const FloorPlan = ({ startNode, endNode, }) => {
+const FloorPlan = ({ startNode, endNode, rooms }) => {
   const [pathD, setPathD] = useState('');
 
   useEffect(() => {
@@ -75,6 +97,22 @@ const FloorPlan = ({ startNode, endNode, }) => {
   return (
     <svg width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
       <path fill="none" d={pathD} strokeWidth="1" stroke="black" />
+
+      {rooms.map((data) => (
+        <circle
+          cx={data.x}
+          cy={data.y}
+          r="5"
+          fill="yellow"
+          stroke="black"
+          strokeWidth="1"
+          onClick={() => alert(
+            data.room.properties.RoomName + "\n" +
+            data.room.properties.Type + "\n"
+          )}
+          style={{ cursor: 'pointer' }}
+        />
+        ))}
     </svg>
   );
 };
@@ -94,9 +132,14 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   }, [latitude, longitude, zoom, map]); 
 };
 
+
+
+
+
 const FloorPlanView = ({ building, floorPlans, onClose}) => {
   const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans[0]);
   const [rooms, setRooms] = useState([])
+  const imageRef = useRef(null); // Ref to access image dimensions
 
   useEffect(() => {
     async function fetchAndSetRooms() {
@@ -104,25 +147,34 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
       const indoorData = response.data
       //console.log(response.data)
       //console.log(selectedFloorPlan)
-    
       // Note: account for basement, 1, 2, 3, 4 for now. Need to change either floor plan or data to align and account for ground floors
-      const filteredRooms = indoorData.features.filter(room => {
-        const roomFloor = room.properties.Floor; 
+      const filteredRooms = await Promise.all(
+        indoorData.features
+          .filter(room => {
+            const roomFloor = room.properties.Floor;
+            return (
+              (selectedFloorPlan.floorNumber === 'Basement' && roomFloor === -1) ||
+              (selectedFloorPlan.floorNumber === '1' && roomFloor === 0) ||
+              (selectedFloorPlan.floorNumber === '2' && roomFloor === 1) ||
+              (selectedFloorPlan.floorNumber === '3' && roomFloor === 2) ||
+              (selectedFloorPlan.floorNumber === '4' && roomFloor === 3)
+            );
+          })
+          .map(async room => {
+            const roomName = room.properties.RoomName;
 
-        return (
-          //room.properties.Type == "Room" && // only searching for rooms
-          (selectedFloorPlan.floorNumber === 'Basement' && roomFloor === -1) || 
-          (selectedFloorPlan.floorNumber === '1' && roomFloor === 0) || 
-          (selectedFloorPlan.floorNumber === '2' && roomFloor === 1) || 
-          (selectedFloorPlan.floorNumber === '3' && roomFloor === 2) || 
-          (selectedFloorPlan.floorNumber === '4' && roomFloor === 3) 
-        );
-      });
+            // Fetch x, y position for each room
+            const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
+              params: { name: roomName }
+            });
+            const { x, y } = response.data;
+            return { room: room, x: x, y: y };
+          })
+      );
 
-      setRooms(filteredRooms.map(room => room.properties.RoomName));
+      setRooms(filteredRooms);
     }
     fetchAndSetRooms()
-    console.log(rooms)
   }, [selectedFloorPlan, building]);
 
   const markRooms = (room) => { // implement marking/highlighting room in some way
@@ -150,8 +202,11 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
         <button onClick={onClose}>×</button>
       </div>
       <div className="floor-plan-content">
-        <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
-        <FloorPlan startNode={11} endNode={12} />
+        <img ref={imageRef} src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
+        
+        {/* Path handler for interior */}
+        <FloorPlan startNode={11} endNode={20} rooms={rooms} />
+
       </div>
     </div> 
   );

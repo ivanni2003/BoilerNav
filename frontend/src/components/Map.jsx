@@ -101,7 +101,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
         <circle
           cx={data.x}
           cy={data.y}
-          r="5"
+          r="7"
           fill="yellow"
           stroke="black"
           strokeWidth="1"
@@ -118,7 +118,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
         <circle
           cx={data.x}
           cy={data.y}
-          r="5"
+          r="3"
           fill="blue"
           stroke="black"
           strokeWidth="1"

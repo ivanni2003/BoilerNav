@@ -21,6 +21,28 @@ const DEFAULT_LAT = 40.4237;
 const DEFAULT_LON = -86.9212;
 const DEFAULT_ZOOM = 15;
 
+const RoomButton = ({ x, y, onClick }) => {
+  return (
+    <button 
+      onClick={onClick} 
+      style={{
+        position: 'absolute',
+        top: `${y}px`,
+        left: `${x}px`,
+        transform: 'translate(-50%, -50%)',
+        width: '10px', // Diameter of the circle
+        height: '10px',
+        backgroundColor: 'yellow',
+        opacity: 0.8,
+        borderRadius: '50%',
+        border: '1px solid black',
+        cursor: 'pointer',
+        zIndex: 10
+      }}
+    />
+  );
+};
+
 const MapEventHandler = ({ selectedSavedRoute }) => {
   const map = useMap();
 
@@ -42,7 +64,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
   return null;
 };
 
-  const FloorPlan = ({ startNode, endNode, setDistancetime, floorNumber, markedRooms}) => {
+  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRooms}) => {
     const [pathD, setPathD] = useState('');
 
     useEffect(() => {
@@ -92,20 +114,25 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
     }, [startNode, endNode, floorNumber]);
 
   return (
-    <div>
-      <svg width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
-        <path fill="none" d={pathD} strokeWidth="1" stroke="black" />
-        {markedRooms && markedRooms.map((room, index) => (
-                    <circle 
-                        key={index}
-                        cx={room.x} 
-                        cy={room.y} 
-                        r="10"       
-                        fill="blue"  
-                    />
-                ))}
-      </svg>
-    </div>
+    <svg width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
+      <path fill="none" d={pathD} strokeWidth="1" stroke="black" />
+
+      {rooms.map((data) => (
+        <circle
+          cx={data.x}
+          cy={data.y}
+          r="5"
+          fill="yellow"
+          stroke="black"
+          strokeWidth="1"
+          onClick={() => alert(
+            data.room.properties.RoomName + "\n" +
+            data.room.properties.Type + "\n"
+          )}
+          style={{ cursor: 'pointer' }}
+        />
+        ))}
+    </svg>
   );
 };
 
@@ -124,27 +151,9 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   }, [latitude, longitude, zoom, map]); 
 };
 
-function latLonToXY(lat, lon) {
-  // Here, you need to adjust the min/max values according to your data
-  let canvasWidth = 180;    // note will need to change depending on indoor plan
-  let canvasHeight = 467;
-  //const minLat = 40.427; // Minimum latitude
-  //const maxLat = 40.428; // Maximum latitude
-  //const minLon = -86.917; // Minimum longitude
-  //const maxLon = -86.916; // Maximum longitude
-  const minLat = 40.42732; // Minimum latitude
-  const maxLat = 40.42820; // Maximum latitude
-  const minLon = -86.91722; // Minimum longitude
-  const maxLon = -86.91682; // Maximum longitude
 
-  //40.428193270497175, -86.91720299128373
-  //40.42738132339402, -86.9167784430074
-  //40.42820, -86.91722
-  //40.42732, -86.91682
-  const x = ((lon - minLon) / (maxLon - minLon)) * canvasWidth; // Scale to canvas width
-  const y = ((maxLat - lat) / (maxLat - minLat)) * canvasHeight + 18; // Scale to canvas height, inverted for y-axis
-  return { x, y };
-}
+
+
 
 const FloorPlanView = ({ building, floorPlans, onClose}) => {
   const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans[0]);
@@ -152,6 +161,7 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
   const [distance, setDistance] = useState(null);
   const [time, setTime] = useState(null);
   const [markedRooms, setMarkedRooms] = useState([]);
+  const imageRef = useRef(null); // Ref to access image dimensions
 
   useEffect(() => {
     async function fetchAndSetRooms() {
@@ -159,25 +169,34 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
       const indoorData = response.data
       //console.log(response.data)
       //console.log(selectedFloorPlan)
-    
       // Note: account for basement, 1, 2, 3, 4 for now. Need to change either floor plan or data to align and account for ground floors
-      const filteredRooms = indoorData.features.filter(room => {
-        const roomFloor = room.properties.Floor; 
+      const filteredRooms = await Promise.all(
+        indoorData.features
+          .filter(room => {
+            const roomFloor = room.properties.Floor;
+            return (
+              (selectedFloorPlan.floorNumber === 'Basement' && roomFloor === -1) ||
+              (selectedFloorPlan.floorNumber === '1' && roomFloor === 0) ||
+              (selectedFloorPlan.floorNumber === '2' && roomFloor === 1) ||
+              (selectedFloorPlan.floorNumber === '3' && roomFloor === 2) ||
+              (selectedFloorPlan.floorNumber === '4' && roomFloor === 3)
+            );
+          })
+          .map(async room => {
+            const roomName = room.properties.RoomName;
 
-        return (
-          //room.properties.Type == "Room" && // only searching for rooms
-          (selectedFloorPlan.floorNumber === 'Basement' && roomFloor === -1) || 
-          (selectedFloorPlan.floorNumber === '1' && roomFloor === 0) || 
-          (selectedFloorPlan.floorNumber === '2' && roomFloor === 1) || 
-          (selectedFloorPlan.floorNumber === '3' && roomFloor === 2) || 
-          (selectedFloorPlan.floorNumber === '4' && roomFloor === 3) 
-        );
-      });
-      
+            // Fetch x, y position for each room
+            const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
+              params: { name: roomName }
+            });
+            const { x, y } = response.data;
+            return { room: room, x: x, y: y };
+          })
+      );
+
       setRooms(filteredRooms);
     }
     fetchAndSetRooms()
-    console.log(rooms)
   }, [selectedFloorPlan, building]);
 
   const markRooms = (room) => { // implement marking/highlighting room in some way
@@ -214,17 +233,20 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
               Floor {fp.floorNumber}
             </option>
 
-            ))}
-          </select>
-          <button onClick={onClose}>×</button>
-        </div>
-        <div className="floor-plan-content">
-          <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
-          <FloorPlan startNode={79} endNode={150} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms}/>
-        </div>
-      </div> 
-    );
-  };
+          ))}
+        </select>
+        <button onClick={onClose}>×</button>
+      </div>
+      <div className="floor-plan-content">
+        <img ref={imageRef} src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
+        
+        {/* Path handler for interior */}
+        <FloorPlan startNode={11} endNode={20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} />
+
+      </div>
+    </div> 
+  );
+};
 
 const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
   const [isFavorite, setIsFavorite] = useState(false);

@@ -427,7 +427,7 @@ wayRouter.get(
       return;
     }
     const searchRadiusMeters = 100;
-    const searchRadiusDegrees = searchRadiusMeters / 111111;
+    const searchRadiusDegrees = searchRadiusMeters / 11111;
     // navNode lat and lon are named latitude and longitude
     const closeStartNodes = await NavNode.find({
       latitude: {
@@ -586,9 +586,14 @@ const getClosestBusStop = async (lat, lon, searchRadiusDegrees) => {
       }
     }
   });
+  console.log('Closest osmNode Bus Stop: ', closestBusStop)
 
+<<<<<<< HEAD
   // Now convert the closest bus stop to a corresponding navNode
   const tolerance = 0.1; // Adjust tolerance as needed
+=======
+  const tolerance = .0001;  // Adjust tolerance as needed
+>>>>>>> nate-dev
   const navBusStop = await NavNode.findOne({
     latitude: {
       $gte: closestBusStop.lat - tolerance,
@@ -632,7 +637,7 @@ wayRouter.get(
       return;
     }
     const searchRadiusMeters = 1000;
-    const searchRadiusDegrees = searchRadiusMeters / 111111;
+    const searchRadiusDegrees = searchRadiusMeters / 11111;
     // navNode lat and lon are named latitude and longitude
     const closeStartNodes = await NavNode.find({
       latitude: {
@@ -680,10 +685,14 @@ wayRouter.get(
     const endBusStop = await getClosestBusStop(end.lat, end.lon, 99999999);
 
     if (startBusStop === null || endBusStop === null) {
+<<<<<<< HEAD
       console.log(startBusStop, endBusStop);
       response
         .status(400)
         .json({ error: "No bus stops were found, try checking the db" });
+=======
+      response.status(400).json({ error: "No bus stops were found, try checking the db" });
+>>>>>>> nate-dev
       return;
     }
 
@@ -694,6 +703,8 @@ wayRouter.get(
       busWays,
     );
 
+    console.log("\n\nfootpathToBusStop: ", footpathToBusStop)
+
     const busPath = pathBetweenNodes(startBusStop, endBusStop, nodes, busWays);
 
     const footpathToEnd = pathBetweenNodes(
@@ -703,7 +714,13 @@ wayRouter.get(
       busWays,
     );
 
+<<<<<<< HEAD
     response.json([...footpathToBusStop, ...busPath, ...footpathToEnd]);
+=======
+    console.log("\n\nfootpathToEnd: ", footpathToEnd)
+
+   response.json([...footpathToBusStop,...busPath,...footpathToEnd]);
+>>>>>>> nate-dev
   },
 );
 

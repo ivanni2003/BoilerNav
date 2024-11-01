@@ -211,7 +211,7 @@ function App() {
       },
       (err) => {
         //setUserLocation([40.4274, -86.9132])
-        console.error(err);
+        // console.error(err);
       },
       {
         enableHighAccuracy: true,
@@ -230,7 +230,7 @@ function App() {
   useEffect(() => {
     if (!isRerouteEnabled) return;
     const distanceFromRoute = calculateDistanceFromRoute(userLocation, polylineCoordinates);
-    console.log("Distance from route: ", distanceFromRoute);
+    // console.log("Distance from route: ", distanceFromRoute);
     if (distanceFromRoute !== null && (distanceFromRoute > accuracy || distanceFromRoute > 100)) {
       console.log("User is off course. Rerouting...");
       // Re-route if user is off course

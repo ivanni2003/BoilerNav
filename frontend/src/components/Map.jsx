@@ -95,6 +95,15 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
     <div>
       <svg width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
         <path fill="none" d={pathD} strokeWidth="1" stroke="black" />
+        {markedRooms && markedRooms.map((room, index) => (
+                    <circle 
+                        key={index}
+                        cx={room.x} 
+                        cy={room.y} 
+                        r="500"       
+                        fill="blue"  
+                    />
+                ))}
       </svg>
     </div>
   );
@@ -172,8 +181,8 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
   }, [selectedFloorPlan, building]);
 
   const markRooms = (room) => { // implement marking/highlighting room in some way
-    alert(`You selected ${room}, Do smth here`)
-    const location = latLonToXY(room.geometry.coordinates[0], room.geometry.coordinates[1])
+    console.log(room)
+    const location = latLonToXY(room.geometry.coordinates[1], room.geometry.coordinates[0])
     console.log(location)
     const newMarkedRooms = [...markedRooms, location];
     setMarkedRooms(newMarkedRooms); // Update state with the new array
@@ -211,7 +220,7 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
         </div>
         <div className="floor-plan-content">
           <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
-          <FloorPlan startNode={79} endNode={150} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber}/>
+          <FloorPlan startNode={79} endNode={150} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms}/>
         </div>
       </div> 
     );

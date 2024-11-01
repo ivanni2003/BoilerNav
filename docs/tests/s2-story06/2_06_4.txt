@@ -1,0 +1,20 @@
+A. Identification and classification
+  Test Case 2_06_4
+  System: Outdoor rerouting
+  Sprint 2
+  Rerouting is disabled
+  Severity: 1
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Set the GPS location to be on Purdue's campus using the browser's developer tools
+  4. Disable rerouting by setting the rerouting option to off in the map options menu in the bottom left
+  5. Choose a building on the map and get directions to it by clicking on the building and then clicking the
+  "Directions" button, then clicking the "Go" button
+  6. Once the route is displayed, change the GPS location incrementally away from the route using the browser's
+  developer tools 
+  7. Continue until the GPS location is about to leave Purdue's campus
+
+C. Expected Result:
+  1. The application should not reroute the user

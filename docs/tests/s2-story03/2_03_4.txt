@@ -1,0 +1,22 @@
+A. Identification and classification
+  Test Case 2_03_4
+  System: Personal Route Times
+  Sprint 2
+  Route duration invalid input
+  Severity: 1
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Log in to an existing account with saved personal routes using the user button in the top left corner
+  4. Upon returning to the main page, navigate to the profile section by clicking on the user button in the top left
+  corner
+  5. Choose a saved route and type an invalid duration into the input box (e.g a negative number)
+  6. Click the confirmation button next to the chosen input box
+  7. Observe the notification that appears in the top right corner of the screen
+
+C. Expected Result:
+  1. The duration should not be updated
+  2. The notification should indicate that the input is invalid
+
+

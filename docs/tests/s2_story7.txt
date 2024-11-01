@@ -1,4 +1,4 @@
-Test Case 271
+Test Case 2_7_1
 System: IndoorNavigationButtonsAndRoutes
 Phase: 2
 Server startup check with profile section
@@ -18,7 +18,7 @@ C. Expected Result:
 
 -------------------
 
-Test Case 272
+Test Case 2_7_2
 System: IndoorNavigationButtonsAndRoutes
 Phase: 2
 Server startup check with profile section
@@ -40,7 +40,7 @@ C. Expected Result:
 
 -------------------
 
-Test Case 273
+Test Case 2_7_3
 System: IndoorNavigationButtonsAndRoutes
 Phase: 2
 Server startup check with profile section

@@ -1,0 +1,96 @@
+Test Case 2_3_1
+System: Personal Route Times
+Phase: 2
+Input boxes are rendered
+Severity: 1
+
+A. Identification and classification
+- Test existence of input boxes
+- Verify that input boxes are rendered for each saved route
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Log in to an existing account with saved personal routes using the user button in the top left corner
+  4. Upon returning to the main page, navigate to the profile section by clicking on the user button in the top left
+  corner
+  5. Observe the rendered input boxes next to each saved route near the bottom of the page
+
+C. Expected Result:
+  1. Input boxes should be rendered for each saved route
+
+---------------------------------------------------
+Test Case 2_3_2
+System: Personal Route Times
+Phase: 2
+Route duration confirmation button
+Severity: 1
+
+A. Identification and classification
+- Test existence of route confirmation button
+- Verify route confirmation button is rendered for each saved route duration input
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Log in to an existing account with saved personal routes using the user button in the top left corner
+  4. Upon returning to the main page, navigate to the profile section by clicking on the user button in the top left
+  corner
+  5. Observe the confirmation buttons next to each saved route duration input box near the bottom of the page
+
+C. Expected Result:
+  1. Confirmation buttons should be rendered for each saved route duration input box
+
+
+-------------------------------------------------
+
+Test Case 2_3_3
+System: Personal Route Times
+Phase: 2
+Route duration updating
+Severity: 1
+
+A. Identification and classification
+- Test route duration updating
+- Verify that new route duration is correctly saved with associated route
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Log in to an existing account with saved personal routes using the user button in the top left corner
+  4. Upon returning to the main page, navigate to the profile section by clicking on the user button in the top left
+  corner
+  5. Choose a saved route and type a new duration into the input box
+  6. Click the confirmation button next to the chosen input box
+  7. Exit and return to the profile section by clicking the page title in the top left corner and repeat step 4
+  8. Verify that the new duration is saved and displayed next to the chosen route
+
+C. Expected Result:
+  1. The new duration should be saved and displayed next to the chosen route
+
+-------------------------------------------------
+Test Case 2_3_4
+System: Personal Route Times
+Phase: 2
+Route duration invalid input
+Severity: 1
+
+A. Identification and classification
+- Test error handling of invalid route duration input
+- Verify that user is notified of invalid inputs when entered
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Log in to an existing account with saved personal routes using the user button in the top left corner
+  4. Upon returning to the main page, navigate to the profile section by clicking on the user button in the top left
+  corner
+  5. Choose a saved route and type an invalid duration into the input box (e.g a negative number)
+  6. Click the confirmation button next to the chosen input box
+  7. Observe the notification that appears in the top right corner of the screen
+
+C. Expected Result:
+  1. The duration should not be updated
+  2. The notification should indicate that the input is invalid
+
+

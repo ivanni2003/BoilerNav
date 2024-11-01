@@ -81,7 +81,8 @@ function dijkstra(graph, features, startNode, endNode) {
             while (node !== null) {
                 const { coordinates: [lon, lat] } = features.find(f => f.properties.id === node).geometry;
                 const {x, y} = latLonToXY(lat,lon);
-                path.unshift({x,y});
+                const floor = features.find(f => f.properties.id === node).properties.Floor;
+                path.unshift({x,y, floor});
                 const prevNode = parent.get(node) || null;
                 if (prevNode !== null) {
                     const { coordinates: [lon1, lat1] } = features.find(f => f.properties.id === node).geometry;

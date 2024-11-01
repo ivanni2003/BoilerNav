@@ -42,9 +42,8 @@
     return null;
   };
 
-  const FloorPlan = ({ startNode, endNode, setDistancetime}) => {
+  const FloorPlan = ({ startNode, endNode, setDistancetime, floorNumber}) => {
     const [pathD, setPathD] = useState('');
-
     useEffect(() => {
       const fetchPath = async () => {
         try {
@@ -62,10 +61,23 @@
             //meters per second
             const time = ((distance / avgMsRate) / 60).toFixed(2);
             setDistancetime(distance, time)
-      // Construct the 'd' attribute string
-            const dString = data.route.reduce((acc, { x, y }, idx) => {
-              return idx === 0 ? `M ${x} ${y}` : `${acc} L ${x} ${y}`;
+            // Construct the 'd' attribute string
+
+            const floorMappings = { 'Basement': -1, '1': 0, '2': 1, '3': 2 };
+            const roomFloor = floorMappings[floorNumber] ?? 0;
+            let lastFloor = null;
+            const dString = data.route.reduce((acc, { x, y, floor }) => {
+              // If this point is on a new floor, start a new path with 'M'
+              if (roomFloor === floor) {
+                const command = lastFloor === floor ? `L ${x} ${y}` : `M ${x} ${y}`;
+                lastFloor = floor; // Update last floor seen
+                return `${acc} ${command}`;
+              }
+              return acc;
             }, '');
+            console.log("dString: ", dString);
+            console.log("roomFloor: ", roomFloor)
+            console.log("floorNumber:", floorNumber)
 
             console.log("SVG Path Data (d attribute):", dString);
             setPathD(dString);
@@ -76,7 +88,7 @@
       };
 
       fetchPath();
-    }, [startNode, endNode]);
+    }, [startNode, endNode, floorNumber]);
 
     return (
       <svg width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
@@ -167,7 +179,7 @@
         </div>
         <div className="floor-plan-content">
           <img src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
-          <FloorPlan startNode={1} endNode={4} setDistancetime={setDistancetime}/>
+          <FloorPlan startNode={79} endNode={150} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber}/>
         </div>
       </div> 
     );

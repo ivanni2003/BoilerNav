@@ -1,0 +1,66 @@
+Test Case 2_8_1
+System: Indoor Search           
+Phase: 2    
+Verify visibility of indoor search
+Severity: 1
+
+A. Identification and Classification:
+- Test existence of indoor search
+- Verify search visibility and placement
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. Search for Lawson Hall (LWSN) using search for destination.
+    4. Click the circle associated with Lawson and click view indoors.
+
+C. Expected Result:
+    1. Indoor search fields are visible in the top right of the screen.
+
+-------------------------------------------------------
+Test Case 2_8_2
+System: Indoor Search              
+Phase: 2    
+Verify functionality of indoor search
+Severity: 1
+
+A. Identification and Classification:
+- Test functionality of indoor search.
+- Verify that you can enter input and relevant elements appear in dropdown.
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. Search for Lawson Hall (LWSN) using search for destination
+    4. Click the circle associated with Lawson and click view indoors.
+    5. Select the search bar and enter B155 Classroom.
+
+C. Expected Result:
+    1. You can enter input into the search.
+    2. Search bar displays a dropdown containing names from user input.
+    3. Search bar searches for rooms of the building.
+
+---------------------------------------------------------
+Test Case 2_8_3
+System: Indoor Search              
+Phase: 2    
+Verify functionality of selection within indoor search
+Severity: 1
+
+A. Identification and Classification:
+- Test item selection in indoor search
+- Verify item is marked when selected
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. Search for Lawson Hall (LWSN) using search for destination
+    4. Click the circle associated with Lawson and click view indoors.
+    5. Select the search bar and enter B155 Classroom.
+    6. Select B155 Classroom within dropdown menu.
+
+C. Expected Result:
+    1. You can enter input into the search.
+    2. Search bar displays a dropdown containing names from user input.
+    3. Search bar searches for rooms of the building.
+    4. Location of selected room is highlighted on the floor plan view.

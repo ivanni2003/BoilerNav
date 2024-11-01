@@ -1,0 +1,60 @@
+Test Case 2_13_1
+System: Parking Module            
+Phase: 2    
+Verify visibility of view parking button
+Severity: 1
+
+A. Identification and Classification:
+- Test existence of view parking button
+- Verify button visibility and placement
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+
+C. Expected Result:
+    1. View Parking button in bottom left is visible.
+
+--------------------------------------------
+Test Case 2_13_2
+System: Parking Module            
+Phase: 2    
+Verify functionality of button and popup
+Severity: 1
+
+A. Identification and Classification:
+- Test event of view parking click and the closing of the generated popup.
+- Verify that menu with named parking appears and parking amenities are marked. 
+  Also verify that these disappear when popup is closed.
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. Click view parking button.
+    4. Close popup that appeared.
+
+C. Expected Result:
+    1. Parking Lot amenities are marked and popup menu should appear with named parking buildings.
+    2. Parking Lot amenities are unmarked and popup is closed.
+
+--------------------------------------------
+Test Case 2_13_3
+System: Parking Module            
+Phase: 2    
+Verify functionality of selection within menu
+Severity: 1
+
+A. Identification and Classification:
+- Test behavior of selecting item within menu
+- Verify that map recenters to location of item within menu
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. Click view parking button.
+    4. Select a parking building in the popup.
+
+C. Expected Result:
+    1. Parking Lot amenities are marked and popup menu should appear with named parking buildings.
+    2. Map is recentered to location of parking building.
+

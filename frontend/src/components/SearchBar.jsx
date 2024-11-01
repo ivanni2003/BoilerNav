@@ -47,7 +47,6 @@ const SearchBar = ({items, updateMap, markRooms, viewSavedRoute, start, destinat
         return (`${item.startLocation.name} to ${item.endLocation.name}`).toLowerCase().includes(search.toLowerCase()) 
       }
       else {
-        console.log(item)
         return item.room.properties.RoomName.toLowerCase().includes(search.toLowerCase()); 
       }
     }).slice(0, 20) 

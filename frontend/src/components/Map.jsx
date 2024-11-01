@@ -114,6 +114,17 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
           style={{ cursor: 'pointer' }}
         />
         ))}
+        {markedRooms && markedRooms.map((data) => (
+        <circle
+          cx={data.x}
+          cy={data.y}
+          r="5"
+          fill="blue"
+          stroke="black"
+          strokeWidth="1"
+          style={{ cursor: 'pointer' }}
+        />
+        ))}
     </svg>
   );
 };
@@ -218,9 +229,12 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
     fetchAndSetRooms()
   }, [selectedFloorPlan, building]);
 
-  const markRooms = (room) => { // implement marking/highlighting room in some way
+  const markRooms = async (room) => { // implement marking/highlighting room in some way
     console.log(room)
-    const location = latLonToXY(room.geometry.coordinates[1], room.geometry.coordinates[0])
+    const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
+      params: { name: room.room.properties.RoomName }
+    });
+    const location = response.data
     console.log(location)
     const newMarkedRooms = [...markedRooms, location];
     setMarkedRooms(newMarkedRooms); // Update state with the new array

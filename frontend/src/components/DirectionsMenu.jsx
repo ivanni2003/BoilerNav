@@ -15,7 +15,8 @@ const DirectionsMenu = ({
   polylineCoordinates,
   showNotification,
   onViewSavedRoute,
-  updatePublicRoutes
+  updatePublicRoutes,
+  isInterior,
 }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
@@ -39,7 +40,7 @@ const DirectionsMenu = ({
   // Fetch the global privacy setting when component mounts
   useEffect(() => {
     const fetchGlobalPrivacySetting = async () => {
-      if (user) {
+      if (user && !isInterior) {
         try {
           const response = await axios.get(`http://localhost:3001/api/routes/${user.id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -59,8 +60,7 @@ const DirectionsMenu = ({
 
   useEffect(() => {
     const checkDuplicate = async () => {
-      if (!user || !start || !destination) return;
-
+      if (!user || !start || !destination || isInterior) return;
       setIsChecking(true);
       try {
         const response = await axios.post(
@@ -125,7 +125,7 @@ const DirectionsMenu = ({
         endLocation: {
           lat: destination.buildingPosition.lat,
           lon: destination.buildingPosition.lon,
-          name: destination.tags.name || 'Unnamed Destination'
+          name: destination.properties?.RoomName || destination.tags?.name || 'Unnamed Destination'
         },
         distance: manhattanDistance,
         duration: travelTime,
@@ -173,14 +173,14 @@ const DirectionsMenu = ({
       <input
         className="input-field"
         type="text"
-        value={start ? "Current Location" : ""}
+        value={start?.properties?.RoomName || "Current Location"}
         placeholder="Start Location"
         readOnly
       />
       <input
         className="input-field"
         type="text"
-        value={destination ? destination.tags.name : ""}
+        value={destination ? destination.properties?.RoomName || destination.tags?.name : ""}
         placeholder="Destination"
         readOnly
       />
@@ -188,7 +188,7 @@ const DirectionsMenu = ({
         <button className="directions-button" onClick={handleClose}>Close</button>
         <button className="directions-button" onClick={handleRouting}>Go</button>
       </div>
-      {manhattanDistance && travelTime && (
+      {!isInterior && manhattanDistance && travelTime && (
         <div className="route-save-section">
           <div className="distance-info">
             <p><strong>Distance:</strong> {manhattanDistance} miles</p>

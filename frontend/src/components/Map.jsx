@@ -1,5 +1,5 @@
   import axios from 'axios';
-  import React, { useEffect, useState, useRef } from 'react';
+  import React, { useEffect, useState } from 'react';
   import 'leaflet/dist/leaflet.css';
   import './Map.css';
   import L from 'leaflet';
@@ -58,9 +58,9 @@
             console.log("Path data received:", data.route);
             //average meters/second walk speed
             const avgMsRate = 1.3;
-            const distance = (data.distance).toFixed(2);;
+            const distance = (data.distance).toFixed(2);
             //meters per second
-            const time = ((distance / avgMsRate) / 60).toFixed(2);;
+            const time = ((distance / avgMsRate) / 60).toFixed(2);
             setDistancetime(distance, time)
       // Construct the 'd' attribute string
             const dString = data.route.reduce((acc, { x, y }, idx) => {

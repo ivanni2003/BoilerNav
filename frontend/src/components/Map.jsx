@@ -44,7 +44,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
   return null;
 };
 
-  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRooms, handleRoomClick}) => {
+  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRoom, handleRoomClick}) => {
     const [pathD, setPathD] = useState('');
 
     useEffect(() => {
@@ -102,7 +102,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
           cx={data.x}
           cy={data.y}
           r="7"
-          fill="yellow"
+          fill="lightgreen"
           stroke="black"
           strokeWidth="1"
           onClick={() => handleRoomClick(data)
@@ -114,17 +114,17 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
           style={{ cursor: 'pointer' }}
         />
         ))}
-        {markedRooms && markedRooms.map((data) => (
+        {markedRoom && 
         <circle
-          cx={data.x}
-          cy={data.y}
-          r="3"
-          fill="blue"
+          cx={markedRoom.x}
+          cy={markedRoom.y}
+          r="2"
+          fill="red"
           stroke="black"
           strokeWidth="1"
           style={{ cursor: 'pointer' }}
         />
-        ))}
+        }
     </svg>
   );
 };
@@ -153,7 +153,7 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
   const [rooms, setRooms] = useState([])
   const [distance, setDistance] = useState(null);
   const [time, setTime] = useState(null);
-  const [markedRooms, setMarkedRooms] = useState([]);
+  const [markedRoom, setMarkedRoom] = useState(null);
   const imageRef = useRef(null); // Ref to access image dimensions
   const [showDirectionsMenu, setShowDirectionsMenu] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null); // Store selected room data for DirectionsMenu
@@ -229,17 +229,13 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
     fetchAndSetRooms()
   }, [selectedFloorPlan, building]);
 
-  const markRooms = async (room) => { // implement marking/highlighting room in some way
-    console.log(room)
+  const markRoom = async (room) => { 
     const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
       params: { name: room.room.properties.RoomName }
     });
-    const location = response.data
-    console.log(location)
-    const newMarkedRooms = [...markedRooms, location];
-    setMarkedRooms(newMarkedRooms); // Update state with the new array
-    console.log(newMarkedRooms); // Log the new array
 
+    const location = response.data
+    setMarkedRoom(location)
   }
   const setDistancetime = (newDistance, newTime) => {
     setDistance(newDistance);
@@ -249,8 +245,7 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
   return (
     <div className="floor-plan-fullscreen">
       <div className="floor-plan-search"> 
-                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} viewSavedRoute={null} start={null} destination={null} searchStr={"Start"} />
-                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} viewSavedRoute={null} start={null} destination={null} searchStr={"End"} />
+                <SearchBar items={rooms} updateMap={null} markRoom={markRoom} viewSavedRoute={null} searchStr={"Room"} />
                 <div>
                   <br></br>
                   <p>{distance !== null ? `Distance: ${distance} meters` : 'Distance not calculated'}</p>
@@ -275,7 +270,7 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
         <img ref={imageRef} src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
         
         {/* Path handler for interior */}
-        <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} handleRoomClick={handleRoomClick} 
+        <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRoom={markedRoom} handleRoomClick={handleRoomClick} 
         />
         {showPopup && selectedRoom && (
         <InteriorPopupContent

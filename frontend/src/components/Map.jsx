@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import L from 'leaflet';
+import 'leaflet.heat';
 import arrowIcon from '../img/up-arrow.png';
 import Amenities from './Amenities'
 import SearchBar from './SearchBar'
@@ -44,13 +45,14 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
   return null;
 };
 
-  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRooms, handleRoomClick}) => {
+  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRooms, handleRoomClick, building}) => {
     const [pathD, setPathD] = useState('');
 
     useEffect(() => {
       const fetchPath = async () => {
         try {
-          const response = await fetch(`http://localhost:3001/api/indoornav/path?start=${startNode}&end=${endNode}`);
+          //get building
+          const response = await fetch(`http://localhost:3001/api/indoornav/path?building=${building.tags.name}&start=${startNode}&end=${endNode}`);
           const data = await response.json();
           //console.log(response);
           console.log(data);
@@ -81,6 +83,8 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
             console.log("dString: ", dString);
             console.log("roomFloor: ", roomFloor)
             console.log("floorNumber:", floorNumber)
+            console.log("building: ", building)
+            console.log("building name:", building.tags.name)
 
           console.log("SVG Path Data (d attribute):", dString);
           setPathD(dString);
@@ -138,6 +142,19 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   let WL_Bounds = [SouthWestCoords, NorthEastCoords]; 
   map.setMaxBounds(WL_Bounds);
   map.setMinZoom(15);
+  const heatData = [
+    [40.42, -86.90, 1],
+    [40.4356, -86.92, 0.2],
+    // more data points
+  ];
+  //get list of data points with 
+  
+  const heatmapLayer = L.heatLayer(heatData, {
+    //radius: 25,
+    //blur: 15,
+    //maxZoom: 17,
+  });
+  map.addLayer(heatmapLayer);
 
   useEffect(() => {
     map.setView([latitude, longitude], zoom); 
@@ -275,7 +292,8 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
         <img ref={imageRef} src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
         
         {/* Path handler for interior */}
-        <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} handleRoomClick={handleRoomClick} 
+        {/* need to pass the building over */}
+        <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} handleRoomClick={handleRoomClick} building={building} 
         />
         {showPopup && selectedRoom && (
         <InteriorPopupContent

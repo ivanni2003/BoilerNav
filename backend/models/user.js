@@ -12,7 +12,16 @@ const userSchema = new mongoose.Schema({
     lat: Number,
     lon: Number,
     buildingId: String
-  }]
+  }],
+  isElevated: { type: Boolean, default: false },
+  floorPlanRequests: [
+    {
+      user: String,
+      url: String,
+      building: String,
+      floorNum: String
+    }
+  ]
 });
 
 userSchema.set('toJSON', {

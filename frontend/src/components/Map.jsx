@@ -146,9 +146,41 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
 
 
 
+const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan}) => {
+  if (!isVisible) {
+      return null
+  }
 
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    console.log(user)
+    console.log(building)
+    console.log(selectedFloorPlan)
+    console.log(e.target)
+  }
 
-const FloorPlanView = ({ building, floorPlans, onClose}) => {
+  return (
+      <div>
+          <div>
+          <span className="close" onClick={onClose}>&times;</span>
+              <h2 style={{ fontSize: '18px'}}>Submit Floor Plan URL</h2>
+              <form className="popup-form" onSubmit={handleSubmit}>
+                <div>
+                  <label>
+                    Floor Plan URL:
+                    <input type="text" />
+                  </label>
+                </div>
+                <div>
+                  <button type="submit">Submit</button>
+                </div>
+              </form>
+          </div>
+      </div>
+  )
+}
+
+const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification}) => {
   const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans[0]);
   const [rooms, setRooms] = useState([])
   const [distance, setDistance] = useState(null);
@@ -160,6 +192,8 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
   const [showPopup, setShowPopup] = useState(false);
   const [start, setStart] = useState("StairUp"); // State for start location
   const [destination, setDestination] = useState(null); // State for destination location
+
+  const [isPopupFormVisible, setIsPopupFormVisible] = useState(false)
 
   const handleRoomClick = (room) => {
     setSelectedRoom(room);
@@ -189,6 +223,20 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
     setShowDirectionsMenu(false);
     setSelectedRoom(null);
   };
+
+  const closePopupForm = () => {
+    setIsPopupFormVisible(false)
+  }
+
+  const handleOpenPopupForm = () => {
+    if (user) {
+      setIsPopupFormVisible(true)
+    }
+    else {
+      console.log("notification")
+      showNotification('Please login to your account.', 'info');
+    }
+  }
 
   useEffect(() => {
     async function fetchAndSetRooms() {
@@ -229,6 +277,7 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
     fetchAndSetRooms()
   }, [selectedFloorPlan, building]);
 
+  
   const markRoom = async (room) => { 
     const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
       params: { name: room.room.properties.RoomName }
@@ -251,6 +300,12 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
                   <p>{distance !== null ? `Distance: ${distance} meters` : 'Distance not calculated'}</p>
                   <p>{time !== null ? `Time: ${time} minutes` : 'Time not calculated'}</p>
                 </div>
+      </div>
+      <div className="submit-floor-plan">
+        {!isPopupFormVisible && 
+        <button className="submit-floor-plan-btn" onClick={() => handleOpenPopupForm()}>Submit Floor Plan Image</button>
+        }
+        <PopupForm isVisible={isPopupFormVisible} onClose={closePopupForm} user={user} building={building} selectedFloorPlan={selectedFloorPlan}/>
       </div>
       <div className="floor-plan-header">
         <select 
@@ -324,7 +379,7 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
   }, [building.id, favoriteLocations, isLoadingFavorites, user, building]);
 
   if (showFloorPlan) {
-    return <FloorPlanView building={building} floorPlans={floorPlans} onClose={() => setShowFloorPlan(false)} />;
+    return <FloorPlanView building={building} floorPlans={floorPlans} onClose={() => setShowFloorPlan(false)} user={null} />;
   }
 
   const handleFavoriteToggle = async () => {
@@ -787,7 +842,9 @@ const Map = ({ latitude,
         <FloorPlanView 
           building={selectedBuilding}
           floorPlans={floorPlans}
+          user={user}
           onClose={() => setShowFloorPlan(false)}
+          showNotification={showNotification}
         />
       )}
     </div>

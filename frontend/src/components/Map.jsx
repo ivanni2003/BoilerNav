@@ -15,9 +15,6 @@ import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle
 
 
 const baseURL = "http://localhost:3001";
-const buildingAPI = `${baseURL}/api/ways/buildings`;
-const nodeAPI = `${baseURL}/api/nodes`;
-const nodeIDAPI = `${baseURL}/api/nodes/id`;
 
 const DEFAULT_LAT = 40.4237;
 const DEFAULT_LON = -86.9212;
@@ -147,28 +144,61 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
 
 
 const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan}) => {
+  const [imageURL, setImageURL] = useState('')
+  const [floorNumber, setFloorNumber] = useState('')
   if (!isVisible) {
       return null
   }
 
-  const handleSubmit = (e) => {
+  const handleImageURLChange = (e) => {
+    setImageURL(e.target.value);
+    console.log(imageURL)
+  }
+
+  const handleFloorNumberChange = (e) => {
+    setFloorNumber(e.target.value);
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     console.log(user)
-    console.log(building)
-    console.log(selectedFloorPlan)
-    console.log(e.target)
+    console.log(building.id)
+    console.log(selectedFloorPlan.floorNumber)
+    console.log(imageURL)
+    console.log(floorNumber)
+
+    try {
+      const response = await axios.post(`${baseURL}/api/users/floorPlanRequests`, {
+        username: user.username,
+        imageURL: imageURL,
+        buildingID: building.id,
+        floorNumber: floorNumber
+      })
+    }
+    catch (error) {
+      console.log(error)
+    }
   }
 
   return (
       <div>
           <div>
           <span className="close" onClick={onClose}>&times;</span>
-              <h2 style={{ fontSize: '18px'}}>Submit Floor Plan URL</h2>
+              <h2 style={{ fontSize: '18px'}}>Submit Floor Plan</h2>
               <form className="popup-form" onSubmit={handleSubmit}>
                 <div>
                   <label>
                     Floor Plan URL:
-                    <input type="text" />
+                    <input type="text" placeholder="enter image url" onChange={handleImageURLChange} value={imageURL}/>
+                  </label>
+                </div>
+                <div>
+                <label>
+                    Floor Number:
+                    <input type="text" 
+                          value={floorNumber}
+                          placeholder="-1: basement, 0: ground, 1: floor 1, ..." 
+                          onChange={handleFloorNumberChange}/>
                   </label>
                 </div>
                 <div>
@@ -181,7 +211,7 @@ const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan}) => {
 }
 
 const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification}) => {
-  const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans[0]);
+  const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans && floorPlans.length > 0 ? floorPlans[0] : null);
   const [rooms, setRooms] = useState([])
   const [distance, setDistance] = useState(null);
   const [time, setTime] = useState(null);
@@ -309,10 +339,10 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
       </div>
       <div className="floor-plan-header">
         <select 
-          value={selectedFloorPlan.floorNumber} 
+          value={selectedFloorPlan?.floorNumber ?? 0}
           onChange={(e) => setSelectedFloorPlan(floorPlans.find(fp => fp.floorNumber === e.target.value))}
         >
-          {floorPlans.map(fp => (
+          {floorPlans && floorPlans.map(fp => (
             <option key={fp.floorNumber} value={fp.floorNumber}>
               Floor {fp.floorNumber}
             </option>
@@ -322,10 +352,10 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
         <button onClick={onClose}>×</button>
       </div>
       <div className="floor-plan-content">
-        <img ref={imageRef} src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
+        <img ref={imageRef} src={selectedFloorPlan?.imageUrl ?? null} alt={selectedFloorPlan?.floorNumber ? `Floor ${selectedFloorPlan.floorNumber}` : 'No floor plan available'} />
         
         {/* Path handler for interior */}
-        <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRoom={markedRoom} handleRoomClick={handleRoomClick} 
+        <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan?.floorNumber ?? 0} markedRoom={markedRoom} handleRoomClick={handleRoomClick} 
         />
         {showPopup && selectedRoom && (
         <InteriorPopupContent
@@ -613,7 +643,7 @@ const Map = ({ latitude,
   mapOptions }) => {
     const [showFloorPlan, setShowFloorPlan] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
-    const [floorPlans, setFloorPlans] = useState([]);
+    const [floorPlans, setFloorPlans] = useState(null);
     const [parkingLots, setParkingLots] = useState([])
     const [busStops, setBusStops] = useState([]);
     const [bikeRacks, setBikeRacks] = useState([]);
@@ -721,11 +751,15 @@ const Map = ({ latitude,
       } else {
         try {
           const response = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
-          if (response.data && response.data.length > 0) {
+          if (building.tags.name == null) {  // unnamed buildings
+            showNotification('No floor plans available for this building', 'info');
+          }
+          else if (response.data && response.data.length > 0) {   // buildings with uploaded plans
             setFloorPlans(response.data);
             setShowFloorPlan(true);
           } else {
-            showNotification('No floor plans available for this building', 'info');
+            setFloorPlans(null)
+            setShowFloorPlan(true);
           }
         } catch (error) {
           console.error('Error fetching floor plans:', error);

@@ -16,10 +16,10 @@ const userSchema = new mongoose.Schema({
   isElevated: { type: Boolean, default: false },
   floorPlanRequests: [
     {
-      user: String,
-      url: String,
-      building: String,
-      floorNum: String
+      username: String,
+      imageUrl: String,
+      buildingID: Number,
+      floorNumber: String
     }
   ]
 });

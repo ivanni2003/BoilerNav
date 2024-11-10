@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
     buildingId: String
   }],
   isElevated: { type: Boolean, default: false },
+  isBanned: { type: Boolean, default: false },
   floorPlanRequests: [
     {
       username: String,

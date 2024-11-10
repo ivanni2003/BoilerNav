@@ -4,11 +4,12 @@ const navigationRouter = require("express").Router();
 const { findPath, latLonToXY }  = require('../IndoorNav'); // Import pathfinding utility
 
 navigationRouter.get('/path', async (req, res) => {
-    const { start, end } = req.query;
+    const { building, start, end } = req.query;
   
-    if (!start || !end) {
-      return res.status(400).json({ message: "Start and end nodes are required" });
+    if (!building || !start || !end) {
+      return res.status(400).json({ message: "Building and Start and end nodes are required" });
     }
+    console.log(building);
   
     try {
       // Call the pathfinding function (implement this in a separate utility file)

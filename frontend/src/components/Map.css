@@ -77,6 +77,10 @@
     overflow: auto;
 }
 
+.absolute-svg {
+    position: absolute;
+  }
+
 .floor-plan-content img {
     max-width: 100%;
     max-height: 100%;

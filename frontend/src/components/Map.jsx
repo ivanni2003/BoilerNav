@@ -43,7 +43,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
 };
 
 
-  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRooms, handleRoomClick, building}) => {
+  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRoom, handleRoomClick, building}) => {
     const [pathD, setPathD] = useState('');
 
     useEffect(() => {
@@ -371,7 +371,7 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
         
         {/* Path handler for interior */}
          {/* need to pass the building over */}
-         <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} handleRoomClick={handleRoomClick} building={building} 
+         <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan?.floorNumber ?? 0} markedRoom={markedRoom} handleRoomClick={handleRoomClick} building={building} 
         />
 
         {showPopup && selectedRoom && (

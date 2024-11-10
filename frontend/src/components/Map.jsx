@@ -289,12 +289,12 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
         <button onClick={onClose}>×</button>
       </div>
       <div className="floor-plan-content">
-        <img ref={imageRef} src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
-        
-        {/* Path handler for interior */}
-        {/* need to pass the building over */}
-        <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} handleRoomClick={handleRoomClick} building={building} 
-        />
+          <img ref={imageRef} src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
+          
+          {/* Path handler for interior */}
+          {/* need to pass the building over */}
+          <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} handleRoomClick={handleRoomClick} building={building} 
+          />
         {showPopup && selectedRoom && (
         <InteriorPopupContent
           roomName={selectedRoom.room.properties.RoomName}

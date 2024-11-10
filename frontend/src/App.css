@@ -158,6 +158,6 @@
   overflow-y: auto;
 }
 
-svg {
-  position: absolute
+.absolute-svg {
+  position: absolute;
 }

@@ -98,7 +98,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
     }, [startNode, endNode, floorNumber]);
 
   return (
-    <svg width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
+    <svg className="absolute-svg" width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
       <path fill="none" d={pathD} strokeWidth="1" stroke="black" />
 
       {rooms.map((data) => (

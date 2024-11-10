@@ -16,9 +16,6 @@ import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle
 
 
 const baseURL = "http://localhost:3001";
-const buildingAPI = `${baseURL}/api/ways/buildings`;
-const nodeAPI = `${baseURL}/api/nodes`;
-const nodeIDAPI = `${baseURL}/api/nodes/id`;
 
 const DEFAULT_LAT = 40.4237;
 const DEFAULT_LON = -86.9212;
@@ -44,6 +41,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
 
   return null;
 };
+
 
   const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRooms, handleRoomClick, building}) => {
     const [pathD, setPathD] = useState('');
@@ -106,7 +104,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
           cx={data.x}
           cy={data.y}
           r="7"
-          fill="yellow"
+          fill="lightgreen"
           stroke="black"
           strokeWidth="1"
           onClick={() => handleRoomClick(data)
@@ -118,17 +116,17 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
           style={{ cursor: 'pointer' }}
         />
         ))}
-        {markedRooms && markedRooms.map((data) => (
+        {markedRoom && 
         <circle
-          cx={data.x}
-          cy={data.y}
-          r="3"
-          fill="blue"
+          cx={markedRoom.x}
+          cy={markedRoom.y}
+          r="2"
+          fill="red"
           stroke="black"
           strokeWidth="1"
           style={{ cursor: 'pointer' }}
         />
-        ))}
+        }
     </svg>
   );
 };
@@ -163,20 +161,84 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
 
 
 
+const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan, showNotification}) => {
+  const [imageURL, setImageURL] = useState('')
+  const [floorNumber, setFloorNumber] = useState('')
+  if (!isVisible) {
+      return null
+  }
 
+  const handleImageURLChange = (e) => {
+    setImageURL(e.target.value);
+    console.log(imageURL)
+  }
 
-const FloorPlanView = ({ building, floorPlans, onClose}) => {
-  const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans[0]);
+  const handleFloorNumberChange = (e) => {
+    setFloorNumber(e.target.value);
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    try {
+      const response = await axios.post(`${baseURL}/api/users/floorPlanRequests`, {
+        username: user.username,
+        imageURL: imageURL,
+        buildingID: building.id,
+        floorNumber: floorNumber
+      })
+
+      showNotification('Request submitted successfully', 'success')
+    }
+    catch (error) {
+      console.log(error)
+    }
+  }
+
+  return (
+      <div>
+          <div>
+          <span className="close" onClick={onClose}>&times;</span>
+              <h2 style={{ fontSize: '18px'}}>Submit Floor Plan</h2>
+              <form className="popup-form" onSubmit={handleSubmit}>
+                <div>
+                  <label>
+                    Floor Plan URL:
+                    <input type="text" placeholder="enter image url" onChange={handleImageURLChange} value={imageURL}/>
+                  </label>
+                </div>
+                <div>
+                <label>
+                    Floor Number:
+                    <input type="text" 
+                          value={floorNumber}
+                          placeholder="-1: basement, 0: ground, 1: floor 1, ..." 
+                          onChange={handleFloorNumberChange}/>
+                  </label>
+                </div>
+                <div>
+                  <button type="submit">Submit</button>
+                </div>
+              </form>
+          </div>
+      </div>
+  )
+}
+
+const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification}) => {
+  const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans && floorPlans.length > 0 ? floorPlans[0] : null);
   const [rooms, setRooms] = useState([])
   const [distance, setDistance] = useState(null);
   const [time, setTime] = useState(null);
-  const [markedRooms, setMarkedRooms] = useState([]);
+  const [markedRoom, setMarkedRoom] = useState(null);
   const imageRef = useRef(null); // Ref to access image dimensions
   const [showDirectionsMenu, setShowDirectionsMenu] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null); // Store selected room data for DirectionsMenu
   const [showPopup, setShowPopup] = useState(false);
   const [start, setStart] = useState("StairUp"); // State for start location
   const [destination, setDestination] = useState(null); // State for destination location
+
+  const [isPopupFormVisible, setIsPopupFormVisible] = useState(false)
 
   const handleRoomClick = (room) => {
     setSelectedRoom(room);
@@ -206,6 +268,20 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
     setShowDirectionsMenu(false);
     setSelectedRoom(null);
   };
+
+  const closePopupForm = () => {
+    setIsPopupFormVisible(false)
+  }
+
+  const handleOpenPopupForm = () => {
+    if (user) {
+      setIsPopupFormVisible(true)
+    }
+    else {
+      console.log("notification")
+      showNotification('Please login to your account.', 'info');
+    }
+  }
 
   useEffect(() => {
     async function fetchAndSetRooms() {
@@ -246,17 +322,14 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
     fetchAndSetRooms()
   }, [selectedFloorPlan, building]);
 
-  const markRooms = async (room) => { // implement marking/highlighting room in some way
-    console.log(room)
+  
+  const markRoom = async (room) => { 
     const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
       params: { name: room.room.properties.RoomName }
     });
-    const location = response.data
-    console.log(location)
-    const newMarkedRooms = [...markedRooms, location];
-    setMarkedRooms(newMarkedRooms); // Update state with the new array
-    console.log(newMarkedRooms); // Log the new array
 
+    const location = response.data
+    setMarkedRoom(location)
   }
   const setDistancetime = (newDistance, newTime) => {
     setDistance(newDistance);
@@ -266,20 +339,25 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
   return (
     <div className="floor-plan-fullscreen">
       <div className="floor-plan-search"> 
-                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} viewSavedRoute={null} start={null} destination={null} searchStr={"Start"} />
-                <SearchBar items={rooms} updateMap={null} markRooms={markRooms} viewSavedRoute={null} start={null} destination={null} searchStr={"End"} />
+                <SearchBar items={rooms} updateMap={null} markRoom={markRoom} viewSavedRoute={null} searchStr={"Room"} />
                 <div>
                   <br></br>
                   <p>{distance !== null ? `Distance: ${distance} meters` : 'Distance not calculated'}</p>
                   <p>{time !== null ? `Time: ${time} minutes` : 'Time not calculated'}</p>
                 </div>
       </div>
+      <div className="submit-floor-plan">
+        {!isPopupFormVisible && 
+        <button className="submit-floor-plan-btn" onClick={() => handleOpenPopupForm()}>Submit Floor Plan Image</button>
+        }
+        <PopupForm isVisible={isPopupFormVisible} onClose={closePopupForm} user={user} building={building} selectedFloorPlan={selectedFloorPlan} showNotification={showNotification}/>
+      </div>
       <div className="floor-plan-header">
         <select 
-          value={selectedFloorPlan.floorNumber} 
+          value={selectedFloorPlan?.floorNumber ?? 0}
           onChange={(e) => setSelectedFloorPlan(floorPlans.find(fp => fp.floorNumber === e.target.value))}
         >
-          {floorPlans.map(fp => (
+          {floorPlans && floorPlans.map(fp => (
             <option key={fp.floorNumber} value={fp.floorNumber}>
               Floor {fp.floorNumber}
             </option>
@@ -289,12 +367,13 @@ const FloorPlanView = ({ building, floorPlans, onClose}) => {
         <button onClick={onClose}>×</button>
       </div>
       <div className="floor-plan-content">
-          <img ref={imageRef} src={selectedFloorPlan.imageUrl} alt={`Floor ${selectedFloorPlan.floorNumber}`} />
-          
-          {/* Path handler for interior */}
-          {/* need to pass the building over */}
-          <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} handleRoomClick={handleRoomClick} building={building} 
-          />
+        <img ref={imageRef} src={selectedFloorPlan?.imageUrl ?? null} alt={selectedFloorPlan?.floorNumber ? `Floor ${selectedFloorPlan.floorNumber}` : 'No floor plan available'} />
+        
+        {/* Path handler for interior */}
+         {/* need to pass the building over */}
+         <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan.floorNumber} markedRooms={markedRooms} handleRoomClick={handleRoomClick} building={building} 
+        />
+
         {showPopup && selectedRoom && (
         <InteriorPopupContent
           roomName={selectedRoom.room.properties.RoomName}
@@ -347,7 +426,7 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
   }, [building.id, favoriteLocations, isLoadingFavorites, user, building]);
 
   if (showFloorPlan) {
-    return <FloorPlanView building={building} floorPlans={floorPlans} onClose={() => setShowFloorPlan(false)} />;
+    return <FloorPlanView building={building} floorPlans={floorPlans} onClose={() => setShowFloorPlan(false)} user={null} />;
   }
 
   const handleFavoriteToggle = async () => {
@@ -581,7 +660,7 @@ const Map = ({ latitude,
   mapOptions }) => {
     const [showFloorPlan, setShowFloorPlan] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
-    const [floorPlans, setFloorPlans] = useState([]);
+    const [floorPlans, setFloorPlans] = useState(null);
     const [parkingLots, setParkingLots] = useState([])
     const [busStops, setBusStops] = useState([]);
     const [bikeRacks, setBikeRacks] = useState([]);
@@ -689,11 +768,15 @@ const Map = ({ latitude,
       } else {
         try {
           const response = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
-          if (response.data && response.data.length > 0) {
+          if (building.tags.name == null) {  // unnamed buildings
+            showNotification('No floor plans available for this building', 'info');
+          }
+          else if (response.data && response.data.length > 0) {   // buildings with uploaded plans
             setFloorPlans(response.data);
             setShowFloorPlan(true);
           } else {
-            showNotification('No floor plans available for this building', 'info');
+            setFloorPlans(null)
+            setShowFloorPlan(true);
           }
         } catch (error) {
           console.error('Error fetching floor plans:', error);
@@ -810,7 +893,9 @@ const Map = ({ latitude,
         <FloorPlanView 
           building={selectedBuilding}
           floorPlans={floorPlans}
+          user={user}
           onClose={() => setShowFloorPlan(false)}
+          showNotification={showNotification}
         />
       )}
     </div>

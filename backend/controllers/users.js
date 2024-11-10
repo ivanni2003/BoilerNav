@@ -195,4 +195,36 @@ usersRouter.delete('/:id/favorites/:buildingId', async (request, response) => {
   }
 });
 
+usersRouter.post('/floorPlanRequests', async (request, response) => {
+  try {
+    const {username, imageURL, buildingID, floorNumber} = request.body
+
+    const floorPlanRequest = {
+      username: username,
+      imageURL: imageURL,
+      buildingID: buildingID,
+      floorNumber: floorNumber
+    };
+
+    console.log(floorPlanRequest)
+
+    const elevatedUsers = await User.find({ isElevated: true });
+
+    const addRequestToElevated = elevatedUsers.map(async (userDoc) => {
+      console.log(userDoc)
+      userDoc.floorPlanRequests.push(floorPlanRequest)
+
+      await userDoc.save()
+    });
+
+    await Promise.all(addRequestToElevated)
+
+    response.status(200).json(floorPlanRequest);
+
+  } catch (error) {
+    console.log('Error submitting request for floor plan')
+    response.status(500).json({ error: 'An error occurred while removing the favorite location' })
+  }
+});
+
 module.exports = usersRouter;

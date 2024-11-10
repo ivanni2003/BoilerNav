@@ -68,7 +68,7 @@ const Amenities = ({updateMap, markParkingLots}) => {
     return (
         <div>
             <button className='amenity-button' onClick={handleParkingClick}>View Parking</button>
-            <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Named Parking"} items={namedParking} updateMap={updateMap}></Popup>
+            <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Parking Garages"} items={namedParking} updateMap={updateMap}></Popup>
         </div>
     );
 }

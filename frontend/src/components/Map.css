@@ -104,3 +104,38 @@
     left: 0px;
     z-index: 1000;
   }
+
+
+.submit-floor-plan {
+    position: absolute;
+    bottom: 0px; 
+    left: 0px;  
+    padding: 8px 15px;
+    background-color: white; 
+    color: black;
+    border-radius: 2px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    z-index: 2000;
+  }
+
+  .submit-floor-plan-btn {
+    position: absolute;
+    background-color: #4CAF50; 
+    bottom: 0px; 
+    left: 0px;  
+    color: white;
+    border-radius: 2px;
+    border: none;
+    font-size: 12px;
+    padding: 8px 15px;
+    cursor: pointer;
+    z-index: 2000;
+    height: 40px; 
+    width: 180px;
+  }
+  
+  .popup-form input[type="text"] {
+    margin-bottom: 5px;
+  }

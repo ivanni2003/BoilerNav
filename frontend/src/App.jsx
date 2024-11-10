@@ -83,7 +83,6 @@ function App() {
   };
 
   const fetchPublicRoutes = async () => {
-    console.log("fetch routes")
     try {
       const response = await axios.get(`${baseURL}/api/routes/public`);
       setPublicRoutes(response.data); 
@@ -185,7 +184,7 @@ function App() {
   handleMapUpdate(transformedPolyline[0][0], transformedPolyline[0][1], 15);
 };
 
-  useEffect(() => {   // prevents scrolling within app
+  useEffect(() => {   // removes scrollbar within main menu
     document.body.style.overflow = 'hidden';
   }, []);
 
@@ -605,9 +604,7 @@ const getTravelTime = (distance, selectedMode) => {
                 updateMap={null} 
                 markRooms={null} 
                 viewSavedRoute={handleViewSavedRoute}
-                start={null} 
-                destination={null} 
-                searchStr={"Routes"} 
+                searchStr={"Route"} 
               />
             </div>
             <div className="search-box">
@@ -616,8 +613,6 @@ const getTravelTime = (distance, selectedMode) => {
                 updateMap={handleMapUpdate} 
                 markRooms={null} 
                 viewSavedRoute={null}
-                start={null} 
-                destination={null} 
                 searchStr={"Destination"} 
               />
             </div>

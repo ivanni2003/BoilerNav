@@ -109,8 +109,8 @@
     padding: 8px 15px;
     background-color: white; 
     color: black;
+    border-radius: 2px;
     border: none;
-    border-radius: 3px;
     cursor: pointer;
     font-size: 12px;
     z-index: 2000;

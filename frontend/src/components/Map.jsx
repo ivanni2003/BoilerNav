@@ -143,7 +143,7 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
 
 
 
-const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan}) => {
+const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan, showNotification}) => {
   const [imageURL, setImageURL] = useState('')
   const [floorNumber, setFloorNumber] = useState('')
   if (!isVisible) {
@@ -161,11 +161,6 @@ const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan}) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log(user)
-    console.log(building.id)
-    console.log(selectedFloorPlan.floorNumber)
-    console.log(imageURL)
-    console.log(floorNumber)
 
     try {
       const response = await axios.post(`${baseURL}/api/users/floorPlanRequests`, {
@@ -174,6 +169,8 @@ const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan}) => {
         buildingID: building.id,
         floorNumber: floorNumber
       })
+
+      showNotification('Request submitted successfully', 'success')
     }
     catch (error) {
       console.log(error)
@@ -335,7 +332,7 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
         {!isPopupFormVisible && 
         <button className="submit-floor-plan-btn" onClick={() => handleOpenPopupForm()}>Submit Floor Plan Image</button>
         }
-        <PopupForm isVisible={isPopupFormVisible} onClose={closePopupForm} user={user} building={building} selectedFloorPlan={selectedFloorPlan}/>
+        <PopupForm isVisible={isPopupFormVisible} onClose={closePopupForm} user={user} building={building} selectedFloorPlan={selectedFloorPlan} showNotification={showNotification}/>
       </div>
       <div className="floor-plan-header">
         <select 

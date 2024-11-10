@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
   floorPlanRequests: [
     {
       username: String,
-      imageUrl: String,
+      imageURL: String,
       buildingID: Number,
       floorNumber: String
     }

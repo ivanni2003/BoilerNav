@@ -107,7 +107,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
           fill="lightgreen"
           stroke="black"
           strokeWidth="1"
-          onClick={() => handleRoomClick(data)
+          onClick={(event) => handleRoomClick(event, data)
           //   alert(
           //   data.room.properties.RoomName + "\n" + 
           //   data.room.properties.Type + "\n" 
@@ -239,11 +239,22 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
   const [destination, setDestination] = useState(null); // State for destination location
 
   const [isPopupFormVisible, setIsPopupFormVisible] = useState(false)
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
-  const handleRoomClick = (room) => {
+  const handleRoomClick = (event, room) => {
     setSelectedRoom(room);
     setShowPopup(true); // Show the popup
     setShowDirectionsMenu(true) //  show the directions Menu 
+
+    // Get the bounding rectangle of the clicked element
+    const rect = event.target.getBoundingClientRect();
+
+    // Calculate the position relative to the floor-plan-content container
+    const containerRect = imageRef.current.getBoundingClientRect();
+    const x = rect.left - 100//- containerRect.left + rect.width / 2;
+    const y = rect.top - containerRect.top + rect.height / 2;
+
+    setPopupPosition({ x, y });
   }
 
   const handleStartClick = () => {
@@ -374,15 +385,16 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
          <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan?.floorNumber ?? 0} markedRoom={markedRoom} handleRoomClick={handleRoomClick} building={building} 
         />
 
-        {showPopup && selectedRoom && (
-        <InteriorPopupContent
-          roomName={selectedRoom.room.properties.RoomName}
-          onStartClick={handleStartClick}
-          onDestinationClick={handleDestinationClick}
-          onClose={handleClosePopup}
-        />
-      )}
 
+        {showPopup && selectedRoom && (
+          <InteriorPopupContent
+            roomName={selectedRoom.room.properties.RoomName}
+            onStartClick={handleStartClick}
+            onDestinationClick={handleDestinationClick}
+            onClose={handleClosePopup}
+            position={popupPosition}
+          />
+        )}
       </div>
 
       {showDirectionsMenu && selectedRoom && (

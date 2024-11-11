@@ -335,6 +335,79 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
     return <div className="profile-container">Loading user data...</div>;
   }
 
+  const handleViewRoute = async (route) => {
+    if (route.travelMode === 'indoor') {
+      try {
+        // Fetch building data using buildingId from route
+        const response = await axios.get(`http://localhost:3001/api/ways/buildings`);
+        const buildings = response.data;
+        const building = buildings.find(b => b.id === route.buildingId);
+        
+        if (!building) {
+          showNotification('Building not found', 'error');
+          return;
+        }
+
+        // Fetch floor plans for the building
+        const floorPlansResponse = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
+        if (floorPlansResponse.data && floorPlansResponse.data.length > 0) {
+          // Add floor plans to building object
+          building.floorPlans = floorPlansResponse.data;
+          
+          // Create a custom event to trigger floor plan view
+          const event = new CustomEvent('openFloorPlan', {
+            detail: {
+              building,
+              route,
+              startLocationId: route.startLocation.lat, // Using lat field to store node ID for indoor routes
+              endLocationId: route.endLocation.lat // Using lat field to store node ID for indoor routes
+            }
+          });
+          window.dispatchEvent(event);
+          onClose(); // Close the profile view
+        } else {
+          showNotification('No floor plans available for this building', 'info');
+        }
+      } catch (error) {
+        console.error('Error fetching building data:', error);
+        showNotification('Error loading indoor route', 'error');
+      }
+    } else {
+      // Handle outdoor routes as before
+      onViewSavedRoute(route);
+    }
+  };
+
+  const renderSavedRoutes = () => (
+    <div className="saved-routes-list">
+      {savedRoutes.length > 0 ? (
+        savedRoutes.map((route) => (
+          <div key={route._id} className="saved-route-item">
+            <div className="route-info">
+              <span>
+                {route.startLocation?.name || 'Unknown'} to {route.endLocation?.name || 'Unknown'}
+                {' '}({route.distance?.toFixed(2) || 'N/A'} {route.travelMode === 'indoor' ? 'meters' : 'miles'}, 
+                {route.duration?.toFixed(0) || 'N/A'} min)
+                {route.travelMode === 'indoor' && ' (Indoor)'}
+              </span>
+            </div>
+            <div className="route-actions">
+              <button onClick={() => handleViewRoute(route)}>
+                <Map size={16} />
+              </button>
+              <button onClick={() => handleRemoveRoute(route._id)}>
+                <Trash2 size={16} />
+              </button>
+            </div>
+            <RenderRouteDurationInput route={route} />
+          </div>
+        ))
+      ) : (
+        <p className="empty-routes-message">Your saved routes will appear here</p>
+      )}
+    </div>
+  );
+
   return (
     <div className="profile-container">
       <div className="profile-header">
@@ -411,31 +484,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
             </div>
           </div>
         </div>
-        <div className="saved-routes-list">
-          {savedRoutes.length > 0 ? (
-            savedRoutes.map((route) => (
-              <div key={route._id} className="saved-route-item">
-                <div className="route-info">
-                  <span>
-                    {route.startLocation?.name || 'Unknown'} to {route.endLocation?.name || 'Unknown'}
-                    {' '}({route.distance?.toFixed(2) || 'N/A'} miles, {route.duration?.toFixed(0) || 'N/A'} min)
-                  </span>
-                </div>
-                <div className="route-actions">
-                  <button onClick={() => onViewSavedRoute(route)}>
-                    <Map size={16} />
-                  </button>
-                  <button onClick={() => handleRemoveRoute(route._id)}>
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-                <RenderRouteDurationInput route={route} />
-              </div>
-            ))
-          ) : (
-            <p className="empty-routes-message">Your saved routes will appear here</p>
-          )}
-        </div>
+        {renderSavedRoutes()}
       </div>
         <div className="delete-account-section">
         {!showDeleteConfirmation ? (

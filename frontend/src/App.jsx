@@ -189,6 +189,38 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const handleOpenFloorPlan = async (event) => {
+      const { building, route, startLocationId, endLocationId } = event.detail;
+      
+      // Set the selected building and show floor plan
+      setSelectedBuilding(building);
+      setShowFloorPlan(true);
+      
+      // Set the start and destination for the indoor route
+      setStart({
+        properties: {
+          id: startLocationId,
+          RoomName: route.startLocation.name,
+          Floor: route.startLocation.floor
+        }
+      });
+      
+      setDestination({
+        properties: {
+          id: endLocationId,
+          RoomName: route.endLocation.name,
+          Floor: route.endLocation.floor
+        }
+      });
+    };
+  
+    window.addEventListener('openFloorPlan', handleOpenFloorPlan);
+    return () => {
+      window.removeEventListener('openFloorPlan', handleOpenFloorPlan);
+    };
+  }, []);
+
+  useEffect(() => {
 
     // Fetch buildings only when showLogin is false
     if (!showLogin) {

@@ -44,80 +44,70 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
 };
 
 
-  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRoom, handleRoomClick, building}) => {
-    const [pathD, setPathD] = useState('');
+const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRoom, handleRoomClick, building}) => {
+  const [pathD, setPathD] = useState('');
 
-    useEffect(() => {
-      const fetchPath = async () => {
-        try {
-          //get building
-          const response = await fetch(`http://localhost:3001/api/indoornav/path?building=${building.tags.name}&start=${startNode}&end=${endNode}`);
-          const data = await response.json();
-          //console.log(response);
-          console.log(data);
-          
+  useEffect(() => {
+    const fetchPath = async () => {
+      // If either startNode or endNode is null, clear the path
+      if (!startNode || !endNode) {
+        setPathD('');
+        return;
+      }
 
-          if (data.route) {
-            console.log("Path data received:", data.route);
-            //average meters/second walk speed
-            const avgMsRate = 1.3;
-            const distance = (data.distance).toFixed(2);
-            //meters per second
-            const time = ((distance / avgMsRate) / 60).toFixed(2);
-            setDistancetime(distance, time)
-            // Construct the 'd' attribute string
+      try {
+        const response = await fetch(`http://localhost:3001/api/indoornav/path?building=${building.tags.name}&start=${startNode}&end=${endNode}`);
+        const data = await response.json();
+        console.log(data);
 
-            const floorMappings = { 'Basement': -1, '1': 0, '2': 1, '3': 2 };
-            const roomFloor = floorMappings[floorNumber] ?? 0;
-            let lastFloor = null;
-            const dString = data.route.reduce((acc, { x, y, floor }) => {
-              // If this point is on a new floor, start a new path with 'M'
-              if (roomFloor === floor) {
-                const command = lastFloor === floor ? `L ${x} ${y}` : `M ${x} ${y}`;
-                lastFloor = floor; // Update last floor seen
-                return `${acc} ${command}`;
-              }
-              return acc;
-            }, '');
-            console.log("dString: ", dString);
-            console.log("roomFloor: ", roomFloor)
-            console.log("floorNumber:", floorNumber)
-            console.log("building: ", building)
-            console.log("building name:", building.tags.name)
+        if (data.route) {
+          console.log("Path data received:", data.route);
+          const avgMsRate = 1.3;
+          const distance = (data.distance).toFixed(2);
+          const time = ((distance / avgMsRate) / 60).toFixed(2);
+          setDistancetime(distance, time);
 
-          console.log("SVG Path Data (d attribute):", dString);
+          const floorMappings = { 'Basement': -1, '1': 0, '2': 1, '3': 2 };
+          const roomFloor = floorMappings[floorNumber] ?? 0;
+          let lastFloor = null;
+          const dString = data.route.reduce((acc, { x, y, floor }) => {
+            if (roomFloor === floor) {
+              const command = lastFloor === floor ? `L ${x} ${y}` : `M ${x} ${y}`;
+              lastFloor = floor;
+              return `${acc} ${command}`;
+            }
+            return acc;
+          }, '');
+
+          console.log("dString: ", dString);
           setPathD(dString);
         }
       } catch (error) {
         console.error("Failed to fetch path data:", error);
+        setPathD('');
       }
     };
 
-      fetchPath();
-    }, [startNode, endNode, floorNumber]);
+    fetchPath();
+  }, [startNode, endNode, floorNumber]);
 
   return (
     <svg className="absolute-svg" width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
-      <path fill="none" d={pathD} strokeWidth="1" stroke="black" />
-
+      {pathD && <path fill="none" d={pathD} strokeWidth="1" stroke="black" />}
       {rooms.map((data) => (
         <circle
+          key={data.room.properties.id}
           cx={data.x}
           cy={data.y}
           r="7"
           fill="lightgreen"
           stroke="black"
           strokeWidth="1"
-          onClick={(event) => handleRoomClick(event, data)
-          //   alert(
-          //   data.room.properties.RoomName + "\n" + 
-          //   data.room.properties.Type + "\n" 
-          // )
-        }
+          onClick={(event) => handleRoomClick(event, data)}
           style={{ cursor: 'pointer' }}
         />
-        ))}
-        {markedRoom && 
+      ))}
+      {markedRoom && 
         <circle
           cx={markedRoom.x}
           cy={markedRoom.y}
@@ -127,7 +117,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
           strokeWidth="1"
           style={{ cursor: 'pointer' }}
         />
-        }
+      }
     </svg>
   );
 };
@@ -253,6 +243,16 @@ const FloorPlanView = ({
   const [destination, setDestination] = useState(initialDestination); // Initialize with prop
 
 
+  const clearRoute = () => {
+    setStart(null);
+    setDestination(null);
+    setDistance(null);
+    setTime(null);
+    setShowDirectionsMenu(false);
+    setRoute(null);
+    setMarkedRoom(null);
+  };
+
   const handleRoomClick = (event, room) => {
     setSelectedRoom(room);
     setShowPopup(true); // Show the popup
@@ -314,6 +314,12 @@ const FloorPlanView = ({
     }
   }
 
+  const handleClose = (e) => {
+    e.preventDefault();
+    clearRoute();
+    onClose();
+  };
+
   useEffect(() => {
     async function fetchAndSetRooms() {
       const response = await axios.get(`${baseURL}/api/indoordata/${building.tags.name}`)
@@ -353,17 +359,10 @@ const FloorPlanView = ({
     fetchAndSetRooms()
   }, [selectedFloorPlan, building]);
 
-  const handleClose = (e) => {
-    e.preventDefault();
-    // Reset all states
-    setStart(null);
-    setDestination(null);
-    setRoute(null);
-    setShowDirectionsMenu(false);
-    // Call the parent close function
-    onClose();
-  };
 
+  const handleRouteClose = () => {
+    clearRoute();
+  };
   
   const markRoom = async (room) => { 
     const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
@@ -451,11 +450,7 @@ const FloorPlanView = ({
               user={user}
               showNotification={showNotification}
               building={building}
-              closeDirections={() => {
-                setStart(null);
-                setDestination(null);
-                setShowDirectionsMenu(false);
-              }}
+              closeDirections={handleRouteClose}
             />
           </div>
         )}
@@ -476,7 +471,7 @@ const FloorPlanView = ({
         <DirectionsMenu
           start={start} // Assuming current location for start
           destination={destination} // Pass selected room data as destination
-          closeDirections={handleCloseDirectionsMenu}
+          closeDirections={handleRouteClose}
           handleRouting={() => { /* Define the routing function if needed */ }}
           manhattanDistance={distance}
           travelTime={time}

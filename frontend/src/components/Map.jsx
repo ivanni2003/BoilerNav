@@ -233,7 +233,8 @@ const FloorPlanView = ({
   user, 
   showNotification,
   initialStart,
-  initialDestination
+  initialDestination,
+  handleTitleClick
 }) => {
   const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans && floorPlans.length > 0 ? floorPlans[0] : null);
   const [rooms, setRooms] = useState([])
@@ -379,9 +380,23 @@ const FloorPlanView = ({
 
   return (
     <div className="floor-plan-fullscreen">
+      <header className="app-header">
+        <div 
+          className="logo-title" 
+          onClick={() => {
+            onClose(); // Close floor plan view
+            handleTitleClick(); // Reset to default state
+          }} 
+          style={{cursor: 'pointer'}}
+        >
+          <img src="/src/img/icon.png" alt="BoilerNav Logo" className="logo" />
+          <h1>BoilerNav</h1>
+        </div>
+      </header>
       <div className="floor-plan-search"> 
                 <SearchBar items={rooms} updateMap={null} markRoom={markRoom} viewSavedRoute={null} searchStr={"Room"} />
                 <div>
+                  <br></br>
                   <br></br>
                   <br></br>
                   <br></br>
@@ -740,7 +755,8 @@ const Map = ({ latitude,
   indoorStart,
   indoorDestination,
   setIndoorStart,
-  setIndoorDestination }) => {
+  setIndoorDestination,
+  handleTitleClick }) => {
     const [parkingLots, setParkingLots] = useState([])
     const [busStops, setBusStops] = useState([]);
     const [bikeRacks, setBikeRacks] = useState([]);
@@ -982,6 +998,7 @@ const Map = ({ latitude,
           showNotification={showNotification}
           initialStart={indoorStart}
           initialDestination={indoorDestination}
+          handleTitleClick={handleTitleClick}
         />
       )}
     </div>

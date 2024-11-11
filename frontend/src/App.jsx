@@ -670,6 +670,7 @@ const getTravelTime = (distance, selectedMode) => {
               indoorDestination={indoorDestination}
               setIndoorStart={setIndoorStart}
               setIndoorDestination={setIndoorDestination}
+              handleTitleClick={handleTitleClick}
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
             {notification && (

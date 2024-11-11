@@ -227,4 +227,51 @@ usersRouter.post('/floorPlanRequests', async (request, response) => {
   }
 });
 
+usersRouter.get('/is-banned', async (request, response) => {
+  try {
+    const {username} = request.body
+    
+    const ban_user = await User.find({ username: username });
+
+    console.log("Checking ban status: " , ban_user);
+
+    response.status(200).json(ban_user.isBanned);
+
+  } catch (error) {
+    console.log('Error enacted ban')
+    response.status(500).json({ error: 'An error occurred while banning' })
+  }
+});
+
+usersRouter.post('/ban', async (request, response) => {
+  try {
+    
+    const ban_user = await User.find({ username: username });
+
+    console.log("Banning " , username);
+
+    response.status(200).json("Ban Success!");
+
+  } catch (error) {
+    console.log('Error enacted ban')
+    response.status(500).json({ error: 'An error occurred while banning' })
+  }
+});
+
+usersRouter.post('/unban', async (request, response) => {
+  try {
+    const {username} = request.body
+
+    console.log("Unbanning " , username);
+
+    const unban_user = await User.find({ username: username });
+
+    response.status(200).json("Unban Success!");
+
+  } catch (error) {
+    console.log('Error enacted unban')
+    response.status(500).json({ error: 'An error occurred while unbanning' })
+  }
+});
+
 module.exports = usersRouter;

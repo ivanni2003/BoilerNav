@@ -140,3 +140,19 @@
   .popup-form input[type="text"] {
     margin-bottom: 5px;
   }
+
+  .floor-plan-directions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    width: 300px;
+  }
+  
+  .directions-menu {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    width: 100%;
+  }

@@ -11,6 +11,7 @@ import BusStops from './BusStops'
 import MapOptions from './MapOptions'
 import DirectionsMenu from './DirectionsMenu'
 import InteriorPopupContent from './InteriorPopupContent';
+import IndoorRouteMenu from './IndoorRouteMenu';
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
@@ -237,6 +238,7 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
   const [showPopup, setShowPopup] = useState(false);
   const [start, setStart] = useState("StairUp"); // State for start location
   const [destination, setDestination] = useState(null); // State for destination location
+  const [route, setRoute] = useState(null);
 
   const [isPopupFormVisible, setIsPopupFormVisible] = useState(false)
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
@@ -333,6 +335,17 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
     fetchAndSetRooms()
   }, [selectedFloorPlan, building]);
 
+  const handleClose = (e) => {
+    e.preventDefault();
+    // Reset all states
+    setStart(null);
+    setDestination(null);
+    setRoute(null);
+    setShowDirectionsMenu(false);
+    // Call the parent close function
+    onClose();
+  };
+
   
   const markRoom = async (room) => { 
     const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
@@ -356,8 +369,8 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
                   <br></br>
                   <br></br>
                   <br></br>
-                  <p>{distance !== null ? `Distance: ${distance} meters` : 'Distance not calculated'}</p>
-                  <p>{time !== null ? `Time: ${time} minutes` : 'Time not calculated'}</p>
+                  {/* <p>{distance !== null ? `Distance: ${distance} meters` : 'Distance not calculated'}</p>
+                  <p>{time !== null ? `Time: ${time} minutes` : 'Time not calculated'}</p> */}
                 </div>
       </div>
       <div className="submit-floor-plan">
@@ -385,8 +398,28 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
         
         {/* Path handler for interior */}
          {/* need to pass the building over */}
-         <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan?.floorNumber ?? 0} markedRoom={markedRoom} handleRoomClick={handleRoomClick} building={building} 
-        />
+         <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan?.floorNumber ?? 0} markedRoom={markedRoom} handleRoomClick={handleRoomClick} building={building} />
+
+          {start && destination && distance && time && (
+            <div className="floor-plan-directions">
+            <IndoorRouteMenu
+              start={start}
+              destination={destination}
+              route={rooms} // Pass the complete route data
+              distance={distance}
+              time={time}
+              user={user}
+              showNotification={showNotification}
+              building={building}
+              closeDirections={() => {
+                setStart(null);
+                setDestination(null);
+                setRoute(null);
+                setShowDirectionsMenu(false);
+              }}
+            />
+            </div>
+          )}
 
 
         {showPopup && selectedRoom && (

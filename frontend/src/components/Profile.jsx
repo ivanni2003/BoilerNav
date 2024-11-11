@@ -338,7 +338,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   const handleViewRoute = async (route) => {
     if (route.travelMode === 'indoor') {
       try {
-        // Fetch building data using buildingId from route
+        // Fetch building data
         const response = await axios.get(`http://localhost:3001/api/ways/buildings`);
         const buildings = response.data;
         const building = buildings.find(b => b.id === route.buildingId);
@@ -348,32 +348,68 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
           return;
         }
 
-        // Fetch floor plans for the building
+        // Fetch floor plans
         const floorPlansResponse = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
-        if (floorPlansResponse.data && floorPlansResponse.data.length > 0) {
-          // Add floor plans to building object
-          building.floorPlans = floorPlansResponse.data;
-          
-          // Create a custom event to trigger floor plan view
-          const event = new CustomEvent('openFloorPlan', {
-            detail: {
-              building,
-              route,
-              startLocationId: route.startLocation.lat, // Using lat field to store node ID for indoor routes
-              endLocationId: route.endLocation.lat // Using lat field to store node ID for indoor routes
-            }
-          });
-          window.dispatchEvent(event);
-          onClose(); // Close the profile view
-        } else {
+        
+        if (!floorPlansResponse.data || floorPlansResponse.data.length === 0) {
           showNotification('No floor plans available for this building', 'info');
+          return;
         }
+
+        // Add floor plans to building object
+        building.floorPlans = floorPlansResponse.data;
+
+        // Fetch indoor data for room details
+        const indoorDataResponse = await axios.get(`http://localhost:3001/api/indoordata/${building.tags.name}`);
+        if (!indoorDataResponse.data) {
+          showNotification('Indoor data not available', 'error');
+          return;
+        }
+
+        // Find start and end rooms in indoor data
+        const startRoom = indoorDataResponse.data.features.find(
+          feature => feature.properties.id === parseInt(route.startLocation.lat)
+        );
+        const endRoom = indoorDataResponse.data.features.find(
+          feature => feature.properties.id === parseInt(route.endLocation.lat)
+        );
+
+        if (!startRoom || !endRoom) {
+          showNotification('Route endpoints not found', 'error');
+          return;
+        }
+
+        // Create event with complete route data
+        const event = new CustomEvent('openFloorPlan', {
+          detail: {
+            building,
+            route: {
+              ...route,
+              startLocation: {
+                ...route.startLocation,
+                name: startRoom.properties.RoomName,
+                floor: startRoom.properties.Floor
+              },
+              endLocation: {
+                ...route.endLocation,
+                name: endRoom.properties.RoomName,
+                floor: endRoom.properties.Floor
+              }
+            },
+            startLocationId: startRoom.properties.id,
+            endLocationId: endRoom.properties.id
+          }
+        });
+
+        // Dispatch event and close profile
+        window.dispatchEvent(event);
+        onClose();
       } catch (error) {
-        console.error('Error fetching building data:', error);
-        showNotification('Error loading indoor route', 'error');
+        console.error('Error loading indoor route:', error);
+        showNotification('Error loading indoor route: ' + (error.response?.data?.message || error.message), 'error');
       }
     } else {
-      // Handle outdoor routes as before
+      // Handle outdoor routes
       onViewSavedRoute(route);
     }
   };
@@ -484,7 +520,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
             </div>
           </div>
         </div>
-        {renderSavedRoutes()}
+       {renderSavedRoutes()}
       </div>
         <div className="delete-account-section">
         {!showDeleteConfirmation ? (

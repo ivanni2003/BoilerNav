@@ -705,10 +705,14 @@ const Map = ({ latitude,
   polylineCoordinates,
   selectedSavedRoute, 
   handleMapUpdate,
-  mapOptions }) => {
-    const [showFloorPlan, setShowFloorPlan] = useState(false);
-    const [selectedBuilding, setSelectedBuilding] = useState(null);
-    const [floorPlans, setFloorPlans] = useState(null);
+  mapOptions,
+  showFloorPlan,
+  setShowFloorPlan,
+  selectedBuilding,
+  setSelectedBuilding,
+  floorPlans,
+  setFloorPlans,
+  handleViewIndoorPlan }) => {
     const [parkingLots, setParkingLots] = useState([])
     const [busStops, setBusStops] = useState([]);
     const [bikeRacks, setBikeRacks] = useState([]);
@@ -808,30 +812,30 @@ const Map = ({ latitude,
     : polylineCoordinates;
 
 
-    const handleViewIndoorPlan = async (building) => {
-      setSelectedBuilding(building);
-      if (building.floorPlans && building.floorPlans.length > 0) {
-        setFloorPlans(building.floorPlans);
-        setShowFloorPlan(true);
-      } else {
-        try {
-          const response = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
-          if (building.tags.name == null) {  // unnamed buildings
-            showNotification('No floor plans available for this building', 'info');
-          }
-          else if (response.data && response.data.length > 0) {   // buildings with uploaded plans
-            setFloorPlans(response.data);
-            setShowFloorPlan(true);
-          } else {
-            setFloorPlans(null)
-            setShowFloorPlan(true);
-          }
-        } catch (error) {
-          console.error('Error fetching floor plans:', error);
-          showNotification('Error fetching floor plans', 'error');
-        }
-      }
-    };
+    // const handleViewIndoorPlan = async (building) => {
+    //   setSelectedBuilding(building);
+    //   if (building.floorPlans && building.floorPlans.length > 0) {
+    //     setFloorPlans(building.floorPlans);
+    //     setShowFloorPlan(true);
+    //   } else {
+    //     try {
+    //       const response = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
+    //       if (building.tags.name == null) {  // unnamed buildings
+    //         showNotification('No floor plans available for this building', 'info');
+    //       }
+    //       else if (response.data && response.data.length > 0) {   // buildings with uploaded plans
+    //         setFloorPlans(response.data);
+    //         setShowFloorPlan(true);
+    //       } else {
+    //         setFloorPlans(null)
+    //         setShowFloorPlan(true);
+    //       }
+    //     } catch (error) {
+    //       console.error('Error fetching floor plans:', error);
+    //       showNotification('Error fetching floor plans', 'error');
+    //     }
+    //   }
+    // };
 
     const mapCenter = [
       latitude !== undefined ? latitude : DEFAULT_LAT,
@@ -933,11 +937,11 @@ const Map = ({ latitude,
             )} */}
     </MapContainer>
     <span className="amenities-menu">
-      <MapOptions mapOptions={mapOptions} />
-      <Amenities updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
-      <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
-    </span>
-    {showFloorPlan && (
+        <MapOptions mapOptions={mapOptions} />
+        <Amenities updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
+        <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
+      </span>
+      {showFloorPlan && (
         <FloorPlanView 
           building={selectedBuilding}
           floorPlans={floorPlans}

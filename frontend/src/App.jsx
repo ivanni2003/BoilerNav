@@ -25,6 +25,9 @@ function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [selectedSavedRoute, setSelectedSavedRoute] = useState(null);
   const [savedLocationsVersion, setSavedLocationsVersion] = useState(0);
+  const [showFloorPlan, setShowFloorPlan] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const [floorPlans, setFloorPlans] = useState([]);
 
   const [buildings, setBuildings] = useState([])
   const [publicRoutes, setPublicRoutes] = useState([])
@@ -114,6 +117,45 @@ function App() {
       typeof coord[1] === 'number'
     );
   };
+
+  const handleViewIndoorPlan = async (building) => {
+    setSelectedBuilding(building);
+    if (building.floorPlans && building.floorPlans.length > 0) {
+      setFloorPlans(building.floorPlans);
+      setShowFloorPlan(true);
+    } else {
+      try {
+        const response = await axios.get(`${baseURL}/api/floorplans/building/${building.id}`);
+        if (building.tags.name == null) {
+          showNotification('No floor plans available for this building', 'info');
+        }
+        else if (response.data && response.data.length > 0) {
+          setFloorPlans(response.data);
+          setShowFloorPlan(true);
+        } else {
+          setFloorPlans(null);
+          setShowFloorPlan(true);
+        }
+      } catch (error) {
+        console.error('Error fetching floor plans:', error);
+        showNotification('Error fetching floor plans', 'error');
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleOpenFloorPlan = async (event) => {
+      const { building, route, startLocationId, endLocationId } = event.detail;
+      await handleViewIndoorPlan(building);
+      // The Map component will handle the route visualization since it now has access to the building data
+    };
+
+    window.addEventListener('openFloorPlan', handleOpenFloorPlan);
+    return () => {
+      window.removeEventListener('openFloorPlan', handleOpenFloorPlan);
+    };
+  }, []);
+
   
   const calculateDistanceFromRoute = (userLocation, polylineCoordinates) => {
     if (userLocation === null || polylineCoordinates === null || polylineCoordinates.length === 0) {
@@ -577,25 +619,32 @@ const getTravelTime = (distance, selectedMode) => {
               {activeView == 'map' && (
               <>
                 <Map 
-                latitude={latitude} 
-                longitude={longitude} 
-                zoom={zoom} 
-                buildings={buildings} 
-                userLocation={userLocation} 
-                accuracy={accuracy} 
-                altitude={altitude} 
-                heading={heading}
-                getDirections={handleGetDirections}
-                user={user}
-                showNotification={showNotification}
-                favoriteLocations={favoriteLocations}
-                isLoadingFavorites={isLoadingFavorites}
-                onFavoriteToggle={handleFavoriteToggle}
-                polylineCoordinates={polylineCoordinates}
-                selectedMode={selectedMode}
-                selectedSavedRoute={selectedSavedRoute}
-                handleMapUpdate={handleMapUpdate}
-                mapOptions={mapOptions}
+              latitude={latitude} 
+              longitude={longitude} 
+              zoom={zoom} 
+              buildings={buildings} 
+              userLocation={userLocation} 
+              accuracy={accuracy} 
+              altitude={altitude} 
+              heading={heading}
+              getDirections={handleGetDirections}
+              user={user}
+              showNotification={showNotification}
+              favoriteLocations={favoriteLocations}
+              isLoadingFavorites={isLoadingFavorites}
+              onFavoriteToggle={handleFavoriteToggle}
+              polylineCoordinates={polylineCoordinates}
+              selectedMode={selectedMode}
+              selectedSavedRoute={selectedSavedRoute}
+              handleMapUpdate={handleMapUpdate}
+              mapOptions={mapOptions}
+              showFloorPlan={showFloorPlan}
+              setShowFloorPlan={setShowFloorPlan}
+              selectedBuilding={selectedBuilding}
+              setSelectedBuilding={setSelectedBuilding}
+              floorPlans={floorPlans}
+              setFloorPlans={setFloorPlans}
+              handleViewIndoorPlan={handleViewIndoorPlan}
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
             {notification && (

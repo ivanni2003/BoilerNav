@@ -226,7 +226,15 @@ const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan, showN
   )
 }
 
-const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification}) => {
+const FloorPlanView = ({ 
+  building, 
+  floorPlans, 
+  onClose, 
+  user, 
+  showNotification,
+  initialStart,
+  initialDestination
+}) => {
   const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans && floorPlans.length > 0 ? floorPlans[0] : null);
   const [rooms, setRooms] = useState([])
   const [distance, setDistance] = useState(null);
@@ -236,12 +244,13 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
   const [showDirectionsMenu, setShowDirectionsMenu] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null); // Store selected room data for DirectionsMenu
   const [showPopup, setShowPopup] = useState(false);
-  const [start, setStart] = useState("StairUp"); // State for start location
-  const [destination, setDestination] = useState(null); // State for destination location
   const [route, setRoute] = useState(null);
 
   const [isPopupFormVisible, setIsPopupFormVisible] = useState(false)
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [start, setStart] = useState(initialStart); // Initialize with prop
+  const [destination, setDestination] = useState(initialDestination); // Initialize with prop
+
 
   const handleRoomClick = (event, room) => {
     setSelectedRoom(room);
@@ -258,6 +267,14 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
 
     setPopupPosition({ x, y });
   }
+
+  useEffect(() => {
+    if (initialStart && initialDestination) {
+      setStart(initialStart);
+      setDestination(initialDestination);
+      setShowDirectionsMenu(true);
+    }
+  }, [initialStart, initialDestination]);
 
   const handleStartClick = () => {
     setStart(selectedRoom.room); // Set the selected room as the destination
@@ -398,14 +415,22 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
         
         {/* Path handler for interior */}
          {/* need to pass the building over */}
-         <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan?.floorNumber ?? 0} markedRoom={markedRoom} handleRoomClick={handleRoomClick} building={building} />
-
+         <FloorPlan 
+          startNode={start?.properties?.id} 
+          endNode={destination?.properties?.id} 
+          rooms={rooms} 
+          setDistancetime={setDistancetime} 
+          floorNumber={selectedFloorPlan?.floorNumber ?? 0} 
+          markedRoom={markedRoom} 
+          handleRoomClick={handleRoomClick} 
+          building={building}
+        />
           {start && destination && distance && time && (
-            <div className="floor-plan-directions">
+          <div className="floor-plan-directions">
             <IndoorRouteMenu
               start={start}
               destination={destination}
-              route={rooms} // Pass the complete route data
+              route={rooms}
               distance={distance}
               time={time}
               user={user}
@@ -414,12 +439,11 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
               closeDirections={() => {
                 setStart(null);
                 setDestination(null);
-                setRoute(null);
                 setShowDirectionsMenu(false);
               }}
             />
-            </div>
-          )}
+          </div>
+        )}
 
 
         {showPopup && selectedRoom && (
@@ -712,7 +736,11 @@ const Map = ({ latitude,
   setSelectedBuilding,
   floorPlans,
   setFloorPlans,
-  handleViewIndoorPlan }) => {
+  handleViewIndoorPlan,
+  indoorStart,
+  indoorDestination,
+  setIndoorStart,
+  setIndoorDestination }) => {
     const [parkingLots, setParkingLots] = useState([])
     const [busStops, setBusStops] = useState([]);
     const [bikeRacks, setBikeRacks] = useState([]);
@@ -946,8 +974,14 @@ const Map = ({ latitude,
           building={selectedBuilding}
           floorPlans={floorPlans}
           user={user}
-          onClose={() => setShowFloorPlan(false)}
+          onClose={() => {
+            setShowFloorPlan(false);
+            setIndoorStart(null);
+            setIndoorDestination(null);
+          }}
           showNotification={showNotification}
+          initialStart={indoorStart}
+          initialDestination={indoorDestination}
         />
       )}
     </div>

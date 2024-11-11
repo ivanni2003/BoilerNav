@@ -47,6 +47,8 @@ function App() {
   const [start, setStart] = useState(null)
   const [destination, setDestination] = useState(null)
   const [polylineCoordinates, setPolylineCoordinates] = useState([]);
+  const [indoorStart, setIndoorStart] = useState(null);
+  const [indoorDestination, setIndoorDestination] = useState(null);
 
   const [selectedMode, setSelectedMode] = useState('footpath'); // footpath route-type default
 
@@ -146,8 +148,27 @@ function App() {
   useEffect(() => {
     const handleOpenFloorPlan = async (event) => {
       const { building, route, startLocationId, endLocationId } = event.detail;
+      
+      // Set start and destination for the indoor route
+      const start = {
+        properties: {
+          id: parseInt(startLocationId),
+          RoomName: route.startLocation.name,
+          Floor: route.startLocation.floor
+        }
+      };
+      
+      const destination = {
+        properties: {
+          id: parseInt(endLocationId),
+          RoomName: route.endLocation.name,
+          Floor: route.endLocation.floor
+        }
+      };
+
+      setIndoorStart(start);
+      setIndoorDestination(destination);
       await handleViewIndoorPlan(building);
-      // The Map component will handle the route visualization since it now has access to the building data
     };
 
     window.addEventListener('openFloorPlan', handleOpenFloorPlan);
@@ -645,6 +666,10 @@ const getTravelTime = (distance, selectedMode) => {
               floorPlans={floorPlans}
               setFloorPlans={setFloorPlans}
               handleViewIndoorPlan={handleViewIndoorPlan}
+              indoorStart={indoorStart}
+              indoorDestination={indoorDestination}
+              setIndoorStart={setIndoorStart}
+              setIndoorDestination={setIndoorDestination}
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
             {notification && (

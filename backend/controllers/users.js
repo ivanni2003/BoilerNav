@@ -227,7 +227,7 @@ usersRouter.post('/floorPlanRequests', async (request, response) => {
   }
 });
 
-usersRouter.post('/is-banned', async (request, response) => {
+usersRouter.get('/is-banned', async (request, response) => {
   try {
     const {username} = request.body
     

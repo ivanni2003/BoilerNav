@@ -3,21 +3,31 @@ const mongoose = require('mongoose');
 const routeSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   startLocation: {
-    lat: Number,
-    lon: Number,
-    name: String
+    name: { type: String, default: 'Unknown Start' },
+    lat: { type: Number, required: true },
+    lon: { type: Number, required: true },
+    floor: { type: Number }
   },
   endLocation: {
-    lat: Number,
-    lon: Number,
-    name: String
+    name: { type: String, default: 'Unknown Destination' },
+    lat: { type: Number, required: true },
+    lon: { type: Number, required: true },
+    floor: { type: Number }
   },
-  distance: Number,
-  duration: Number,
-  travelMode: String,
-  polyline: [{ lat: Number, lon: Number }],
+  distance: { type: Number, required: true },
+  duration: { type: Number, required: true },
+  travelMode: { type: String, required: true },
+  polyline: [{
+    x: { type: Number },
+    y: { type: Number },
+    floor: { type: Number },
+    lat: { type: Number },
+    lon: { type: Number }
+  }],
   createdAt: { type: Date, default: Date.now },
-  isPublic: { type: Boolean }
+  isPublic: { type: Boolean, default: true },
+  buildingId: { type: Number }
 });
 
-module.exports = mongoose.model('Route', routeSchema);
+const Route = mongoose.model('Route', routeSchema);
+module.exports = Route;

@@ -140,3 +140,87 @@
   .popup-form input[type="text"] {
     margin-bottom: 5px;
   }
+
+  .floor-plan-directions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    width: 300px;
+  }
+  
+  .directions-menu {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    width: 100%;
+  }
+
+  .floor-plan-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .floor-plan-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .floor-plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    z-index: 1;
+  }
+  
+  .floor-plan-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Ensure the header styling matches the main app header */
+  .app-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    background-color: #f8f8f8;
+    position: relative;
+    z-index: 1000;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .logo-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+  
+  .app-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+  }

@@ -25,6 +25,9 @@ function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [selectedSavedRoute, setSelectedSavedRoute] = useState(null);
   const [savedLocationsVersion, setSavedLocationsVersion] = useState(0);
+  const [showFloorPlan, setShowFloorPlan] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const [floorPlans, setFloorPlans] = useState([]);
 
   const [buildings, setBuildings] = useState([])
   const [publicRoutes, setPublicRoutes] = useState([])
@@ -44,6 +47,8 @@ function App() {
   const [start, setStart] = useState(null)
   const [destination, setDestination] = useState(null)
   const [polylineCoordinates, setPolylineCoordinates] = useState([]);
+  const [indoorStart, setIndoorStart] = useState(null);
+  const [indoorDestination, setIndoorDestination] = useState(null);
 
   const [selectedMode, setSelectedMode] = useState('footpath'); // footpath route-type default
 
@@ -114,6 +119,64 @@ function App() {
       typeof coord[1] === 'number'
     );
   };
+
+  const handleViewIndoorPlan = async (building) => {
+    setSelectedBuilding(building);
+    if (building.floorPlans && building.floorPlans.length > 0) {
+      setFloorPlans(building.floorPlans);
+      setShowFloorPlan(true);
+    } else {
+      try {
+        const response = await axios.get(`${baseURL}/api/floorplans/building/${building.id}`);
+        if (building.tags.name == null) {
+          showNotification('No floor plans available for this building', 'info');
+        }
+        else if (response.data && response.data.length > 0) {
+          setFloorPlans(response.data);
+          setShowFloorPlan(true);
+        } else {
+          setFloorPlans(null);
+          setShowFloorPlan(true);
+        }
+      } catch (error) {
+        console.error('Error fetching floor plans:', error);
+        showNotification('Error fetching floor plans', 'error');
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleOpenFloorPlan = async (event) => {
+      const { building, route, startLocationId, endLocationId } = event.detail;
+      
+      // Set start and destination for the indoor route
+      const start = {
+        properties: {
+          id: parseInt(startLocationId),
+          RoomName: route.startLocation.name,
+          Floor: route.startLocation.floor
+        }
+      };
+      
+      const destination = {
+        properties: {
+          id: parseInt(endLocationId),
+          RoomName: route.endLocation.name,
+          Floor: route.endLocation.floor
+        }
+      };
+
+      setIndoorStart(start);
+      setIndoorDestination(destination);
+      await handleViewIndoorPlan(building);
+    };
+
+    window.addEventListener('openFloorPlan', handleOpenFloorPlan);
+    return () => {
+      window.removeEventListener('openFloorPlan', handleOpenFloorPlan);
+    };
+  }, []);
+
   
   const calculateDistanceFromRoute = (userLocation, polylineCoordinates) => {
     if (userLocation === null || polylineCoordinates === null || polylineCoordinates.length === 0) {
@@ -186,6 +249,38 @@ function App() {
 
   useEffect(() => {   // removes scrollbar within main menu
     document.body.style.overflow = 'hidden';
+  }, []);
+
+  useEffect(() => {
+    const handleOpenFloorPlan = async (event) => {
+      const { building, route, startLocationId, endLocationId } = event.detail;
+      
+      // Set the selected building and show floor plan
+      setSelectedBuilding(building);
+      setShowFloorPlan(true);
+      
+      // Set the start and destination for the indoor route
+      setStart({
+        properties: {
+          id: startLocationId,
+          RoomName: route.startLocation.name,
+          Floor: route.startLocation.floor
+        }
+      });
+      
+      setDestination({
+        properties: {
+          id: endLocationId,
+          RoomName: route.endLocation.name,
+          Floor: route.endLocation.floor
+        }
+      });
+    };
+  
+    window.addEventListener('openFloorPlan', handleOpenFloorPlan);
+    return () => {
+      window.removeEventListener('openFloorPlan', handleOpenFloorPlan);
+    };
   }, []);
 
   useEffect(() => {
@@ -545,25 +640,37 @@ const getTravelTime = (distance, selectedMode) => {
               {activeView == 'map' && (
               <>
                 <Map 
-                latitude={latitude} 
-                longitude={longitude} 
-                zoom={zoom} 
-                buildings={buildings} 
-                userLocation={userLocation} 
-                accuracy={accuracy} 
-                altitude={altitude} 
-                heading={heading}
-                getDirections={handleGetDirections}
-                user={user}
-                showNotification={showNotification}
-                favoriteLocations={favoriteLocations}
-                isLoadingFavorites={isLoadingFavorites}
-                onFavoriteToggle={handleFavoriteToggle}
-                polylineCoordinates={polylineCoordinates}
-                selectedMode={selectedMode}
-                selectedSavedRoute={selectedSavedRoute}
-                handleMapUpdate={handleMapUpdate}
-                mapOptions={mapOptions}
+              latitude={latitude} 
+              longitude={longitude} 
+              zoom={zoom} 
+              buildings={buildings} 
+              userLocation={userLocation} 
+              accuracy={accuracy} 
+              altitude={altitude} 
+              heading={heading}
+              getDirections={handleGetDirections}
+              user={user}
+              showNotification={showNotification}
+              favoriteLocations={favoriteLocations}
+              isLoadingFavorites={isLoadingFavorites}
+              onFavoriteToggle={handleFavoriteToggle}
+              polylineCoordinates={polylineCoordinates}
+              selectedMode={selectedMode}
+              selectedSavedRoute={selectedSavedRoute}
+              handleMapUpdate={handleMapUpdate}
+              mapOptions={mapOptions}
+              showFloorPlan={showFloorPlan}
+              setShowFloorPlan={setShowFloorPlan}
+              selectedBuilding={selectedBuilding}
+              setSelectedBuilding={setSelectedBuilding}
+              floorPlans={floorPlans}
+              setFloorPlans={setFloorPlans}
+              handleViewIndoorPlan={handleViewIndoorPlan}
+              indoorStart={indoorStart}
+              indoorDestination={indoorDestination}
+              setIndoorStart={setIndoorStart}
+              setIndoorDestination={setIndoorDestination}
+              handleTitleClick={handleTitleClick}
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
             {notification && (

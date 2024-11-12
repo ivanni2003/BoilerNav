@@ -16,47 +16,61 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-routesRouter.post(
-  "/check-duplicate",
-  authenticateToken,
-  async (request, response) => {
-    try {
-      const { userId, startLocation, endLocation, travelMode } = request.body;
+routesRouter.post('/check-duplicate', authenticateToken, async (request, response) => {
+  try {
+    const { userId, startLocation, endLocation, travelMode, buildingId } = request.body;
 
-      // Define tolerance for coordinate matching (roughly 10 meters)
-      const COORDINATE_TOLERANCE = 0.0001;
+    // Define tolerance for coordinate matching
+    const COORDINATE_TOLERANCE = 0.0001;
 
-      const existingRoute = await Route.findOne({
-        userId,
-        travelMode,
-        "startLocation.lat": {
+    let query = {
+      userId,
+      travelMode
+    };
+
+    if (travelMode === 'indoor') {
+      // For indoor routes, check exact match of building and floors
+      query = {
+        ...query,
+        buildingId,
+        'startLocation.floor': startLocation.floor,
+        'endLocation.floor': endLocation.floor,
+        'startLocation.lat': startLocation.lat,
+        'endLocation.lat': endLocation.lat
+      };
+    } else {
+      // For outdoor routes, use coordinate tolerance
+      query = {
+        ...query,
+        'startLocation.lat': {
           $gte: startLocation.lat - COORDINATE_TOLERANCE,
-          $lte: startLocation.lat + COORDINATE_TOLERANCE,
+          $lte: startLocation.lat + COORDINATE_TOLERANCE
         },
-        "startLocation.lon": {
+        'startLocation.lon': {
           $gte: startLocation.lon - COORDINATE_TOLERANCE,
-          $lte: startLocation.lon + COORDINATE_TOLERANCE,
+          $lte: startLocation.lon + COORDINATE_TOLERANCE
         },
-        "endLocation.lat": {
+        'endLocation.lat': {
           $gte: endLocation.lat - COORDINATE_TOLERANCE,
-          $lte: endLocation.lat + COORDINATE_TOLERANCE,
+          $lte: endLocation.lat + COORDINATE_TOLERANCE
         },
-        "endLocation.lon": {
+        'endLocation.lon': {
           $gte: endLocation.lon - COORDINATE_TOLERANCE,
-          $lte: endLocation.lon + COORDINATE_TOLERANCE,
-        },
-      });
-
-      response.json({ isDuplicate: !!existingRoute, existingRoute });
-    } catch (error) {
-      console.error("Error checking for duplicate route:", error);
-      response.status(500).json({ error: error.message });
+          $lte: endLocation.lon + COORDINATE_TOLERANCE
+        }
+      };
     }
-  },
-);
+
+    const existingRoute = await Route.findOne(query);
+    response.json({ isDuplicate: !!existingRoute, existingRoute });
+  } catch (error) {
+    console.error('Error checking for duplicate route:', error);
+    response.status(500).json({ error: error.message });
+  }
+});
 
 // Create new route
-routesRouter.post("/", authenticateToken, async (request, response) => {
+routesRouter.post('/', authenticateToken, async (request, response) => {
   try {
     const {
       userId,
@@ -67,38 +81,10 @@ routesRouter.post("/", authenticateToken, async (request, response) => {
       travelMode,
       polyline,
       isPublic,
+      buildingId
     } = request.body;
 
-    // Check for duplicate before saving
-    const COORDINATE_TOLERANCE = 0.0001;
-    const existingRoute = await Route.findOne({
-      userId,
-      travelMode,
-      "startLocation.lat": {
-        $gte: startLocation.lat - COORDINATE_TOLERANCE,
-        $lte: startLocation.lat + COORDINATE_TOLERANCE,
-      },
-      "startLocation.lon": {
-        $gte: startLocation.lon - COORDINATE_TOLERANCE,
-        $lte: startLocation.lon + COORDINATE_TOLERANCE,
-      },
-      "endLocation.lat": {
-        $gte: endLocation.lat - COORDINATE_TOLERANCE,
-        $lte: endLocation.lat + COORDINATE_TOLERANCE,
-      },
-      "endLocation.lon": {
-        $gte: endLocation.lon - COORDINATE_TOLERANCE,
-        $lte: endLocation.lon + COORDINATE_TOLERANCE,
-      },
-    });
-
-    if (existingRoute) {
-      return response
-        .status(409)
-        .json({ error: "Route already exists", existingRoute });
-    }
-
-    // Proceed with saving if no duplicate found
+    // Create route with all fields
     const route = new Route({
       userId,
       startLocation,
@@ -108,12 +94,13 @@ routesRouter.post("/", authenticateToken, async (request, response) => {
       travelMode,
       polyline,
       isPublic,
+      buildingId
     });
 
     const savedRoute = await route.save();
     response.status(201).json(savedRoute);
   } catch (error) {
-    console.error("Error saving route:", error);
+    console.error('Error saving route:', error);
     response.status(400).json({ error: error.message });
   }
 });

@@ -8,6 +8,7 @@ const Login = ({ onClose, onLoginSuccess, showNotification }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showBannedPopup, setShowBannedPopup] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,8 +18,16 @@ const Login = ({ onClose, onLoginSuccess, showNotification }) => {
         password
       });
       console.log('Login successful:', response.data);
-      onLoginSuccess(response.data);
-      onClose();
+      if (response.data.token == "Banned") {
+        setShowBannedPopup(true);
+        setTimeout(() => {
+          setShowBannedPopup(false);
+        }, 3000);
+      }
+      else {
+        onLoginSuccess(response.data);
+        onClose();
+      }
     } catch (error) {
       console.error('Error logging in:', error);
       showNotification('Invalid username or password. Please try again.', 'error');
@@ -59,6 +68,12 @@ const Login = ({ onClose, onLoginSuccess, showNotification }) => {
       <button className="forgot-password-link" onClick={() => setShowForgotPassword(true)}>
         Forgot Password?
       </button>
+
+      {showBannedPopup && (
+        <div className="banned-popup" style={{color: "red", fontWeight: "bold", fontSize: 50}}>
+          You have been Banned. 😝😝
+        </div>
+      )}
     </div>
   );
 };

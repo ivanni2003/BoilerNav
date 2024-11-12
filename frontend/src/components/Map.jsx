@@ -11,6 +11,7 @@ import BusStops from './BusStops'
 import MapOptions from './MapOptions'
 import DirectionsMenu from './DirectionsMenu'
 import InteriorPopupContent from './InteriorPopupContent';
+import IndoorRouteMenu from './IndoorRouteMenu';
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
@@ -43,80 +44,70 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
 };
 
 
-  const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRoom, handleRoomClick, building}) => {
-    const [pathD, setPathD] = useState('');
+const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, markedRoom, handleRoomClick, building}) => {
+  const [pathD, setPathD] = useState('');
 
-    useEffect(() => {
-      const fetchPath = async () => {
-        try {
-          //get building
-          const response = await fetch(`http://localhost:3001/api/indoornav/path?building=${building.tags.name}&start=${startNode}&end=${endNode}`);
-          const data = await response.json();
-          //console.log(response);
-          console.log(data);
-          
+  useEffect(() => {
+    const fetchPath = async () => {
+      // If either startNode or endNode is null, clear the path
+      if (!startNode || !endNode) {
+        setPathD('');
+        return;
+      }
 
-          if (data.route) {
-            console.log("Path data received:", data.route);
-            //average meters/second walk speed
-            const avgMsRate = 1.3;
-            const distance = (data.distance).toFixed(2);
-            //meters per second
-            const time = ((distance / avgMsRate) / 60).toFixed(2);
-            setDistancetime(distance, time)
-            // Construct the 'd' attribute string
+      try {
+        const response = await fetch(`http://localhost:3001/api/indoornav/path?building=${building.tags.name}&start=${startNode}&end=${endNode}`);
+        const data = await response.json();
+        console.log(data);
 
-            const floorMappings = { 'Basement': -1, '1': 0, '2': 1, '3': 2 };
-            const roomFloor = floorMappings[floorNumber] ?? 0;
-            let lastFloor = null;
-            const dString = data.route.reduce((acc, { x, y, floor }) => {
-              // If this point is on a new floor, start a new path with 'M'
-              if (roomFloor === floor) {
-                const command = lastFloor === floor ? `L ${x} ${y}` : `M ${x} ${y}`;
-                lastFloor = floor; // Update last floor seen
-                return `${acc} ${command}`;
-              }
-              return acc;
-            }, '');
-            console.log("dString: ", dString);
-            console.log("roomFloor: ", roomFloor)
-            console.log("floorNumber:", floorNumber)
-            console.log("building: ", building)
-            console.log("building name:", building.tags.name)
+        if (data.route) {
+          console.log("Path data received:", data.route);
+          const avgMsRate = 1.3;
+          const distance = (data.distance).toFixed(2);
+          const time = ((distance / avgMsRate) / 60).toFixed(2);
+          setDistancetime(distance, time);
 
-          console.log("SVG Path Data (d attribute):", dString);
+          const floorMappings = { 'Basement': -1, '1': 0, '2': 1, '3': 2 };
+          const roomFloor = floorMappings[floorNumber] ?? 0;
+          let lastFloor = null;
+          const dString = data.route.reduce((acc, { x, y, floor }) => {
+            if (roomFloor === floor) {
+              const command = lastFloor === floor ? `L ${x} ${y}` : `M ${x} ${y}`;
+              lastFloor = floor;
+              return `${acc} ${command}`;
+            }
+            return acc;
+          }, '');
+
+          console.log("dString: ", dString);
           setPathD(dString);
         }
       } catch (error) {
         console.error("Failed to fetch path data:", error);
+        setPathD('');
       }
     };
 
-      fetchPath();
-    }, [startNode, endNode, floorNumber]);
+    fetchPath();
+  }, [startNode, endNode, floorNumber]);
 
   return (
     <svg className="absolute-svg" width="100%" height="100%" viewBox="0 0 180 500" preserveAspectRatio="xMidYMid meet" >
-      <path fill="none" d={pathD} strokeWidth="1" stroke="black" />
-
+      {pathD && <path fill="none" d={pathD} strokeWidth="1" stroke="black" />}
       {rooms.map((data) => (
         <circle
+          key={data.room.properties.id}
           cx={data.x}
           cy={data.y}
           r="7"
           fill="lightgreen"
           stroke="black"
           strokeWidth="1"
-          onClick={(event) => handleRoomClick(event, data)
-          //   alert(
-          //   data.room.properties.RoomName + "\n" + 
-          //   data.room.properties.Type + "\n" 
-          // )
-        }
+          onClick={(event) => handleRoomClick(event, data)}
           style={{ cursor: 'pointer' }}
         />
-        ))}
-        {markedRoom && 
+      ))}
+      {markedRoom && 
         <circle
           cx={markedRoom.x}
           cy={markedRoom.y}
@@ -126,7 +117,7 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
           strokeWidth="1"
           style={{ cursor: 'pointer' }}
         />
-        }
+      }
     </svg>
   );
 };
@@ -225,7 +216,16 @@ const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan, showN
   )
 }
 
-const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification}) => {
+const FloorPlanView = ({ 
+  building, 
+  floorPlans, 
+  onClose, 
+  user, 
+  showNotification,
+  initialStart,
+  initialDestination,
+  handleTitleClick
+}) => {
   const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans && floorPlans.length > 0 ? floorPlans[0] : null);
   const [rooms, setRooms] = useState([])
   const [distance, setDistance] = useState(null);
@@ -235,11 +235,23 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
   const [showDirectionsMenu, setShowDirectionsMenu] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null); // Store selected room data for DirectionsMenu
   const [showPopup, setShowPopup] = useState(false);
-  const [start, setStart] = useState("StairUp"); // State for start location
-  const [destination, setDestination] = useState(null); // State for destination location
+  const [route, setRoute] = useState(null);
 
   const [isPopupFormVisible, setIsPopupFormVisible] = useState(false)
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [start, setStart] = useState(initialStart); // Initialize with prop
+  const [destination, setDestination] = useState(initialDestination); // Initialize with prop
+
+
+  const clearRoute = () => {
+    setStart(null);
+    setDestination(null);
+    setDistance(null);
+    setTime(null);
+    setShowDirectionsMenu(false);
+    setRoute(null);
+    setMarkedRoom(null);
+  };
 
   const handleRoomClick = (event, room) => {
     setSelectedRoom(room);
@@ -256,6 +268,14 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
 
     setPopupPosition({ x, y });
   }
+
+  useEffect(() => {
+    if (initialStart && initialDestination) {
+      setStart(initialStart);
+      setDestination(initialDestination);
+      setShowDirectionsMenu(true);
+    }
+  }, [initialStart, initialDestination]);
 
   const handleStartClick = () => {
     setStart(selectedRoom.room); // Set the selected room as the destination
@@ -293,6 +313,12 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
       showNotification('Please login to your account.', 'info');
     }
   }
+
+  const handleClose = (e) => {
+    e.preventDefault();
+    clearRoute();
+    onClose();
+  };
 
   useEffect(() => {
     async function fetchAndSetRooms() {
@@ -333,6 +359,10 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
     fetchAndSetRooms()
   }, [selectedFloorPlan, building]);
 
+
+  const handleRouteClose = () => {
+    clearRoute();
+  };
   
   const markRoom = async (room) => { 
     const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
@@ -349,6 +379,19 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
 
   return (
     <div className="floor-plan-fullscreen">
+      <header className="app-header">
+        <div 
+          className="logo-title" 
+          onClick={() => {
+            onClose(); // Close floor plan view
+            handleTitleClick(); // Reset to default state
+          }} 
+          style={{cursor: 'pointer'}}
+        >
+          <img src="/src/img/icon.png" alt="BoilerNav Logo" className="logo" />
+          <h1>BoilerNav</h1>
+        </div>
+      </header>
       <div className="floor-plan-search"> 
                 <SearchBar items={rooms} updateMap={null} markRoom={markRoom} viewSavedRoute={null} searchStr={"Room"} />
                 <div>
@@ -356,8 +399,9 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
                   <br></br>
                   <br></br>
                   <br></br>
-                  <p>{distance !== null ? `Distance: ${distance} meters` : 'Distance not calculated'}</p>
-                  <p>{time !== null ? `Time: ${time} minutes` : 'Time not calculated'}</p>
+                  <br></br>
+                  {/* <p>{distance !== null ? `Distance: ${distance} meters` : 'Distance not calculated'}</p>
+                  <p>{time !== null ? `Time: ${time} minutes` : 'Time not calculated'}</p> */}
                 </div>
       </div>
       <div className="submit-floor-plan">
@@ -385,8 +429,31 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
         
         {/* Path handler for interior */}
          {/* need to pass the building over */}
-         <FloorPlan startNode={start?.properties?.id || 11} endNode={destination?.properties?.id || 20} rooms={rooms} setDistancetime={setDistancetime} floorNumber={selectedFloorPlan?.floorNumber ?? 0} markedRoom={markedRoom} handleRoomClick={handleRoomClick} building={building} 
+         <FloorPlan 
+          startNode={start?.properties?.id} 
+          endNode={destination?.properties?.id} 
+          rooms={rooms} 
+          setDistancetime={setDistancetime} 
+          floorNumber={selectedFloorPlan?.floorNumber ?? 0} 
+          markedRoom={markedRoom} 
+          handleRoomClick={handleRoomClick} 
+          building={building}
         />
+          {start && destination && distance && time && (
+          <div className="floor-plan-directions">
+            <IndoorRouteMenu
+              start={start}
+              destination={destination}
+              route={rooms}
+              distance={distance}
+              time={time}
+              user={user}
+              showNotification={showNotification}
+              building={building}
+              closeDirections={handleRouteClose}
+            />
+          </div>
+        )}
 
 
         {showPopup && selectedRoom && (
@@ -404,7 +471,7 @@ const FloorPlanView = ({ building, floorPlans, onClose, user, showNotification})
         <DirectionsMenu
           start={start} // Assuming current location for start
           destination={destination} // Pass selected room data as destination
-          closeDirections={handleCloseDirectionsMenu}
+          closeDirections={handleRouteClose}
           handleRouting={() => { /* Define the routing function if needed */ }}
           manhattanDistance={distance}
           travelTime={time}
@@ -672,10 +739,19 @@ const Map = ({ latitude,
   polylineCoordinates,
   selectedSavedRoute, 
   handleMapUpdate,
-  mapOptions }) => {
-    const [showFloorPlan, setShowFloorPlan] = useState(false);
-    const [selectedBuilding, setSelectedBuilding] = useState(null);
-    const [floorPlans, setFloorPlans] = useState(null);
+  mapOptions,
+  showFloorPlan,
+  setShowFloorPlan,
+  selectedBuilding,
+  setSelectedBuilding,
+  floorPlans,
+  setFloorPlans,
+  handleViewIndoorPlan,
+  indoorStart,
+  indoorDestination,
+  setIndoorStart,
+  setIndoorDestination,
+  handleTitleClick }) => {
     const [parkingLots, setParkingLots] = useState([])
     const [busStops, setBusStops] = useState([]);
     const [bikeRacks, setBikeRacks] = useState([]);
@@ -775,30 +851,30 @@ const Map = ({ latitude,
     : polylineCoordinates;
 
 
-    const handleViewIndoorPlan = async (building) => {
-      setSelectedBuilding(building);
-      if (building.floorPlans && building.floorPlans.length > 0) {
-        setFloorPlans(building.floorPlans);
-        setShowFloorPlan(true);
-      } else {
-        try {
-          const response = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
-          if (building.tags.name == null) {  // unnamed buildings
-            showNotification('No floor plans available for this building', 'info');
-          }
-          else if (response.data && response.data.length > 0) {   // buildings with uploaded plans
-            setFloorPlans(response.data);
-            setShowFloorPlan(true);
-          } else {
-            setFloorPlans(null)
-            setShowFloorPlan(true);
-          }
-        } catch (error) {
-          console.error('Error fetching floor plans:', error);
-          showNotification('Error fetching floor plans', 'error');
-        }
-      }
-    };
+    // const handleViewIndoorPlan = async (building) => {
+    //   setSelectedBuilding(building);
+    //   if (building.floorPlans && building.floorPlans.length > 0) {
+    //     setFloorPlans(building.floorPlans);
+    //     setShowFloorPlan(true);
+    //   } else {
+    //     try {
+    //       const response = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
+    //       if (building.tags.name == null) {  // unnamed buildings
+    //         showNotification('No floor plans available for this building', 'info');
+    //       }
+    //       else if (response.data && response.data.length > 0) {   // buildings with uploaded plans
+    //         setFloorPlans(response.data);
+    //         setShowFloorPlan(true);
+    //       } else {
+    //         setFloorPlans(null)
+    //         setShowFloorPlan(true);
+    //       }
+    //     } catch (error) {
+    //       console.error('Error fetching floor plans:', error);
+    //       showNotification('Error fetching floor plans', 'error');
+    //     }
+    //   }
+    // };
 
     const mapCenter = [
       latitude !== undefined ? latitude : DEFAULT_LAT,
@@ -900,17 +976,24 @@ const Map = ({ latitude,
             )} */}
     </MapContainer>
     <span className="amenities-menu">
-      <MapOptions mapOptions={mapOptions} />
-      <Amenities updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
-      <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
-    </span>
-    {showFloorPlan && (
+        <MapOptions mapOptions={mapOptions} />
+        <Amenities updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
+        <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
+      </span>
+      {showFloorPlan && (
         <FloorPlanView 
           building={selectedBuilding}
           floorPlans={floorPlans}
           user={user}
-          onClose={() => setShowFloorPlan(false)}
+          onClose={() => {
+            setShowFloorPlan(false);
+            setIndoorStart(null);
+            setIndoorDestination(null);
+          }}
           showNotification={showNotification}
+          initialStart={indoorStart}
+          initialDestination={indoorDestination}
+          handleTitleClick={handleTitleClick}
         />
       )}
     </div>

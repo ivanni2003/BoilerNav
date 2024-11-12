@@ -1,0 +1,71 @@
+Test Case 3_2_1
+System: SavePersonalIndoorRoutes
+Phase: 3
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+- Test saving/unsaving indoor routes through profile section
+- Verify user interface elements for indoor route management
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. VIew indoor of Lawson
+3. Create a route between two rooms
+4. Click "Save Route" button
+5. Navigate to profile section
+6. Attempt to delete the saved route
+
+C. Expected Result:
+1. Route should appear in saved routes section of profile
+2. Delete functionality should remove route from saved routes list
+3. UI should update immediately to reflect changes
+
+-------------------
+
+Test Case 3_2_2
+System: SavePersonalRoutes
+Phase: 3
+Route visualization verification
+Severity: 1
+
+A. Identification and classification
+- Test visual representation of saved indoor routes
+- Verify indoor route display functionality
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Navigate to profile section
+4. Click on a map icon next to the saved indoor route
+5. Observe map visualization
+
+C. Expected Result:
+1. Clicking saved indoor route should display it on the appropriate building plan
+2. Route should be drawn accurately between start and end points
+
+-------------------
+
+Test Case 3_2_3
+System: SavePersonalRoutes
+Phase: 2
+Indoor page route saving functionality
+Severity: 1
+
+A. Identification and classification
+- Test route saving from indoor map interface
+- Verify save button functionality
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Navigate to Lawson
+3. Create a new route on the indoor map
+4. Look for save route button
+5. Click save route button
+
+C. Expected Result:
+1. Save button should be visible after route creation
+2. Clicking save should store route in database
+3. Route should appear in profile's saved routes section

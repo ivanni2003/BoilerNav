@@ -21,6 +21,124 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   const [savedRoutes, setSavedRoutes] = useState([]);
   const [isAllRoutesPublic, setIsAllRoutesPublic] = useState(true);
   const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState(false);
+  const [isElevated, setIsElevated] = useState(user.isElevated);
+
+  // State for Ban Panel
+  const [showBanPanel, setShowBanPanel] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+
+  const [showSubmissionsPopup, setShowSubmissionsPopup] = useState(false);
+
+  const [banUnbanMessage, setBanUnbanMessage] = useState('');
+
+  const [selectedUserSubmissions, setSelectedUserSubmissions] = useState([]);
+  const [selectedUsername, setSelectedUsername] = useState('');
+
+  const handleViewSubmissions = async (username) => {
+    try {
+      const response = await axios.get(`http://localhost:3001/api/users/username/${username}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+  
+      const user = response.data;
+      if (user.floorPlanRequests && user.floorPlanRequests.length > 0) {
+        setSelectedUserSubmissions(user.floorPlanRequests);
+      } else {
+        setSelectedUserSubmissions([]);
+      }
+      setSelectedUsername(username);
+      setShowSubmissionsPopup(true);
+    } catch (error) {
+      console.error('Error fetching user submissions:', error);
+      showNotification('Failed to fetch user submissions', 'error');
+    }
+  };
+
+  // Function to close Submissions Popup
+  const handleCloseSubmissionsPopup = () => {
+    setShowSubmissionsPopup(false);
+  };
+
+  // Open Ban Panel
+  const handleOpenBanPanel = () => {
+    setShowBanPanel(true);
+  };
+
+  // Close Ban Panel
+  const handleCloseBanPanel = () => {
+    setBanUnbanMessage('');
+    setShowBanPanel(false);
+  };
+
+  // Fetch all users except the logged-in user when Ban Panel is opened
+  useEffect(() => {
+    if (showBanPanel) {
+      setBanUnbanMessage('');
+      fetchAllUsers();
+    }
+  }, [showBanPanel]);
+
+  const fetchAllUsers = async () => {
+    try {
+      console.log("Getting users")
+      const response = await axios.get(`http://localhost:3001/api/users`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      console.log("reponse: ", response)
+      // Exclude the logged-in user
+      const users = response.data.filter(u => u.id !== user.id);
+      setAllUsers(users);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setError('Failed to fetch users');
+    }
+  };
+
+  // Handle banning a user
+  const handleBanUser = async (username) => {
+    try {
+      await axios.post(
+        `http://localhost:3001/api/users/ban`,
+        { username },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }
+      );
+      setBanUnbanMessage('BAN SUCCESS!');
+      // Update the user's isBanned status locally
+      setAllUsers(prevUsers =>
+        prevUsers.map(user => (user.username === username ? { ...user, isBanned: true } : user))
+      );
+    } catch (error) {
+      console.error('Error banning user:', error);
+      const errorMessage = error.response?.data?.error || 'An error occurred while banning the user.';
+      setBanUnbanMessage(errorMessage);
+    }
+  };
+
+  // Handle unbanning a user
+  const handleUnbanUser = async (username) => {
+    try {
+      await axios.post(
+        `http://localhost:3001/api/users/unban`,
+        { username },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }
+      );
+      showNotification(`User ${username} has been unbanned.`, 'success');
+      // Update the user's isBanned status locally
+      setAllUsers(prevUsers =>
+        prevUsers.map(user => (user.username === username ? { ...user, isBanned: false } : user))
+      );
+      setBanUnbanMessage("UNBAN SUCCESS!");
+    } catch (error) {
+      console.error('Error unbanning user:', error);
+      showNotification('An error occurred while unbanning the user.', 'error');
+      const errorMessage = error.response?.data?.error || 'An error occurred while banning the user.';
+      setBanUnbanMessage(errorMessage);
+    }
+  };
 
   useEffect(() => {
     fetchFavoriteLocations();
@@ -32,6 +150,11 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
       setIsAllRoutesPublic(allPublic);
     }
   }, [savedRoutes]);
+
+  useEffect(() => {
+    setIsElevated(user.isElevated); // this might cause a infinite loop?
+    // here is where i want to set the visibility of the "open ban panel button"
+  }, [isElevated]);
 
   const handleGlobalPrivacyToggle = async () => {
     setIsUpdatingPrivacy(true);
@@ -522,7 +645,23 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
         </div>
        {renderSavedRoutes()}
       </div>
-        <div className="delete-account-section">
+
+      {/* Add the Ban Panel */}
+      {isElevated && (
+        <div className="open-ban-panel">
+          <div className="open-ban-panel-header">
+            <h2>Ban Panel   </h2>
+            <button
+              className="open-ban-panel-button"
+              onClick={handleOpenBanPanel}
+            >
+              OPEN BAN PANEL
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="delete-account-section">
         {!showDeleteConfirmation ? (
           <button className="delete-account-button" onClick={() => setShowDeleteConfirmation(true)}>
             <Trash2 size={16} />
@@ -542,6 +681,80 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
       </div>
         {error && <div className="error-message">{error}</div>}
       </div>
+
+      {/* Ban Panel Overlay */}
+      {showBanPanel && (
+        <div className="ban-panel-overlay">
+          <div className="ban-panel-content">
+            <div className="ban-panel-header">
+              <h2>Ban Panel</h2>
+              <button className="close-ban-panel-button" onClick={handleCloseBanPanel}>×</button>
+            </div>
+            {banUnbanMessage && (
+            <div className="ban-unban-message">
+              {banUnbanMessage}
+            </div>
+            )}
+            {allUsers.length > 0 ? (
+              <ul className="user-list">
+                {allUsers.map(u => (
+                  <li key={u.id} className="user-item">
+                    <span className="username">{u.username}</span>
+                    <div className="user-actions">
+                      <button
+                        className="view-submissions-button"
+                        onClick={() => handleViewSubmissions(u.username)}
+                      >
+                        View Submissions
+                      </button>
+                      {u.isBanned ? (
+                        <button
+                          className="unban-button"
+                          onClick={() => handleUnbanUser(u.username)}
+                        >
+                          UNBAN
+                        </button>
+                      ) : (
+                        <button
+                          className="ban-button"
+                          onClick={() => handleBanUser(u.username)}
+                        >
+                          BAN
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No users found.</p>
+            )}
+          </div>
+
+          {showSubmissionsPopup && (
+            <div className="submissions-popup-overlay">
+              <div className="submissions-popup-content">
+                <button className="close-submissions-popup-button" onClick={handleCloseSubmissionsPopup}>×</button>
+                <h2>{selectedUsername}'s Suggestions</h2>
+                {selectedUserSubmissions.length > 0 ? (
+                  <ul className="submission-list">
+                    {selectedUserSubmissions.map((submission, index) => (
+                      <li key={index} className="submission-item">
+                        <p><strong>Building ID:</strong> {submission.buildingID}</p>
+                        <p><strong>Floor Number:</strong> {submission.floorNumber}</p>
+                        <p><strong>Image URL:</strong> <a href={submission.imageURL} target="_blank" rel="noopener noreferrer">View Image</a></p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No submissions found.</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 };

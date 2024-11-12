@@ -31,7 +31,9 @@ loginRouter.post('/', async (request, response) => {
       name: user.fullName,
       email: user.email,
       major: user.major,
-      affiliation: user.affiliation
+      affiliation: user.affiliation,
+      isElevated: user.isElevated,
+      isBanned: user.isBanned,
     });
   }
   else if (!user.isBanned) {
@@ -56,7 +58,9 @@ loginRouter.post('/', async (request, response) => {
         name: user.fullName,
         email: user.email,
         major: user.major,
-        affiliation: user.affiliation
+        affiliation: user.affiliation,
+        isElevated: user.isElevated,
+        isBanned: user.isBanned,
       });
     }
 });

@@ -453,7 +453,10 @@ function App() {
       username: userData.username,
       email: userData.email,
       major: userData.major,
-      affiliation: userData.affiliation
+      affiliation: userData.affiliation,
+      isElevated: userData.isElevated,
+      isBanned: userData.isBanned,
+      floorPlanRequests: userData.floorPlanRequests,
     });
     localStorage.setItem('token', userData.token);  // If your API returns a token on account creation
     setShowCreateAccount(false);

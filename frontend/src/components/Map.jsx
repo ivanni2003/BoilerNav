@@ -12,6 +12,8 @@ import MapOptions from './MapOptions'
 import DirectionsMenu from './DirectionsMenu'
 import InteriorPopupContent from './InteriorPopupContent';
 import IndoorRouteMenu from './IndoorRouteMenu';
+import MostPopular from './MostPopular'
+import SubmitFloorPlan from './SubmitFloorPlan';
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
@@ -151,71 +153,6 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
 };
 
 
-
-const PopupForm = ({isVisible, onClose, user, building, selectedFloorPlan, showNotification}) => {
-  const [imageURL, setImageURL] = useState('')
-  const [floorNumber, setFloorNumber] = useState('')
-  if (!isVisible) {
-      return null
-  }
-
-  const handleImageURLChange = (e) => {
-    setImageURL(e.target.value);
-    console.log(imageURL)
-  }
-
-  const handleFloorNumberChange = (e) => {
-    setFloorNumber(e.target.value);
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    try {
-      const response = await axios.post(`${baseURL}/api/users/floorPlanRequests`, {
-        username: user.username,
-        imageURL: imageURL,
-        buildingID: building.id,
-        floorNumber: floorNumber
-      })
-
-      showNotification('Request submitted successfully', 'success')
-    }
-    catch (error) {
-      console.log(error)
-    }
-  }
-
-  return (
-      <div>
-          <div>
-          <span className="close" onClick={onClose}>&times;</span>
-              <h2 style={{ fontSize: '18px'}}>Submit Floor Plan</h2>
-              <form className="popup-form" onSubmit={handleSubmit}>
-                <div>
-                  <label>
-                    Floor Plan URL:
-                    <input type="text" placeholder="enter image url" onChange={handleImageURLChange} value={imageURL}/>
-                  </label>
-                </div>
-                <div>
-                <label>
-                    Floor Number:
-                    <input type="text" 
-                          value={floorNumber}
-                          placeholder="-1: basement, 0: ground, 1: floor 1, ..." 
-                          onChange={handleFloorNumberChange}/>
-                  </label>
-                </div>
-                <div>
-                  <button type="submit">Submit</button>
-                </div>
-              </form>
-          </div>
-      </div>
-  )
-}
-
 const FloorPlanView = ({ 
   building, 
   floorPlans, 
@@ -237,7 +174,6 @@ const FloorPlanView = ({
   const [showPopup, setShowPopup] = useState(false);
   const [route, setRoute] = useState(null);
 
-  const [isPopupFormVisible, setIsPopupFormVisible] = useState(false)
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [start, setStart] = useState(initialStart); // Initialize with prop
   const [destination, setDestination] = useState(initialDestination); // Initialize with prop
@@ -299,20 +235,6 @@ const FloorPlanView = ({
     setShowDirectionsMenu(false);
     setSelectedRoom(null);
   };
-
-  const closePopupForm = () => {
-    setIsPopupFormVisible(false)
-  }
-
-  const handleOpenPopupForm = () => {
-    if (user) {
-      setIsPopupFormVisible(true)
-    }
-    else {
-      console.log("notification")
-      showNotification('Please login to your account.', 'info');
-    }
-  }
 
   const handleClose = (e) => {
     e.preventDefault();
@@ -404,12 +326,14 @@ const FloorPlanView = ({
                   <p>{time !== null ? `Time: ${time} minutes` : 'Time not calculated'}</p> */}
                 </div>
       </div>
-      <div className="submit-floor-plan">
-        {!isPopupFormVisible && 
-        <button className="submit-floor-plan-btn" onClick={() => handleOpenPopupForm()}>Submit Floor Plan Image</button>
-        }
-        <PopupForm isVisible={isPopupFormVisible} onClose={closePopupForm} user={user} building={building} selectedFloorPlan={selectedFloorPlan} showNotification={showNotification}/>
-      </div>
+      {/*<MostPopular 
+              items={[]} 
+              buttonName={'Most Popular Rooms'} 
+              markRoom={markRoom} 
+              viewSavedRoute={null}/> */}
+
+      <SubmitFloorPlan user={user} building={building} showNotification={showNotification}/>
+
       <div className="floor-plan-header">
         <select 
           value={selectedFloorPlan?.floorNumber ?? 0}
@@ -975,11 +899,11 @@ const Map = ({ latitude,
               <Polyline positions={updatedPolylineCoordinates} color={polylineColor} />
             )} */}
     </MapContainer>
-    <span className="amenities-menu">
+    <div className="amenities-menu">
         <MapOptions mapOptions={mapOptions} />
         <Amenities updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
         <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
-      </span>
+      </div>
       {showFloorPlan && (
         <FloorPlanView 
           building={selectedBuilding}

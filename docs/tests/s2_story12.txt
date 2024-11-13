@@ -1,0 +1,80 @@
+Test Case 2_12_1
+System: Bike racks
+Phase: 2
+Bike rack checkbox
+Severity: 1
+
+A. Identification and classification
+- Test existence of bike rack option in map options menu
+- Verify that checkbox for bike rack option is rendered within map options menu
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Open the map options menu in the bottom left
+
+C. Expected Result:
+  1. A checkbox should be rendered for the bike rack option in the map options menu
+
+------------------------------------
+Test Case 2_12_2
+System: Bike racks
+Phase: 2
+Bike rack rendering
+Severity: 1
+
+A. Identification and classification
+- Test rendering of bike racks
+- Verify bike racks are rendered when checkbox in map options menu is clicked
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Open the map options menu in the bottom left
+  4. Click the bike rack checkbox in the map options menu to enable bike rack rendering
+
+C. Expected Result:
+  1. Bike racks should be rendered on the map
+
+-------------------------------------
+Test Case 2_12_3
+System: Bike racks
+Phase: 2
+Bike rack buttons
+Severity: 1
+
+A. Identification and classification
+- Test popup associated with bike racks
+- Verify that popups display available information about associated bike rack
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Open the map options menu in the bottom left
+  4. Click the bike rack button in the map options menu to enable bike rack rendering
+  5. Choose a bike rack on the map and click on it
+
+C. Expected Result:
+  1. A popup should be displayed with available information about the bike rack
+
+---------------------------------
+Test Case 2_12_4
+System: Bike racks
+Phase: 2
+Bike rack popup closing
+Severity: 1
+
+A. Identification and classification
+- Test behavior of closing bike rack popup
+- Verify popup closes when clicking outside of popup
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Open the map options menu in the bottom left
+  4. Click the bike rack checkbox in the map options menu to enable bike rack rendering
+  5. Choose a bike rack on the map and click on it
+  6. Click outside of the popup
+
+C. Expected Result:
+  1. The bike rack popup should close

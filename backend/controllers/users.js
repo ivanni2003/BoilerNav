@@ -51,6 +51,43 @@ usersRouter.post('/', async (request, response) => {
   }
 });
 
+usersRouter.get('/', authenticateToken, async (req, res) => {
+  try {
+    const users = await User.find({});
+    // Map users to include necessary fields and exclude sensitive information
+    const userList = users.map(user => ({
+      id: user._id,
+      username: user.username,
+      fullName: user.fullName,
+      email: user.email,
+      isBanned: user.isBanned,
+      isElevated: user.isElevated,
+      floorPlanRequests: user.floorPlanRequests,
+    }));
+    res.json(userList);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'An error occurred while fetching users' });
+  }
+});
+
+// Get user by username (for elevated users)
+usersRouter.get('/username/:username', authenticateToken, async (request, response) => {
+  try {
+    const username = request.params.username;
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return response.status(404).json({ error: 'User not found' });
+    }
+
+    response.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    response.status(500).json({ error: 'An error occurred while fetching the user' });
+  }
+});
+
 usersRouter.put('/:id', authenticateToken, async (request, response) => {
   const { id } = request.params;
   const { name, email, major, affiliation, username, password } = request.body;
@@ -192,6 +229,97 @@ usersRouter.delete('/:id/favorites/:buildingId', async (request, response) => {
   } catch (error) {
     console.error('Error removing favorite location:', error);
     response.status(500).json({ error: 'An error occurred while removing the favorite location' });
+  }
+});
+
+usersRouter.post('/floorPlanRequests', async (request, response) => {
+  try {
+    const {username, imageURL, buildingID, floorNumber} = request.body
+
+    const floorPlanRequest = {
+      username: username,
+      imageURL: imageURL,
+      buildingID: buildingID,
+      floorNumber: floorNumber
+    };
+
+    console.log(floorPlanRequest)
+
+    const elevatedUsers = await User.find({ isElevated: true });
+
+    const addRequestToElevated = elevatedUsers.map(async (userDoc) => {
+      console.log(userDoc)
+      userDoc.floorPlanRequests.push(floorPlanRequest)
+
+      await userDoc.save()
+    });
+
+    await Promise.all(addRequestToElevated)
+
+    response.status(200).json(floorPlanRequest);
+
+  } catch (error) {
+    console.log('Error submitting request for floor plan')
+    response.status(500).json({ error: 'An error occurred while removing the favorite location' })
+  }
+});
+
+// you don't actually need this. you can just use the /me endpoint and access
+// the response.data.isBanned boolean directly.
+usersRouter.get('/is-banned', async (request, response) => {
+  try {
+    const {username} = request.body
+    
+    const ban_user = await User.find({ username: username });
+
+    console.log("Checking ban status: " , ban_user);
+
+    response.status(200).json(ban_user.isBanned);
+
+  } catch (error) {
+    console.log('Error enacted ban')
+    response.status(500).json({ error: 'An error occurred while banning' })
+  }
+});
+
+usersRouter.post('/ban', async (request, response) => {
+  try {
+
+    const { username } = request.body;
+    const userToBan = await User.findOne({ username });
+
+    if (!userToBan) {
+      return response.status(404).json({ error: 'User not found' });
+    }
+
+    userToBan.isBanned = true;
+    await userToBan.save();
+
+    response.status(200).json("Ban Success!");
+
+  } catch (error) {
+    console.log('Error enacted ban')
+    response.status(500).json({ error: 'An error occurred while banning' })
+  }
+});
+
+usersRouter.post('/unban', async (request, response) => {
+  try {
+    const { username } = request.body;
+    const userToUnban = await User.findOne({ username });
+
+    if (!userToUnban) {
+      return response.status(404).json({ error: 'User not found' });
+    }
+
+    userToUnban.isBanned = false;
+    await userToUnban.save();
+
+    response.status(200).json("Unban Success!");
+
+  } catch (error) {
+    console.log('Error enacted unban')
+    response.status(500).json({ error: 'An error occurred while unbanning' })
   }
 });
 

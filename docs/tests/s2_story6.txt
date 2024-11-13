@@ -1,0 +1,100 @@
+Test Case 2_6_1
+System: Outdoor rerouting
+Phase: 2
+User does not stray from route
+Severity: 1
+
+A. Identification and classification
+- Test rerouting behavior when user correctly follows route
+- Verify that application does not reroute when user correctly follows route
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Set the GPS location to be on Purdue's campus using the browser's developer tools
+  4. Choose a building on the map and get directions to it by clicking on the building and then clicking the
+  "Directions" button, then clicking the "Go" button
+  5. Once the route is displayed, change the GPS location incrementally along the route using the browser's developer
+  tools 
+  6. Observe the lack of rerouting behavior of the application as the GPS location is changed as specified in step 5
+
+C. Expected Result:
+  1. The application should not reroute the user as the GPS location is changed along the route
+
+------------------------------------
+
+Test Case 2_6_2
+System: Outdoor rerouting
+Phase: 2
+User strays from route
+Severity: 1
+
+A. Identification and classification
+- Test rerouting behavior when user strays from route
+- Verify that application reroutes user when their location is sufficiently far from route
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Set the GPS location to be on Purdue's campus using the browser's developer tools
+  4. Choose a building on the map and get directions to it by clicking on the building and then clicking the
+  "Directions" button, then clicking the "Go" button
+  5. Once the route is displayed, change the GPS location incrementally away from the route using the browser's
+  developer tools 
+  6. Observe the rerouting behavior of the application as the GPS location is changed as specified in step 5
+
+C. Expected Result:
+  1. The application should reroute the user once the GPS location is sufficiently far from the route (at most around
+  100 meters)
+
+  --------------------------------------
+
+Test Case 2_6_3
+System: Outdoor rerouting
+Phase: 2
+Rerouting notification
+Severity: 1
+
+A. Identification and classification
+- Test rerouting notification when user strays from route
+- Verify that application notifies user when they stray sufficiently far from route
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Set the GPS location to be on Purdue's campus using the browser's developer tools
+  4. Choose a building on the map and get directions to it by clicking on the building and then clicking the
+  "Directions" button, then clicking the "Go" button
+  5. Once the route is displayed, change the GPS location incrementally away from the route using the browser's
+  developer tools 
+  6. Observe the notification that appears once the GPS location is sufficiently far from the route
+
+C. Expected Result:
+  1. The application should display a notification once the GPS location is sufficiently far from the route (at most around
+  100 meters)
+
+--------------------------------------
+
+Test Case 2_6_4
+System: Outdoor rerouting
+Phase: 2
+Rerouting is disabled
+Severity: 1
+
+A. Identification and classification
+- Test disabling of rerouting
+- Verify that user is not rerouted when sufficiently far from path given that rerouting is disabled
+
+B. Instructions
+  1. Start the frontend and backend servers by running `npm run dev` in the frontend and backend directories in separate terminals
+  2. Open a browser and navigate to the application with the URL `localhost:5173`
+  3. Set the GPS location to be on Purdue's campus using the browser's developer tools
+  4. Disable rerouting by setting the rerouting option to off in the map options menu in the bottom left
+  5. Choose a building on the map and get directions to it by clicking on the building and then clicking the
+  "Directions" button, then clicking the "Go" button
+  6. Once the route is displayed, change the GPS location incrementally away from the route using the browser's
+  developer tools 
+  7. Continue until the GPS location is about to leave Purdue's campus
+
+C. Expected Result:
+  1. The application should not reroute the user

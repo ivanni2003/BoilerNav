@@ -1,0 +1,45 @@
+Test Case 2_10_1
+System: Indoor_ReRouting           
+Phase: 2    
+Verify Indoor_ReRouting routing capabilities, verify the route given, and verify distance and time
+Severity: 3
+
+A. Identification and Classification:
+- Test existence of Indoor_ReRouting
+- Verify Indoor_ReRouting routes and  time and distance
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. Search for Lawson Hall (LWSN) using search for destination.
+    4. Click the circle associated with Lawson and click view indoors.
+    5. Click on the Team Project Lab B160 (the top most right cicle) and click start 
+    6. Click on the B129 (botom most left cicle) and click destination.
+
+C. Expected Result:
+    1. Here have rerouted from the previous route that was selected. in the top right with the times and the distances, we can see them change with the new locations selected.
+    2. Here can also see that the route given is a valid route, and is something able to be walked.
+
+-------------------------------------------------------
+Test Case 2_10_1
+System: Indoor_ReRouting           
+Phase: 2    
+Verify Indoor_ReRouting routing route continuation and whether the user is polled to determine where they are.
+Severity: 3
+
+A. Identification and Classification:
+- Test Route continuation
+- Verify the User gets to determine where they are in the building.
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. Search for Lawson Hall (LWSN) using search for destination.
+    4. Click the circle associated with Lawson and click view indoors.
+    5. Click on the Team Project Lab B160 (the top most right cicle) and click start 
+    6. Click on the B129 (botom most left cicle) and click destination.
+    7. Now Click on Team Project Lab B148 and then click on start.
+
+C. Expected Result:
+    1. The difference from Six to Seven is that the route shortens (simulating that the user is next to the B148). This also changes the Time and the distance
+    2. A user can click on any Dot and then hit start to say that they are next to that room. This then allows them to change where the app thinks they are in the building to get a more accurate route to their destination.

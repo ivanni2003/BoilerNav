@@ -158,4 +158,4 @@ if (require.main === module) {
     // Continue with the rest of your code
 }
 
-module.exports = findPath;
+module.exports = {latLonToXY, findPath};

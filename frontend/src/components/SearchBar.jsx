@@ -1,36 +1,11 @@
 import React from 'react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './SearchBar.css'
 
-const baseURL = 'http://localhost:3001'
-
-const SearchBar = ({items, updateMap, markRooms, viewSavedRoute, start, destination, searchStr}) => {
+const SearchBar = ({items, updateMap, markRoom, viewSavedRoute, searchStr}) => {
     
     const [search, setSearch] = useState('')
-    const [hasStart, setHasStart] = useState(false) // whether start is not null
-    const [hasDestination, setHasDestination] = useState(false) // whether destination is not null
     const [showDropdown, setShowDropdown] = useState(false)
-
-    // might need to delete later
-    useEffect(() => {
-      if (start) {
-          setSearch("Current Location")
-          setShowDropdown(false)
-          setHasStart(true)
-      } 
-      if (destination) {
-          console.log(destination)
-          if (destination.tags.name) {
-            setSearch(destination.tags.name)
-          }
-          else {
-            setSearch("Building")
-          }
-          setShowDropdown(false)
-          setHasDestination(true)
-
-      }
-  }, [start, destination]);
 
     const handleChange = (e) => {
         setSearch(e.target.value)
@@ -47,7 +22,7 @@ const SearchBar = ({items, updateMap, markRooms, viewSavedRoute, start, destinat
         return (`${item.startLocation.name} to ${item.endLocation.name}`).toLowerCase().includes(search.toLowerCase()) 
       }
       else {
-        return item.properties.RoomName.toLowerCase().includes(search.toLowerCase()); 
+        return item.room.properties.RoomName.toLowerCase().includes(search.toLowerCase()); 
       }
     }).slice(0, 20) 
   : [];
@@ -62,9 +37,15 @@ const SearchBar = ({items, updateMap, markRooms, viewSavedRoute, start, destinat
       }
       else if (viewSavedRoute) {
         viewSavedRoute(item)
+
+        setSearch(`${item.startLocation.name} to ${item.endLocation.name}`)
+        setShowDropdown(false)
       } 
       else {  //  click behavior for indoor map
-        markRooms(item)
+        markRoom(item)
+
+        setSearch(item.room.properties.RoomName)
+        setShowDropdown(false)
       }
     }
       return (
@@ -74,9 +55,8 @@ const SearchBar = ({items, updateMap, markRooms, viewSavedRoute, start, destinat
             value={search}
             onChange={handleChange}
             placeholder={"Search For "  + searchStr}
-            readOnly={hasDestination}
           />
-          {showDropdown && !hasDestination &&   
+          {showDropdown &&   
             <div className="dropdown">            
                 {filteredItems.length > 0 ?  (
                 filteredItems.map((item, index) => (
@@ -89,10 +69,10 @@ const SearchBar = ({items, updateMap, markRooms, viewSavedRoute, start, destinat
                     {updateMap ? item.tags.name : 
                       viewSavedRoute 
                         ? `${item.startLocation.name} to ${item.endLocation.name}` 
-                          : item.properties.RoomName} {/* based on usage of search bar */}
+                          : item.room.properties.RoomName} {/* based on usage of search bar */}
                   </ul>
                 ))
-              ) : !hasStart && search != "" && (
+              ) : search != "" && (
                 <ul className="item">No results found</ul>
               )}
               

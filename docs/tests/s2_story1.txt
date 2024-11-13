@@ -1,4 +1,4 @@
-Test Case 211
+Test Case 2_1_1
 System: SavePersonalRoutes
 Phase: 2
 Server startup check with profile section
@@ -23,7 +23,7 @@ C. Expected Result:
 
 -------------------
 
-Test Case 212
+Test Case 2_1_2
 System: SavePersonalRoutes
 Phase: 2
 Route visualization verification
@@ -47,7 +47,7 @@ C. Expected Result:
 
 -------------------
 
-Test Case 213
+Test Case 2_1_3
 System: SavePersonalRoutes
 Phase: 2
 Main page route saving functionality

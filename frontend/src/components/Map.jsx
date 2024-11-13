@@ -110,18 +110,49 @@ const MapEventHandler = ({ selectedSavedRoute }) => {
 };
 
 
+
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
+  const heatmapLayerRef = useRef(null);
 
   let SouthWestCoords = [40.40815, -86.95308];
   let NorthEastCoords = [40.44628, -86.89712];
   let WL_Bounds = [SouthWestCoords, NorthEastCoords]; 
   map.setMaxBounds(WL_Bounds);
   map.setMinZoom(15);
+  const heatData = [
+    [40.42, -86.901, 5],
+    [40.435, -86.92, 1],
+    // more data points
+  ];
 
   useEffect(() => {
-    map.setView([latitude, longitude], zoom); 
-  }, [latitude, longitude, zoom, map]); 
+    map.setView([latitude, longitude], zoom);
+    
+    // Remove existing heatmap layer if it exists
+    if (heatmapLayerRef.current) {
+      map.removeLayer(heatmapLayerRef.current);
+    }
+
+    // Create a new heatmap layer with updated heatData
+    heatmapLayerRef.current = L.heatLayer(heatData, {
+      radius: 20,
+      blur: 10,
+      maxZoom: 17
+    });
+
+    // Add the new layer to the map
+    map.addLayer(heatmapLayerRef.current);
+
+    // Cleanup function to remove the heatmap layer when the component unmounts
+    return () => {
+      if (heatmapLayerRef.current) {
+        map.removeLayer(heatmapLayerRef.current);
+      }
+    };
+  }, [latitude, longitude, zoom, map, heatData]); 
+
+  return null;
 };
 
 function latLonToXY(lat, lon) {

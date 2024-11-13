@@ -140,8 +140,32 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   ];
 
   useEffect(() => {
-    map.setView([latitude, longitude], zoom); 
-  }, [latitude, longitude, zoom, map]); 
+    map.setView([latitude, longitude], zoom);
+    
+    // Remove existing heatmap layer if it exists
+    if (heatmapLayerRef.current) {
+      map.removeLayer(heatmapLayerRef.current);
+    }
+
+    // Create a new heatmap layer with updated heatData
+    heatmapLayerRef.current = L.heatLayer(heatData, {
+      radius: 20,
+      blur: 10,
+      maxZoom: 17
+    });
+
+    // Add the new layer to the map
+    map.addLayer(heatmapLayerRef.current);
+
+    // Cleanup function to remove the heatmap layer when the component unmounts
+    return () => {
+      if (heatmapLayerRef.current) {
+        map.removeLayer(heatmapLayerRef.current);
+      }
+    };
+  }, [latitude, longitude, zoom, map, heatData]); 
+
+  return null;
 };
 
 

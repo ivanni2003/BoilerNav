@@ -1,0 +1,46 @@
+Test Case 2_9_1
+System: Indoor_Routing           
+Phase: 2    
+Verify Indoor_Routing routing capabilities and verify distance and time
+Severity: 4
+
+A. Identification and Classification:
+- Test existence of Indoor_Routing
+- Verify Indoor_Routing routes and  time and distance
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. Search for Lawson Hall (LWSN) using search for destination.
+    4. Click the circle associated with Lawson and click view indoors.
+    5. Using the Drop-down menu from the top-right, click to Floor 1.
+    6. If you want to test the distance and time, you can go to Lawson and test by walking and measuring the route.
+
+C. Expected Result:
+    1. A viable route (on the map) between two locations (doesn't go like through walls, or through rooms, etc)
+    2. This route should take the user between the two locations.
+    3. In the middle right, a distance and time should exist that are relatively accurate to the actual distance/time spent walking
+
+-------------------------------------------------------
+Test Case 2_9_2
+System: Indoor Routing              
+Phase: 2    
+Verify different floor routing and direct routes
+Severity: 1
+
+A. Identification and Classification:
+- Test that the algorithm provides a route that goes through the elevators/stairs in order to get to another floor.
+- Test that the algorithm provides the most direct route go an endpoint
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. Search for Lawson Hall (LWSN) using search for destination
+    4. Click the circle associated with Lawson and click view indoors.
+    5. Click the dot next to 1142 University Meeting Room (the room across from the elevator) and then click start
+    6. Using the dropdown menu in the top left, click floor 3
+    7. Click the dot next to the Terrace (the room in the bottom right on floor 3), and click destination.
+
+C. Expected Result:
+    1. The path leads to the elevator, and from the elevator then goes directly to the terrace
+    2. This is a (relatively straight route) but goes directly to the destination from the start.

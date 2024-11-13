@@ -1,4 +1,4 @@
-Test Case 221
+Test Case 2_2_1
 System: SavedLocationsAccess
 Phase: 2
 Verify saved locations display and routing from main page
@@ -22,7 +22,7 @@ C. Expected Result:
 
 -------------------
 
-Test Case 222
+Test Case 2_2_2
 System: SavedLocationsDelete
 Phase: 2
 Verify location removal synchronization
@@ -47,7 +47,7 @@ C. Expected Result:
 
 -------------------
 
-Test Case 223
+Test Case 2_2_3
 System: SavedLocationsAdd
 Phase: 2
 Verify new location addition synchronization
@@ -71,7 +71,7 @@ C. Expected Result:
 
 -------------------
 
-Test Case 224
+Test Case 2_2_4
 System: SavedLocationsRouting
 Phase: 2
 Verify route generation functionality

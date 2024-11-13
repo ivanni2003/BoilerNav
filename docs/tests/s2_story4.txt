@@ -1,4 +1,4 @@
-Test Case 241
+Test Case 2_4_1
 System: RoutePrivacyButton
 Phase: 2
 Verify presence and location of privacy toggle button
@@ -22,7 +22,7 @@ C. Expected Result:
 
 -------------------
 
-Test Case 242
+Test Case 2_4_2
 System: RoutePrivacyFunctionality
 Phase: 2
 Verify privacy functionality for other users
@@ -49,7 +49,7 @@ C. Expected Result:
 
 -------------------
 
-Test Case 243
+Test Case 2_4_3
 System: RoutePrivacyTooltip
 Phase: 2
 Verify privacy button tooltip functionality

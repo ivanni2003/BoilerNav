@@ -12,7 +12,17 @@ const userSchema = new mongoose.Schema({
     lat: Number,
     lon: Number,
     buildingId: String
-  }]
+  }],
+  isElevated: { type: Boolean, default: false },
+  isBanned: { type: Boolean, default: false },
+  floorPlanRequests: [
+    {
+      username: String,
+      imageURL: String,
+      buildingID: Number,
+      floorNumber: String
+    }
+  ]
 });
 
 userSchema.set('toJSON', {

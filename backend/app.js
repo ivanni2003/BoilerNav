@@ -15,6 +15,7 @@ const floorPlanRouter = require("./controllers/floorPlans");
 const routesRouter = require("./controllers/routes");
 const indoorDataRouter = require("./controllers/indoorDataInfo");
 const indoorNavRouter = require('./controllers/navigation')
+const Route = require('./models/route');
 
 
 const url =

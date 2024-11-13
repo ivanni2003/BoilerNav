@@ -1,0 +1,62 @@
+Test Case 2_14_1
+System: BusSystem
+Phase: 2
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. If you are prompted for your location, click "Allow".
+    4. Click on "Bus" on the bottom right
+    5. Click any building
+    6. In the popup, click "Directions"
+    7. In the directions menu, click "Go"
+
+C. Expected Result:
+    1. It may take a while, but a red routing line will appear which "walks" to the 
+        nearest bus stop, takes the bus to the next bus stop, then "walks" to the
+        destination.
+
+-------------------
+
+Test Case 2_14_2
+System: BusSystem
+Phase: 2
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. If you are prompted for your location, click "Allow".
+    4. Click on "Bus" on the bottom right
+
+C. Expected Result:
+    1. All available bus stops on campus will be shown as bright red circles.
+        You can click on any red circle to view information about the bus stop.
+
+-------------------
+
+Test Case 2_14_3
+System: BusSystem
+Phase: 2
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+
+B. Instructions:
+    1. In one tab, run npm run dev in backend directory.
+    2. In another tab, run npm run dev in frontend directory.
+    3. If you are prompted for your location, click "Allow".
+    4. Click on "Bus" on the bottom right
+
+C. Expected Result:
+    1. All available bus stops on campus will be shown as bright red circles.
+
+-------------------

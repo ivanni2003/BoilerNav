@@ -8,6 +8,7 @@ const SearchBar = ({items, updateMap, markRoom, viewSavedRoute, searchStr}) => {
     const [showDropdown, setShowDropdown] = useState(false)
 
     const handleChange = (e) => {
+      console.log(items)
         setSearch(e.target.value)
         setShowDropdown(true);
     }
@@ -57,7 +58,7 @@ const SearchBar = ({items, updateMap, markRoom, viewSavedRoute, searchStr}) => {
             placeholder={"Search For "  + searchStr}
           />
           {showDropdown &&   
-            <div className="dropdown">            
+            <div className="search-dropdown">            
                 {filteredItems.length > 0 ?  (
                 filteredItems.map((item, index) => (
                   <ul 

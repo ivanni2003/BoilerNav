@@ -115,7 +115,7 @@
 { "type": "Feature", "properties": { "id": 110, "Type": "Restroom", "RoomName": "Restroom", "LinkedTo": "109", "Floor": 1 }, "geometry": { "type": "Point", "coordinates": [ -86.91701, 40.42814 ] } },
 { "type": "Feature", "properties": { "id": 111, "Type": "Intersection", "RoomName": "Intersection", "LinkedTo": "109,112,113", "Floor": 1 }, "geometry": { "type": "Point", "coordinates": [ -86.91699, 40.42808 ] } },
 { "type": "Feature", "properties": { "id": 112, "Type": "Room", "RoomName": "2161", "LinkedTo": "111", "Floor": 1 }, "geometry": { "type": "Point", "coordinates": [ -86.91701, 40.42808 ] } },
-{ "type": "Feature", "properties": { "id": 113, "Type": "Intersection", "RoomName": "Intersection", "LinkedTo": "111,114,115", "Floor": null }, "geometry": { "type": "Point", "coordinates": [ -86.91699, 40.42803 ] } },
+{ "type": "Feature", "properties": { "id": 113, "Type": "Intersection", "RoomName": "Intersection", "LinkedTo": "111,114,115", "Floor": 1 }, "geometry": { "type": "Point", "coordinates": [ -86.91699, 40.42803 ] } },
 { "type": "Feature", "properties": { "id": 114, "Type": "Room", "RoomName": "2161", "LinkedTo": "113", "Floor": 1 }, "geometry": { "type": "Point", "coordinates": [ -86.91700, 40.42803 ] } },
 { "type": "Feature", "properties": { "id": 115, "Type": "Intersection", "RoomName": "Intersection", "LinkedTo": "113,116,117", "Floor": 1 }, "geometry": { "type": "Point", "coordinates": [ -86.91699, 40.42798 ] } },
 { "type": "Feature", "properties": { "id": 116, "Type": "Room", "RoomName": "2149", "LinkedTo": "115", "Floor": 1 }, "geometry": { "type": "Point", "coordinates": [ -86.91700, 40.42798 ] } },

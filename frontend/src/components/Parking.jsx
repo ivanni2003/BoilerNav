@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Amenities.css'
+import './Parking.css'
 import axios from 'axios';
 
 const baseURL = 'http://localhost:3001'

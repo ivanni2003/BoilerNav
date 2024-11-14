@@ -5,7 +5,7 @@ import './Map.css';
 import L from 'leaflet';
 import 'leaflet.heat';
 import arrowIcon from '../img/up-arrow.png';
-import Amenities from './Amenities'
+import Parking from './Parking'
 import SearchBar from './SearchBar'
 import BusStops from './BusStops'
 import MapOptions from './MapOptions'
@@ -245,9 +245,12 @@ const FloorPlanView = ({
   useEffect(() => {
     async function fetchAndSetRooms() {
       const response = await axios.get(`${baseURL}/api/indoordata/${building.tags.name}`)
+      console.log(response)
+      console.log(response.data)
+      console.log(response.data.features)
+
       const indoorData = response.data
-      //console.log(response.data)
-      //console.log(selectedFloorPlan)
+   
       // Note: account for basement, 1, 2, 3, 4 for now. Need to change either floor plan or data to align and account for ground floors
       const filteredRooms = await Promise.all(
         indoorData.features
@@ -314,6 +317,13 @@ const FloorPlanView = ({
           <h1>BoilerNav</h1>
         </div>
       </header>
+      <div className='most-popular-rooms'>
+      {<MostPopular 
+              items={[]} 
+              buttonName={'Most Popular Rooms'} 
+              markRoom={markRoom} 
+              viewSavedRoute={null}/> }
+      </div>  
       <div className="floor-plan-search"> 
                 <SearchBar items={rooms} updateMap={null} markRoom={markRoom} viewSavedRoute={null} searchStr={"Room"} />
                 <div>
@@ -326,11 +336,6 @@ const FloorPlanView = ({
                   <p>{time !== null ? `Time: ${time} minutes` : 'Time not calculated'}</p> */}
                 </div>
       </div>
-      {/*<MostPopular 
-              items={[]} 
-              buttonName={'Most Popular Rooms'} 
-              markRoom={markRoom} 
-              viewSavedRoute={null}/> */}
 
       <SubmitFloorPlan user={user} building={building} showNotification={showNotification}/>
 
@@ -901,7 +906,7 @@ const Map = ({ latitude,
     </MapContainer>
     <div className="amenities-menu">
         <MapOptions mapOptions={mapOptions} />
-        <Amenities updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
+        <Parking updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
         <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
       </div>
       {showFloorPlan && (

@@ -122,6 +122,20 @@ const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, ma
   );
 };
 
+async function fetchHeatmapData() {
+  try {
+    const response = await fetch('http://localhost:3001/api/heatmap/heatmap-get'); // Replace with your backend URL
+    if (!response.ok) {
+      throw new Error('Failed to fetch heatmap data');
+    }
+    const data = await response.json();
+    console.log('Heatmap Data:', data); // This will include lat, long, and intensity
+    return data;
+  } catch (error) {
+    console.error('Error fetching heatmap data:', error);
+  }
+}
+
 
 
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
@@ -134,7 +148,7 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   map.setMaxBounds(WL_Bounds);
   map.setMinZoom(15);
   const heatData = [
-    [40.42, -86.901, 5],
+    [40.42, -86.901, 4],
     [40.435, -86.92, 1],
     // more data points
   ];
@@ -143,19 +157,24 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
     map.setView([latitude, longitude], zoom);
     
     // Remove existing heatmap layer if it exists
-    if (heatmapLayerRef.current) {
-      map.removeLayer(heatmapLayerRef.current);
+    async function updateHeatmap() {
+      const heatmapData = await fetchHeatmapData();
+      if (heatmapLayerRef.current) {
+        map.removeLayer(heatmapLayerRef.current);
+      }
+
+      // Convert data to Leaflet.heat format
+      const heatData = heatmapData.map(({ lat, long, intensity }) => [lat, long, intensity]);
+
+      // Add the new heatmap layer
+      heatmapLayerRef.current = L.heatLayer(heatData, {
+        radius: 20,
+        blur: 10,
+        maxZoom: 17,
+      }).addTo(map);
     }
 
-    // Create a new heatmap layer with updated heatData
-    heatmapLayerRef.current = L.heatLayer(heatData, {
-      radius: 20,
-      blur: 10,
-      maxZoom: 17
-    });
-
-    // Add the new layer to the map
-    map.addLayer(heatmapLayerRef.current);
+    updateHeatmap();
 
     // Cleanup function to remove the heatmap layer when the component unmounts
     return () => {

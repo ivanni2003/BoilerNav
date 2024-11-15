@@ -7,12 +7,18 @@ heatMapRouter.get('/heatmap-get', async (req, res) => {
     try {
         // Retrieve all heatmap data and calculate intensities
         const heatmapData = await Heatmap.find({});
-        const data = heatmapData.map(doc => ({
-            lat: doc.lat,
-            long: doc.long,
-            intensity: (doc.uids.length / 10)  // Intensity based on number of UIDs
-        }));
-        res.json(data);
+        const processedData = await Promise.all(
+            heatmapData.map(async (doc) => {
+                await doc.removeExpiredUIDs(); // Call the method on each document
+                return {
+                    lat: doc.lat,
+                    long: doc.long,
+                    intensity: doc.uids.length / 10 // Calculate intensity
+                };
+            })
+        );
+
+        res.json(processedData);
     } catch (error) {
         console.error("Error retrieving heatmap data:", error);
         res.status(500).json({ message: "Internal server error" });

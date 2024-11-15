@@ -1,5 +1,6 @@
 const indoorDataRouter = require('express').Router();
 const IndoorData = require('../models/indoorData');
+const UpdateRequest = require('../models/updateRequest');
 
 indoorDataRouter.post('/', async(request, response) => {
     const indoorData = request.body
@@ -27,5 +28,24 @@ indoorDataRouter.get('/:name', async(request, response) => {  // get by name
         response.status(400, error)
     }
 })
+
+// Add API to submit update requests
+indoorDataRouter.post('/update-request', async (request, response) => {
+    const { buildingName, roomId, newRoomName, username } = request.body;
+    try {
+      const updateRequest = new UpdateRequest({
+        buildingName,
+        roomId,
+        newRoomName,
+        username
+      });
+      await updateRequest.save();
+  
+      response.status(200).json({ message: 'Update request submitted successfully' });
+    } catch (error) {
+      console.error('Error handling update request:', error);
+      response.status(500).json({ error: 'Failed to submit update request' });
+    }
+  });
 
 module.exports = indoorDataRouter

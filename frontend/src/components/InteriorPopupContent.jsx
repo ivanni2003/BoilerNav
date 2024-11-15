@@ -1,7 +1,7 @@
 import React from 'react';
 import './InteriorPopupContent.css';
 
-const InteriorPopupContent = ({ roomName, onStartClick, onDestinationClick, onClose, position }) => {
+const InteriorPopupContent = ({ roomName, onStartClick, onDestinationClick, onUpdateClick, onClose, position }) => {
   const style = {
     position: 'absolute',
     top: position.y,
@@ -16,6 +16,7 @@ const InteriorPopupContent = ({ roomName, onStartClick, onDestinationClick, onCl
       <div className="button-group">
         <button className="popup-button" onClick={onStartClick}>Start</button>
         <button className="popup-button" onClick={onDestinationClick}>Destination</button>
+        <button className="popup-button" onClick={onUpdateClick} >Update</button>
         <button className="popup-close" onClick={onClose}>x</button>
       </div>
     </div>

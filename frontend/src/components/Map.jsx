@@ -10,6 +10,7 @@ import SearchBar from './SearchBar'
 import BusStops from './BusStops'
 import MapOptions from './MapOptions'
 import DirectionsMenu from './DirectionsMenu'
+import FloorPlanImage from './FloorPlanImage';
 import InteriorPopupContent from './InteriorPopupContent';
 import IndoorRouteMenu from './IndoorRouteMenu';
 import { v4 as uuid } from 'uuid'
@@ -219,8 +220,12 @@ const FloorPlanView = ({
   initialDestination,
   handleTitleClick
 }) => {
-  const [selectedFloorPlan, setSelectedFloorPlan] = useState(floorPlans && floorPlans.length > 0 ? floorPlans[0] : null);
-  const [rooms, setRooms] = useState([])
+  // TODO: If floorPlans is updated to include both floorIndex and floorNumber, this can be updated
+  const startingFloorPlan = floorPlans && floorPlans.length > 0 ? floorPlans[0] : null;
+  if (startingFloorPlan) {
+    startingFloorPlan.floorIndex = 0;
+  }
+  const [selectedFloorPlan, setSelectedFloorPlan] = useState(startingFloorPlan);
   const [distance, setDistance] = useState(null);
   const [time, setTime] = useState(null);
   const [markedRoom, setMarkedRoom] = useState(null);
@@ -229,6 +234,7 @@ const FloorPlanView = ({
   const [selectedRoom, setSelectedRoom] = useState(null); // Store selected room data for DirectionsMenu
   const [showPopup, setShowPopup] = useState(false);
   const [route, setRoute] = useState(null);
+  const [isEditModeOn, setIsEditModeOn] = useState(false);
 
   const [topRooms, setTopRooms] = useState([])
 
@@ -236,6 +242,10 @@ const FloorPlanView = ({
   const [start, setStart] = useState(initialStart); // Initialize with prop
   const [destination, setDestination] = useState(initialDestination); // Initialize with prop
 
+  const [indoorNavData, setIndoorNavData] = useState(null);
+  const [rooms, setRooms] = useState([])
+  const [features, setFeatures] = useState([])
+  const [selectedFeature, setSelectedFeature] = useState(null);
 
   const clearRoute = () => {
     setStart(null);
@@ -261,6 +271,38 @@ const FloorPlanView = ({
     const y = rect.top - containerRect.top + rect.height / 2;
 
     setPopupPosition({ x, y });
+  }
+
+  const handleFloorPlanClick = (x, y) => {
+    if (!isEditModeOn) return;
+    console.log("User clicked on the floor plan at: ", x, y);
+    const newFeature = {
+      properties: {
+        id: features.length,
+        type: "Intersection",
+        roomName: "Intersection",
+        linkedTo: [],
+        floor: selectedFloorPlan.floorIndex
+      },
+      geometry: { x, y }
+    }
+    setFeatures([...features, newFeature]);
+    if (selectedFeature) {
+      linkTwoFeatures(selectedFeature, newFeature);
+    }
+    setSelectedFeature(newFeature);
+    console.log("Added new feature:", newFeature);
+  }
+
+  const handleFeatureClick = (event, feature) => {
+    if (!isEditModeOn) return;
+    console.log("User clicked on feature:", feature);
+    if (!selectedFeature) {
+      setSelectedFeature(feature);
+    } else if (selectedFeature.properties.id === feature.properties.id) {
+    } else {
+      setSelectedFeature(feature);
+    }
   }
 
   useEffect(() => {
@@ -294,6 +336,39 @@ const FloorPlanView = ({
     setSelectedRoom(null);
   };
 
+  const handleChangeSelectedFloorPlan = (e) => {
+    const index = floorPlans.findIndex(fp => fp.floorNumber === e.target.value);
+    const newSelectedFloorPlan = floorPlans[index];
+    newSelectedFloorPlan.floorIndex = index;
+    setSelectedFloorPlan(newSelectedFloorPlan);
+  }
+
+  const handleEditModeButton = () => {
+    if (isEditModeOn) {
+      // TODO: Send update request to server instead of instant update
+      const indoorData = indoorNavData;
+      indoorData.features = features;
+      // Use indoorData as the body of the request
+      const response = axios.post(`${baseURL}/api/indoordata`, indoorData);
+      if (response.status === 400) {
+        console.error('Failed to update indoor data:', response.data);
+        showNotification('Failed to update indoor data.', 'error');
+      }
+    }
+    setIsEditModeOn(!isEditModeOn);
+  };
+
+  const linkTwoFeatures = (feature1, feature2) => {
+    if (!feature1 || !feature2) return;
+    if (feature1.properties.id === feature2.properties.id) return;
+    if (!feature1.properties.linkedTo.includes(feature2.properties.id)) {
+      feature1.properties.linkedTo.push(feature2.properties.id);
+    }
+    if (!feature2.properties.linkedTo.includes(feature1.properties.id)) {
+      feature2.properties.linkedTo.push(feature1.properties.id);
+    }
+  };
+
   const handleClose = (e) => {
     e.preventDefault();
     clearRoute();
@@ -322,64 +397,72 @@ const FloorPlanView = ({
   }
 
   useEffect(() => {
-    async function fetchAndSetRooms() {
-      const buildingName = building.tags.name.replace(' ', '') // remove spaces in building name
-      let indoorData = null
-
+    async function fetchIndoorNavData() {
       try {
-        const response = await axios.get(`${baseURL}/api/indoordata/${buildingName}`)
-        indoorData = response.data
+        // Remove all spaces from building name
+        // URL doesn't accept spaces?
+        const buildingNameNoSpaces = building.tags.name.replaceAll(' ', '');
+        const response = await axios.get(`${baseURL}/api/indoordata/${buildingNameNoSpaces}`);
+        if (response.status !== 200) {
+          console.error("Failed to fetch indoor data:", response.data);
+          showNotification('Failed to fetch indoor data.', 'error');
+          return;
+        }
+        console.log("Fetched indoor data:", response.data);
+        const indoorData = response.data;
+        setIndoorNavData(indoorData);
+      // Catch 404 error and create new indoor data
       } catch (error) {
-        console.log(error)
-      }
-
-      const floorLevel = convertFloorLevel(selectedFloorPlan.floorNumber)
-      console.log(floorLevel)
-
-      try {
-        const response = await axios.get(`${baseURL}/api/indoordata/${buildingName}/${floorLevel}/topRooms`)
-        setTopRooms(response.data)
-      } catch (error) {
-        console.log(error)
-      }
-
-      // implement top rooms somewhere here using current floor, building name, etc.
-
-      //console.log(response.data)
-      //console.log(selectedFloorPlan)
-      // Note: account for basement, 1, 2, 3, 4 for now. Need to change either floor plan or data to align and account for ground floors
-      const filteredRooms = await Promise.all(
-        indoorData.features
-          .filter(room => {
-            const roomFloor = room.properties.Floor;
-            return (
-              room.properties.Type === "Room" &&
-              (
-                (selectedFloorPlan.floorNumber === 'Basement' && roomFloor === -1) ||
-                (selectedFloorPlan.floorNumber === '1' && roomFloor === 0) ||
-                (selectedFloorPlan.floorNumber === '2' && roomFloor === 1) ||
-                (selectedFloorPlan.floorNumber === '3' && roomFloor === 2) ||
-                (selectedFloorPlan.floorNumber === '4' && roomFloor === 3)
-              )
-            );
-          })
-          .map(async room => {
-            const roomName = room.properties.RoomName;
-
-            // Fetch x, y position for each room
-            const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
-              params: { name: roomName }
+        const buildingNameNoSpaces = building.tags.name.replaceAll(' ', '');
+        if (error.response.status === 404) {
+          console.error("Indoor data not found for building:", building.tags.name);
+          showNotification('Indoor data not found for this building.', 'error');
+          const indoorData = {
+            name: buildingNameNoSpaces,
+            floors: [],
+            features: [],
+            scale: -1,
+          };
+          // TODO: If floorNumber becomes becomes the actual floor number, and a floorName is added to floorPlans, this
+          // needs to be updated to match the new structure
+          floorPlans.forEach((floorPlan, index) => {
+            indoorData.floors.push({
+              floorName: floorPlan.floorNumber,
+              floorIndex: index,
             });
-            const { x, y } = response.data;
-            return { room: room, x: x, y: y };
-          })
-      );
+          });
+          setIndoorNavData(indoorData);
+          console.log("Created new indoor data:", indoorData);
+          return;
+        }
+      }
+    }
+    fetchIndoorNavData();
+  }, [building]);
 
+  useEffect(() => {
+    function setFilteredRooms() {
+      const indoorData = indoorNavData;
+      if (!indoorData || !selectedFloorPlan) return;
+      // Find the index of element in indoorData.floor that matches selectedFloorPlan.floorNumber
+      const floorFromFeatureCollection = indoorData.floors.find((floor) => floor.floorName === selectedFloorPlan.floorNumber);
+      if (!floorFromFeatureCollection) {
+        console.error('Floor not found in indoor data:', selectedFloorPlan.floorNumber, 
+          "\nAvailable floors:", indoorData.floors);
+        return;
+      }
+      const floorIndex = floorFromFeatureCollection.floorIndex;
+      const features = indoorData.features;
+      setFeatures(features)
+      const filteredRooms = features.filter((feature) => {
+        if (feature.properties.type !== 'room') return false;
+        if (feature.properties.floor !== floorIndex) return false;
+        return true;
+      })
       setRooms(filteredRooms);
     }
-    fetchAndSetRooms()
-    clearRoute()
-  }, [selectedFloorPlan, building]);
+    setFilteredRooms();
+  }, [indoorNavData, selectedFloorPlan, building]);
 
 
   const handleRouteClose = () => {
@@ -445,10 +528,13 @@ const FloorPlanView = ({
 
       <SubmitFloorPlan user={user} building={building} showNotification={showNotification}/>
 
+      <div className="floor-plan-editing">
+        <button className="edit-mode-btn" onClick={() => handleEditModeButton()}>Toggle Edit Mode</button>
+      </div>
       <div className="floor-plan-header">
         <select 
           value={selectedFloorPlan?.floorNumber ?? 0}
-          onChange={(e) => setSelectedFloorPlan(floorPlans.find(fp => fp.floorNumber === e.target.value))}
+          onChange={handleChangeSelectedFloorPlan}
         >
           {floorPlans && floorPlans.map(fp => (
             <option key={fp.floorNumber} value={fp.floorNumber}>
@@ -460,11 +546,22 @@ const FloorPlanView = ({
         <button onClick={onClose}>×</button>
       </div>
       <div className="floor-plan-content">
-        <img ref={imageRef} src={selectedFloorPlan?.imageUrl ?? null} alt={selectedFloorPlan?.floorNumber ? `Floor ${selectedFloorPlan.floorNumber}` : 'No floor plan available'} />
+        <FloorPlanImage
+          imageUrl={selectedFloorPlan?.imageUrl ?? null}
+          alt={selectedFloorPlan?.floorNumber ? `Floor ${selectedFloorPlan.floorNumber}` : 'No floor plan available'}
+          onFloorPlanClick={handleFloorPlanClick}
+          onRoomClick={handleRoomClick}
+          onFeatureClick={handleFeatureClick}
+          rooms={rooms}
+          features={features}
+          isEditModeOn={isEditModeOn}
+          selectedFloorPlan={selectedFloorPlan}
+          selectedFeature={selectedFeature}
+        />
         
         {/* Path handler for interior */}
          {/* need to pass the building over */}
-         <FloorPlan 
+        {/*<FloorPlan 
           startNode={start?.properties?.id} 
           endNode={destination?.properties?.id} 
           rooms={rooms} 
@@ -473,7 +570,7 @@ const FloorPlanView = ({
           markedRoom={markedRoom} 
           handleRoomClick={handleRoomClick} 
           building={building}
-        />
+        />*/}
           {start && destination && distance && time && (
           <div className="floor-plan-directions">
             <IndoorRouteMenu
@@ -789,19 +886,19 @@ const Map = ({ latitude,
   setIndoorStart,
   setIndoorDestination,
   handleTitleClick }) => {
-    const [parkingLots, setParkingLots] = useState([])
-    const [busStops, setBusStops] = useState([]);
-    const [bikeRacks, setBikeRacks] = useState([]);
+  const [parkingLots, setParkingLots] = useState([])
+  const [busStops, setBusStops] = useState([]);
+  const [bikeRacks, setBikeRacks] = useState([]);
 
-    const markParkingLots = (lots) => {
-      setParkingLots(lots)
-      console.log(parkingLots)
+  const markParkingLots = (lots) => {
+    setParkingLots(lots)
+    console.log(parkingLots)
 
-    }
+  }
 
-    const markBusStops = (stops) => {
-      setBusStops(stops)
-    }
+  const markBusStops = (stops) => {
+    setBusStops(stops)
+  }
 
   // DEBUG: Fetch navNodes and navWays for rendering
   // Comment out if not needed
@@ -837,7 +934,7 @@ const Map = ({ latitude,
   //   fetchNavWays();
   //   fetchNodeGraph();
   // }, []);
-  
+
   useEffect(() => {
     const fetchBikeRacks = async () => {
       try {
@@ -896,14 +993,12 @@ const Map = ({ latitude,
       setBusStops([]);
     }
   }, [selectedMode]);
-  
+
+  const customIconHTML = `<div style="transform: rotate(${heading || 0}deg); width: 32px; height: 32px;">` + `<img src="${arrowIcon}" style="width: 100%; height: 100%;" alt="Marker" />` + `</div>`;
+
   const customIcon = L.divIcon({
     className: "custom-marker",
-    html: `
-      <div style="transform: rotate(${heading || 0}deg); width: 32px; height: 32px;">
-        <img src="${arrowIcon}" style="width: 100%; height: 100%;" alt="Marker" />
-      </div>
-    `,
+    html: customIconHTML,
     iconAnchor: [16, 16] // Center the icon
   });
   const updatedPolylineCoordinates = userLocation
@@ -911,127 +1006,127 @@ const Map = ({ latitude,
     : polylineCoordinates;
 
 
-    // const handleViewIndoorPlan = async (building) => {
-    //   setSelectedBuilding(building);
-    //   if (building.floorPlans && building.floorPlans.length > 0) {
-    //     setFloorPlans(building.floorPlans);
-    //     setShowFloorPlan(true);
-    //   } else {
-    //     try {
-    //       const response = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
-    //       if (building.tags.name == null) {  // unnamed buildings
-    //         showNotification('No floor plans available for this building', 'info');
-    //       }
-    //       else if (response.data && response.data.length > 0) {   // buildings with uploaded plans
-    //         setFloorPlans(response.data);
-    //         setShowFloorPlan(true);
-    //       } else {
-    //         setFloorPlans(null)
-    //         setShowFloorPlan(true);
-    //       }
-    //     } catch (error) {
-    //       console.error('Error fetching floor plans:', error);
-    //       showNotification('Error fetching floor plans', 'error');
-    //     }
-    //   }
-    // };
+  // const handleViewIndoorPlan = async (building) => {
+  //   setSelectedBuilding(building);
+  //   if (building.floorPlans && building.floorPlans.length > 0) {
+  //     setFloorPlans(building.floorPlans);
+  //     setShowFloorPlan(true);
+  //   } else {
+  //     try {
+  //       const response = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
+  //       if (building.tags.name == null) {  // unnamed buildings
+  //         showNotification('No floor plans available for this building', 'info');
+  //       }
+  //       else if (response.data && response.data.length > 0) {   // buildings with uploaded plans
+  //         setFloorPlans(response.data);
+  //         setShowFloorPlan(true);
+  //       } else {
+  //         setFloorPlans(null)
+  //         setShowFloorPlan(true);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching floor plans:', error);
+  //       showNotification('Error fetching floor plans', 'error');
+  //     }
+  //   }
+  // };
 
-    const mapCenter = [
-      latitude !== undefined ? latitude : DEFAULT_LAT,
-      longitude !== undefined ? longitude : DEFAULT_LON
-    ];
-    const mapZoom = zoom !== undefined ? zoom : DEFAULT_ZOOM;
-  
+  const mapCenter = [
+    latitude !== undefined ? latitude : DEFAULT_LAT,
+    longitude !== undefined ? longitude : DEFAULT_LON
+  ];
+  const mapZoom = zoom !== undefined ? zoom : DEFAULT_ZOOM;
 
-    const renderSavedRoute = () => {
-      if (selectedSavedRoute && Array.isArray(selectedSavedRoute.polyline) && selectedSavedRoute.polyline.length > 1) {
-        console.log('Rendering saved route:', selectedSavedRoute);
-        return (
-          <Polyline 
-            positions={selectedSavedRoute.polyline} 
-            color="blue"
-          >
-            <Popup>
-              {selectedSavedRoute.endLocation?.name || 'Unknown Destination'}
-              <br />
-              Distance: {selectedSavedRoute.distance?.toFixed(2) || 'N/A'} miles
-              <br />
-              Duration: {selectedSavedRoute.duration?.toFixed(0) || 'N/A'} minutes
-            </Popup>
-          </Polyline>
-        );
-      }
-      // console.warn('Unable to render saved route:', selectedSavedRoute);
-      return null;
-    };
-    
-    return (
-      <div className="map-wrapper">
-    <MapContainer center={[latitude, longitude]} zoom={zoom} zoomControl={false} className="map-container">
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      <MapEventHandler selectedSavedRoute={selectedSavedRoute} />
-      {renderSavedRoute()}
-      {/* Add blue polyline nodes for the routing system */}
-      {polylineCoordinates.length > 0 && (
-        <Polyline key={selectedMode} positions={updatedPolylineCoordinates || polylineCoordinates} color={polylineColor} />
-      )}
-      {polylineCoordinates.map((coords, index) => (
-        <Marker key={index} position={coords}>
+
+  const renderSavedRoute = () => {
+    if (selectedSavedRoute && Array.isArray(selectedSavedRoute.polyline) && selectedSavedRoute.polyline.length > 1) {
+      console.log('Rendering saved route:', selectedSavedRoute);
+      return (
+        <Polyline 
+          positions={selectedSavedRoute.polyline} 
+          color="blue"
+        >
           <Popup>
-            Lat: {coords[0]}, Lon: {coords[1]}
+            {selectedSavedRoute.endLocation?.name || 'Unknown Destination'}
+            <br />
+            Distance: {selectedSavedRoute.distance?.toFixed(2) || 'N/A'} miles
+            <br />
+            Duration: {selectedSavedRoute.duration?.toFixed(0) || 'N/A'} minutes
           </Popup>
-        </Marker>
-      ))}
-      <BuildingsRenderer 
-        buildings={buildings} 
-        viewIndoorPlan={handleViewIndoorPlan}
-        getDirections={getDirections}
-        user={user}
-        showNotification={showNotification}
-        favoriteLocations={favoriteLocations}
-        isLoadingFavorites={isLoadingFavorites}
-        onFavoriteToggle={onFavoriteToggle}
-      />
-      <BikeRacksRenderer bikeRacks={bikeRacks} isBikeRacksVisible={mapOptions.isBikeRacksVisible} />
-      {parkingLots.map((lot, index) => (
+        </Polyline>
+      );
+    }
+    // console.warn('Unable to render saved route:', selectedSavedRoute);
+    return null;
+  };
+
+  return (
+    <div className="map-wrapper">
+      <MapContainer center={[latitude, longitude]} zoom={zoom} zoomControl={false} className="map-container">
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        <MapEventHandler selectedSavedRoute={selectedSavedRoute} />
+        {renderSavedRoute()}
+        {/* Add blue polyline nodes for the routing system */}
+        {polylineCoordinates.length > 0 && (
+          <Polyline key={selectedMode} positions={updatedPolylineCoordinates || polylineCoordinates} color={polylineColor} />
+        )}
+        {polylineCoordinates.map((coords, index) => (
+          <Marker key={index} position={coords}>
+            <Popup>
+              Lat: {coords[0]}, Lon: {coords[1]}
+            </Popup>
+          </Marker>
+        ))}
+        <BuildingsRenderer 
+          buildings={buildings} 
+          viewIndoorPlan={handleViewIndoorPlan}
+          getDirections={getDirections}
+          user={user}
+          showNotification={showNotification}
+          favoriteLocations={favoriteLocations}
+          isLoadingFavorites={isLoadingFavorites}
+          onFavoriteToggle={onFavoriteToggle}
+        />
+        <BikeRacksRenderer bikeRacks={bikeRacks} isBikeRacksVisible={mapOptions.isBikeRacksVisible} />
+        {parkingLots.map((lot, index) => (
           <Marker key={index} position={[lot.buildingPosition.lat, lot.buildingPosition.lon]}>
           </Marker>
         ))}
-      {busStops.map((stop, index) => (
-        <Marker
-          key={index}
-          position={[stop.lat, stop.lon]}
-          icon={L.divIcon({
-            className: "custom-marker",
-            html: `<div style="background-color: red; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>`,
-            iconAnchor: [10, 10]
-          })}
-        >
-          <Popup>
-            {stop.tags.name || 'Bus Stop'} <br />
-            Operator: {stop.tags.operator || 'Operator'} <br />
-            Bench: {stop.tags.bench || 'Bench Status Unknown'} <br />
-          </Popup>
-        </Marker>
-      ))}
-      <MapViewUpdater latitude={latitude} longitude={longitude} zoom={zoom} /> {/* Include the updater */}
-      {userLocation && (
-                <>
-                    {/* Render Marker regardless of altitude */}
-                    <Marker position={userLocation} icon = {customIcon}>
-                        <Popup>
-                            Lat: {userLocation[0]} <br />
-                            Long: {userLocation[1]} <br />
-                            {altitude && <>Alt: {altitude} m</>}
-                            {accuracy && accuracy <= 100 ? <>Accuracy: {accuracy} m</> : <>Turn on your precise location</>}
-                          </Popup>
-                    </Marker>
-                </>
-            )}
-            {/* {updatedPolylineCoordinates && (
+        {busStops.map((stop, index) => (
+          <Marker
+            key={index}
+            position={[stop.lat, stop.lon]}
+            icon={L.divIcon({
+              className: "custom-marker",
+              html: `<div style="background-color: red; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>`,
+              iconAnchor: [10, 10]
+            })}
+          >
+            <Popup>
+              {stop.tags.name || 'Bus Stop'} <br />
+              Operator: {stop.tags.operator || 'Operator'} <br />
+              Bench: {stop.tags.bench || 'Bench Status Unknown'} <br />
+            </Popup>
+          </Marker>
+        ))}
+        <MapViewUpdater latitude={latitude} longitude={longitude} zoom={zoom} /> {/* Include the updater */}
+        {userLocation && (
+          <>
+            {/* Render Marker regardless of altitude */}
+            <Marker position={userLocation} icon = {customIcon}>
+              <Popup>
+                Lat: {userLocation[0]} <br />
+                Long: {userLocation[1]} <br />
+                {altitude && <>Alt: {altitude} m</>}
+                {accuracy && accuracy <= 100 ? <>Accuracy: {accuracy} m</> : <>Turn on your precise location</>}
+              </Popup>
+            </Marker>
+          </>
+        )}
+        {/* {updatedPolylineCoordinates && (
               <Polyline positions={updatedPolylineCoordinates} color={polylineColor} />
             )} */}
     </MapContainer>

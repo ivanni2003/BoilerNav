@@ -295,9 +295,6 @@ const FloorPlanView = ({
         console.log(error)
       }
 
-
-      
-
       // implement top rooms somewhere here using current floor, building name, etc.
 
       //console.log(response.data)
@@ -333,6 +330,7 @@ const FloorPlanView = ({
       setRooms(filteredRooms);
     }
     fetchAndSetRooms()
+    clearRoute()
   }, [selectedFloorPlan, building]);
 
 

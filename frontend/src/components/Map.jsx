@@ -60,14 +60,22 @@ const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, ma
       try {
         const response = await fetch(`http://localhost:3001/api/indoornav/path?building=${building.tags.name}&start=${startNode}&end=${endNode}`);
         const data = await response.json();
-        console.log(data);
 
         if (data.route) {
-          console.log("Path data received:", data.route);
+          ///console.log("Path data received:", data.route);
           const avgMsRate = 1.3;
           const distance = (data.distance).toFixed(2);
           const time = ((distance / avgMsRate) / 60).toFixed(2);
           setDistancetime(distance, time);
+
+
+          try {   // updating destination count of room
+            const buildingName = building.tags.name.replace(' ', '')
+            await axios.patch(`http://localhost:3001/api/indoordata/${buildingName}/${endNode}`)
+          } catch (error) {
+            console.log(error)
+          }
+      
 
           const floorMappings = { 'Basement': -1, '1': 0, '2': 1, '3': 2 };
           const roomFloor = floorMappings[floorNumber] ?? 0;
@@ -81,7 +89,7 @@ const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, ma
             return acc;
           }, '');
 
-          console.log("dString: ", dString);
+          //console.log("dString: ", dString);
           setPathD(dString);
         }
       } catch (error) {
@@ -174,6 +182,8 @@ const FloorPlanView = ({
   const [showPopup, setShowPopup] = useState(false);
   const [route, setRoute] = useState(null);
 
+  const [topRooms, setTopRooms] = useState([])
+
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [start, setStart] = useState(initialStart); // Initialize with prop
   const [destination, setDestination] = useState(initialDestination); // Initialize with prop
@@ -215,15 +225,15 @@ const FloorPlanView = ({
 
   const handleStartClick = () => {
     setStart(selectedRoom.room); // Set the selected room as the destination
-    console.log("Set start location for:", start);
-    console.log("Set destination location for:", destination);
+    //console.log("Set start location for:", start);
+    //console.log("Set destination location for:", destination);
     setShowPopup(false);
   };
 
   const handleDestinationClick = () => {
     setDestination(selectedRoom.room); // Set the selected room as the destination
-    console.log("Set start location for:", start);
-    console.log("Set destination location for:", destination);
+   // console.log("Set start location for:", start);
+   // console.log("Set destination location for:", destination);
     setShowPopup(false);
   };
 
@@ -242,15 +252,56 @@ const FloorPlanView = ({
     onClose();
   };
 
+  const convertFloorLevel = (selectedFloorPlan) => {   // assuming no ground level rn?
+    if (selectedFloorPlan == "Basement") {
+      return -1
+    }
+    else if (selectedFloorPlan == '1') {   // data misalignment, 0 -> 1 in Lawson
+      return 0
+    }
+    else if (selectedFloorPlan == '2') {
+      return 1
+    }
+    else if (selectedFloorPlan == '3') {
+      return 2
+    }
+    else if (selectedFloorPlan == '4') {
+      return 3
+    }
+    else if (selectedFloorPlan == '5') {
+      return 4
+    }
+  }
+
   useEffect(() => {
     async function fetchAndSetRooms() {
-      const response = await axios.get(`${baseURL}/api/indoordata/${building.tags.name}`)
-      console.log(response)
-      console.log(response.data)
-      console.log(response.data.features)
+      const buildingName = building.tags.name.replace(' ', '') // remove spaces in building name
+      let indoorData = null
 
-      const indoorData = response.data
-   
+      try {
+        const response = await axios.get(`${baseURL}/api/indoordata/${buildingName}`)
+        indoorData = response.data
+      } catch (error) {
+        console.log(error)
+      }
+
+      const floorLevel = convertFloorLevel(selectedFloorPlan.floorNumber)
+      console.log(floorLevel)
+
+      try {
+        const response = await axios.get(`${baseURL}/api/indoordata/${buildingName}/${floorLevel}/topRooms`)
+        setTopRooms(response.data)
+      } catch (error) {
+        console.log(error)
+      }
+
+
+      
+
+      // implement top rooms somewhere here using current floor, building name, etc.
+
+      //console.log(response.data)
+      //console.log(selectedFloorPlan)
       // Note: account for basement, 1, 2, 3, 4 for now. Need to change either floor plan or data to align and account for ground floors
       const filteredRooms = await Promise.all(
         indoorData.features
@@ -289,12 +340,21 @@ const FloorPlanView = ({
     clearRoute();
   };
   
-  const markRoom = async (room) => { 
-    const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
-      params: { name: room.room.properties.RoomName }
-    });
-
-    const location = response.data
+  const markRoom = async (item, usage) => { 
+    let location = null
+    if (usage == "search") {
+      const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
+        params: { name: item.room.properties.RoomName }
+      });
+      location = response.data
+    }
+    else {
+      const response = await axios.get(`${baseURL}/api/indoornav/position-from-name`, {
+        params: { name: item.properties.RoomName }
+      });
+      location = response.data
+    }
+    
     setMarkedRoom(location)
   }
   const setDistancetime = (newDistance, newTime) => {
@@ -319,7 +379,7 @@ const FloorPlanView = ({
       </header>
       <div className='most-popular-rooms'>
       {<MostPopular 
-              items={[]} 
+              items={topRooms} 
               buttonName={'Most Popular Rooms'} 
               markRoom={markRoom} 
               viewSavedRoute={null}/> }
@@ -397,6 +457,7 @@ const FloorPlanView = ({
       </div>
 
       {showDirectionsMenu && selectedRoom && (
+        <div className="floor-plan-directions-menu"> 
         <DirectionsMenu
           start={start} // Assuming current location for start
           destination={destination} // Pass selected room data as destination
@@ -411,7 +472,8 @@ const FloorPlanView = ({
           onViewSavedRoute={(route) => console.log('View saved route:', route)}
           updatePublicRoutes={() => console.log('Update public routes')}
           isInterior={true}
-        />
+        /></div>
+        
       )}
 
     </div> 

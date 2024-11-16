@@ -99,6 +99,16 @@
   gap: 18px;
 }
 
+.floor-plan-directions-menu {
+  position: absolute;
+  top: 115px;
+  right:0px;
+  width: 250px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
 .amenities-menu {
     position: absolute;
     bottom: 0px;

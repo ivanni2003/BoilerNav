@@ -16,6 +16,8 @@ const MostPopular = ({items, buttonName, markRoom, viewSavedRoute}) => {
         }
     }
 
+  
+
     return (
         <div className="most-popular-container">
             <button className='feature-button' onClick={() => setIsMenuVisible(!isMenuVisible)}>{buttonName}</button>
@@ -23,9 +25,9 @@ const MostPopular = ({items, buttonName, markRoom, viewSavedRoute}) => {
                 <div className="most-popular-dropdown">
                     { items.length > 0 ? (
                         items.map((item, index) =>
-                        <ul className={item} key={index} onClick={() => handleItemClick(item)} style={{ cursor: 'pointer' }}
+                        <ul className="item" key={index} onClick={() => handleItemClick(item)} style={{ cursor: 'pointer' }}
                         >
-                            item here
+                            {item.properties.RoomName}
                         </ul>
                         )
                     ) : (

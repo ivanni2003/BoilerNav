@@ -90,13 +90,23 @@
 
 .floor-plan-search {
   position: absolute;
-  top: 51px;
-  right: 10px;
+  top: 115px;
+  right: 20px;
   width: 250px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+
+.floor-plan-directions-menu {
+  position: absolute;
+  top: 115px;
+  right:0px;
+  width: 250px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
 
 .amenities-menu {
@@ -192,6 +202,13 @@
     font-size: 24px;
     font-weight: bold;
     color: #333;
+  }
+
+  .most-popular-rooms {
+    position: absolute;
+    top: 115px;
+    left: 0px;
+    width: 200px;
   }
 
   .update-form-overlay {

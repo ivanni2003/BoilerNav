@@ -6,6 +6,7 @@
     padding: 10px 15px; 
     cursor: pointer; 
     font-size: 12px; 
+    width: 150px;
 }
 
 .amenity-popup {

@@ -639,6 +639,7 @@ const getTravelTime = (distance, selectedMode) => {
             updatePublicRoutes={fetchPublicRoutes}
           />
         ) : (
+        <div>
           <div className="map-content">
             <div className="map-container">
               {activeView == 'map' && (
@@ -677,7 +678,11 @@ const getTravelTime = (distance, selectedMode) => {
               handleTitleClick={handleTitleClick}
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
-            
+            {<MostPopular 
+              items={[]} 
+              buttonName={'Most Popular Routes'} 
+              markRoom={null} 
+              viewSavedRoute={handleViewSavedRoute}/> }
             {notification && (
             <Notification
                 message={notification.message}
@@ -742,15 +747,11 @@ const getTravelTime = (distance, selectedMode) => {
               }}
               version={savedLocationsVersion}
             />
-            {/*<MostPopular 
-              items={[]} 
-              buttonName={'Most Popular Routes'} 
-              markRoom={null} 
-              viewSavedRoute={handleViewSavedRoute}/> */}
           </div> 
               )}
             </>
           )}
+        </div>
         </div>
       </div>
      )}

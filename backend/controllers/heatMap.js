@@ -33,17 +33,29 @@ heatMapRouter.get('/heatmap-add', async (req, res) => {
     }
 
     try {
-        const expirationDate = new Date(Date.now() + 10 * 60 * 1000);  // 10 minutes from now
-
+        const expirationDate = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+        //console.log("Expiration Date1:", expirationDate);
+        await Heatmap.updateMany(
+            { uids: uid },
+            { 
+                $pull: { 
+                    uids: uid, 
+                    expirationDates: { $lte: new Date() } // Remove expired dates, if applicable
+                } 
+            }
+        );
+        //console.log("Expiration Date2:", expirationDate);
         // Find existing document or create a new one for the same coordinates
         const heatmapEntry = await Heatmap.findOneAndUpdate(
             { lat, long },
             {
                 $addToSet: { uids: uid, expirationDates: expirationDate },
-                $set: { lastExpirationDate: expirationDate }  // Update the TTL index field
+                $set: { lastExpirationDate: expirationDate }, // Update TTL index field
             },
             { new: true, upsert: true }
         );
+        //console.log("Expiration Date3:", expirationDate);
+
 
         res.json({ message: "Heatmap data added/updated successfully", entry: heatmapEntry });
     } catch (error) {
@@ -51,5 +63,6 @@ heatMapRouter.get('/heatmap-add', async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 });
+
 
 module.exports = heatMapRouter;

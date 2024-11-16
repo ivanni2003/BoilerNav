@@ -850,6 +850,22 @@ const Map = ({ latitude,
     fetchBikeRacks();
   }, []);
 
+  useEffect(() => {
+    const setheatmaplocation = async() => {
+      try {
+        const uid = 1; // Replace with dynamic UID if needed
+        const response = await axios.get(
+          `${baseURL}/api/heatmap/heatmap-add?lat=${userLocation[0]}&long=${userLocation[1]}&uid=${uid}`
+        );
+        console.log("Heatmap location updated:", response.data);
+      } catch (error) {
+        console.error("Error updating heatmap location:", error);
+      }
+    };
+    if (userLocation)
+      setheatmaplocation();
+  }, [userLocation])
+
   var polylineColor = 'blue';
   if (selectedMode === "bike") {
     polylineColor = "green";

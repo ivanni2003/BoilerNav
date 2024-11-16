@@ -33,19 +33,29 @@ HeatMapSchema.pre('save', function (next) {
     next();
 });
 
-HeatMapSchema.methods.removeExpiredUids = function () {
+HeatMapSchema.methods.removeExpiredUIDs = function () {
     const now = new Date();
-    const validIndexes = this.expirationDates
-      .map((date, index) => (date > now ? index : null))
-      .filter((index) => index !== null);
-  
-    this.uids = validIndexes.map((index) => this.uids[index]);
-    this.expirationDates = validIndexes.map((index) => this.expirationDates[index]);
-    if (this.expirationDates.length > 0) {
-      this.lastExpirationDate = new Date(Math.max(...this.expirationDates.map(date => date.getTime())));
-    } else {
-      this.lastExpirationDate = now; // Default to now if all dates are expired
-    }
-  };
+
+    // Filter UIDs and expirationDates where expiration date is still valid
+    const validIndices = this.expirationDates
+        .map((date, index) => (date > now ? index : null))
+        .filter((index) => index !== null);
+
+    this.uids = validIndices.map((index) => this.uids[index]);
+    this.expirationDates = validIndices.map((index) => this.expirationDates[index]);
+
+    // Ensure UIDs remain unique
+    const seenUIDs = new Set();
+    this.uids = this.uids.filter((uid, index) => {
+        if (seenUIDs.has(uid)) {
+            return false;
+        }
+        seenUIDs.add(uid);
+        return true;
+    });
+
+    return this.save(); // Save the updated document to the database
+};
+
 
 module.exports = mongoose.model('Heatmap', HeatMapSchema);

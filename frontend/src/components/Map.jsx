@@ -12,9 +12,20 @@ import MapOptions from './MapOptions'
 import DirectionsMenu from './DirectionsMenu'
 import InteriorPopupContent from './InteriorPopupContent';
 import IndoorRouteMenu from './IndoorRouteMenu';
+import { v4 as uuid } from 'uuid'
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
+const DEVICE_ID_KEY = 'boilernav-device-id'
+
+export const getDeviceId = () => {
+  let deviceId = localStorage.getItem(DEVICE_ID_KEY) || ""
+  if(!deviceId){
+      deviceId = uuid()
+      localStorage.setItem(DEVICE_ID_KEY, deviceId)
+  }
+  return deviceId
+}
 
 const baseURL = "http://localhost:3001";
 
@@ -124,12 +135,12 @@ const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, ma
 
 async function fetchHeatmapData() {
   try {
-    const response = await fetch('http://localhost:3001/api/heatmap/heatmap-get'); // Replace with your backend URL
+    const response = await fetch('http://localhost:3001/api/heatmap/heatmap-get'); 
     if (!response.ok) {
       throw new Error('Failed to fetch heatmap data');
     }
     const data = await response.json();
-    console.log('Heatmap Data:', data); // This will include lat, long, and intensity
+    //console.log('Heatmap Data:', data); // This will include lat, long, and intensity
     return data;
   } catch (error) {
     console.error('Error fetching heatmap data:', error);
@@ -853,9 +864,16 @@ const Map = ({ latitude,
   useEffect(() => {
     const setheatmaplocation = async() => {
       try {
-        const uid = 1; // Replace with dynamic UID if needed
+        //uid = 1; // Replace with dynamic UID if needed
+        //const uid = Math.floor(Math.random() * 100);
+        const uid = 34;
+        //let id = machineIdSync();
+        //console.log("uuid: ", id);
+        const uuid = getDeviceId();
+        console.log("uuid: ", uuid);
+        console.log("uid: ", uid);
         const response = await axios.get(
-          `${baseURL}/api/heatmap/heatmap-add?lat=${userLocation[0]}&long=${userLocation[1]}&uid=${uid}`
+          `${baseURL}/api/heatmap/heatmap-add?lat=${userLocation[0]}&long=${userLocation[1]}&uid=${uuid}`
         );
         console.log("Heatmap location updated:", response.data);
       } catch (error) {

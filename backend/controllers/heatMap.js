@@ -7,16 +7,16 @@ heatMapRouter.get('/heatmap-get', async (req, res) => {
     try {
         // Retrieve all heatmap data and calculate intensities
         const heatmapData = await Heatmap.find({});
-        const processedData = await Promise.all(
-            heatmapData.map(async (doc) => {
-                await doc.removeExpiredUIDs(); // Call the method on each document
-                return {
-                    lat: doc.lat,
-                    long: doc.long,
-                    intensity: doc.uids.length / 10 // Calculate intensity
-                };
-            })
-        );
+        const intensityMap = {};
+        heatmapData.forEach(({ lat, long }) => {
+            const key = `${lat},${long}`;
+            if (!intensityMap[key]) {
+                intensityMap[key] = { lat, long, intensity: 0 };
+            }
+            intensityMap[key].intensity++;
+        });
+
+        const processedData = Object.values(intensityMap);
 
         res.json(processedData);
     } catch (error) {
@@ -35,24 +35,12 @@ heatMapRouter.get('/heatmap-add', async (req, res) => {
     try {
         const expirationDate = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
         //console.log("Expiration Date1:", expirationDate);
-        await Heatmap.updateMany(
-            { uids: uid },
-            { 
-                $pull: { 
-                    uids: uid, 
-                    expirationDates: { $lte: new Date() } // Remove expired dates, if applicable
-                } 
-            }
-        );
-        //console.log("Expiration Date2:", expirationDate);
-        // Find existing document or create a new one for the same coordinates
+        const roundedLat = parseFloat(lat).toFixed(3);
+        const roundedLong = parseFloat(long).toFixed(3);
         const heatmapEntry = await Heatmap.findOneAndUpdate(
-            { lat, long },
-            {
-                $addToSet: { uids: uid, expirationDates: expirationDate },
-                $set: { lastExpirationDate: expirationDate }, // Update TTL index field
-            },
-            { new: true, upsert: true }
+            { uid }, // Match by UID
+            { lat: roundedLat, long: roundedLong, uid, expirationDate }, // Update fields
+            { new: true, upsert: true } // Create a new entry if it doesn't exist
         );
         //console.log("Expiration Date3:", expirationDate);
 

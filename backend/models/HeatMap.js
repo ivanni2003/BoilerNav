@@ -9,28 +9,19 @@ const HeatMapSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    uids: {
-        type: [String],
-        required: true
+    uid: {
+        type: String,
+        required: true,
+        unique: true
     },
-    expirationDates: {
-        type: [Date],
-        required: true
-    },
-    lastExpirationDate: {
+    expirationDate: {
         type: Date,
         required: true
     }
 });
 
 // Set up an automatic TTL index to delete expired tokens
-HeatMapSchema.index({ lastExpirationDate: 1 }, { expireAfterSeconds: 0 });
+HeatMapSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 });
 
-heatmapSchema.pre('save', function (next) {
-    if (this.expirationDates.length > 0) {
-        this.lastExpirationDate = new Date(Math.max(...this.expirationDates.map(date => date.getTime())));
-    }
-    next();
-});
 
 module.exports = mongoose.model('Heatmap', HeatMapSchema);

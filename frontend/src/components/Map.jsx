@@ -12,11 +12,22 @@ import MapOptions from './MapOptions'
 import DirectionsMenu from './DirectionsMenu'
 import InteriorPopupContent from './InteriorPopupContent';
 import IndoorRouteMenu from './IndoorRouteMenu';
+import { v4 as uuid } from 'uuid'
 import MostPopular from './MostPopular'
 import SubmitFloorPlan from './SubmitFloorPlan';
 
 import { MapContainer, TileLayer, CircleMarker, Marker, useMap, Polyline, Circle, Popup, useMapEvents } from 'react-leaflet';
 
+const DEVICE_ID_KEY = 'boilernav-device-id'
+
+export const getDeviceId = () => {
+  let deviceId = localStorage.getItem(DEVICE_ID_KEY) || ""
+  if(!deviceId){
+      deviceId = uuid()
+      localStorage.setItem(DEVICE_ID_KEY, deviceId)
+  }
+  return deviceId
+}
 
 const baseURL = "http://localhost:3001";
 
@@ -132,9 +143,25 @@ const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, ma
   );
 };
 
+async function fetchHeatmapData() {
+  try {
+    const response = await fetch('http://localhost:3001/api/heatmap/heatmap-get'); 
+    if (!response.ok) {
+      throw new Error('Failed to fetch heatmap data');
+    }
+    const data = await response.json();
+    //console.log('Heatmap Data:', data); // This will include lat, long, and intensity
+    return data;
+  } catch (error) {
+    console.error('Error fetching heatmap data:', error);
+  }
+}
+
+
 
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
+  const heatmapLayerRef = useRef(null);
 
   let SouthWestCoords = [40.40815, -86.95308];
   let NorthEastCoords = [40.44628, -86.89712];
@@ -142,22 +169,43 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   map.setMaxBounds(WL_Bounds);
   map.setMinZoom(15);
   const heatData = [
-    [40.42, -86.90, 1],
-    [40.4356, -86.92, 0.2],
+    [40.42, -86.901, 4],
+    [40.435, -86.92, 1],
     // more data points
   ];
-  //get list of data points with 
-  
-  const heatmapLayer = L.heatLayer(heatData, {
-    //radius: 25,
-    //blur: 15,
-    //maxZoom: 17,
-  });
-  map.addLayer(heatmapLayer);
 
   useEffect(() => {
-    map.setView([latitude, longitude], zoom); 
-  }, [latitude, longitude, zoom, map]); 
+    map.setView([latitude, longitude], zoom);
+    
+    // Remove existing heatmap layer if it exists
+    async function updateHeatmap() {
+      const heatmapData = await fetchHeatmapData();
+      if (heatmapLayerRef.current) {
+        map.removeLayer(heatmapLayerRef.current);
+      }
+
+      // Convert data to Leaflet.heat format
+      const heatData = heatmapData.map(({ lat, long, intensity }) => [lat, long, intensity]);
+
+      // Add the new heatmap layer
+      heatmapLayerRef.current = L.heatLayer(heatData, {
+        radius: 20,
+        blur: 10,
+        maxZoom: 17,
+      }).addTo(map);
+    }
+
+    updateHeatmap();
+
+    // Cleanup function to remove the heatmap layer when the component unmounts
+    return () => {
+      if (heatmapLayerRef.current) {
+        map.removeLayer(heatmapLayerRef.current);
+      }
+    };
+  }, [latitude, longitude, zoom, map, heatData]); 
+
+  return null;
 };
 
 
@@ -855,6 +903,29 @@ const Map = ({ latitude,
     };
     fetchBikeRacks();
   }, []);
+
+  useEffect(() => {
+    const setheatmaplocation = async() => {
+      try {
+        //uid = 1; // Replace with dynamic UID if needed
+        //const uid = Math.floor(Math.random() * 100);
+        const uid = 34;
+        //let id = machineIdSync();
+        //console.log("uuid: ", id);
+        const uuid = getDeviceId();
+        console.log("uuid: ", uuid);
+        console.log("uid: ", uid);
+        const response = await axios.get(
+          `${baseURL}/api/heatmap/heatmap-add?lat=${userLocation[0]}&long=${userLocation[1]}&uid=${uuid}`
+        );
+        console.log("Heatmap location updated:", response.data);
+      } catch (error) {
+        console.error("Error updating heatmap location:", error);
+      }
+    };
+    if (userLocation)
+      setheatmaplocation();
+  }, [userLocation])
 
   var polylineColor = 'blue';
   if (selectedMode === "bike") {

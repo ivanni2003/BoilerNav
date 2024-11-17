@@ -15,6 +15,7 @@ const floorPlanRouter = require("./controllers/floorPlans");
 const routesRouter = require("./controllers/routes");
 const indoorDataRouter = require("./controllers/indoorDataInfo");
 const indoorNavRouter = require('./controllers/navigation')
+const heatMapRouter = require("./controllers/Heatmap");
 const Route = require('./models/route');
 
 
@@ -49,5 +50,6 @@ app.use('/api/reset-password', resetPasswordRouter)
 app.use('/api/floorplans', floorPlanRouter);
 app.use('/api/indoordata', indoorDataRouter)
 app.use('/api/indoornav', indoorNavRouter)
+app.use('/api/heatmap', heatMapRouter)
 
 module.exports = app;

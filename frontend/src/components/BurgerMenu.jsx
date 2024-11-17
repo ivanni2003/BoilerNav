@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Menu, X, User, LogIn, UserPlus, LogOut, UserCog } from 'lucide-react';
+import React from 'react';
+import { Menu, X, User, LogIn, UserPlus, LogOut, UserCog, HelpCircle } from 'lucide-react';
 
 const BurgerMenu = ({
   user,
@@ -8,8 +8,11 @@ const BurgerMenu = ({
   onViewProfile,
   onLogout,
   isOpen,
-  setIsOpen
+  setIsOpen,
+  onStartTutorial
 }) => {
+  // Previous code remains the same until the Menu Panel div
+
   return (
     <>
       {/* Burger Icon */}
@@ -69,7 +72,9 @@ const BurgerMenu = ({
               boxShadow: '2px 0 5px rgba(0,0,0,0.1)',
               padding: '20px',
               transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-              transition: 'transform 0.3s ease'
+              transition: 'transform 0.3s ease',
+              display: 'flex',
+              flexDirection: 'column'
             }}
           >
             {/* User Icon/Circle */}
@@ -95,12 +100,13 @@ const BurgerMenu = ({
               )}
             </div>
 
-            {/* Menu Items */}
+            {/* Main Menu Items Container */}
             <div style={{ 
               display: 'flex', 
               flexDirection: 'column', 
               gap: '10px',
-              marginTop: '20px'
+              marginTop: '20px',
+              flex: 1 // This will push the divider and tutorial button to the bottom
             }}>
               {user ? (
                 <>
@@ -205,6 +211,56 @@ const BurgerMenu = ({
                   </button>
                 </>
               )}
+            </div>
+
+            {/* Bottom Section Container */}
+            <div style={{
+              marginTop: 'auto', // Push this to the bottom
+              width: '100%'
+            }}>
+              {/* Divider */}
+              <div
+                style={{
+                  height: '1px',
+                  background: '#e0e0e0',
+                  margin: '20px 0',
+                  width: '100%'
+                }}
+              />
+
+              {/* Tutorial Button */}
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onStartTutorial();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '12px',
+                  border: '2px solid #4CAF50',
+                  background: 'white',
+                  cursor: 'pointer',
+                  gap: '10px',
+                  width: '100%',
+                  fontSize: '16px',
+                  borderRadius: '4px',
+                  color: '#4CAF50',
+                  transition: 'all 0.2s ease',
+                  marginBottom: '40px' // Increased bottom margin
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.backgroundColor = '#4CAF50';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.backgroundColor = 'white';
+                  e.currentTarget.style.color = '#4CAF50';
+                }}
+              >
+                <HelpCircle size={20} />
+                Start Tutorial
+              </button>
             </div>
           </div>
         </div>

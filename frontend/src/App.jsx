@@ -612,19 +612,25 @@ const getTravelTime = (distance, selectedMode) => {
     }
   }
 
+  const handleStartTutorial = () => {
+    // Tutorial logic will go here
+    console.log("Starting tutorial...");
+  };
+
   return (
     <ErrorBoundary>
     <div className="app-container">
     <header className="app-header" style={{ position: 'relative', zIndex: isMenuOpen ? 10000 : 1 }}>
-      <BurgerMenu 
-        user={user}
-        onCreateAccount={handleCreateAccount}
-        onLogin={handleLogin}
-        onViewProfile={handleViewProfile}
-        onLogout={handleLogout}
-        isOpen={isMenuOpen}
-        setIsOpen={setIsMenuOpen}
-      />
+    <BurgerMenu 
+      user={user}
+      onCreateAccount={handleCreateAccount}
+      onLogin={handleLogin}
+      onViewProfile={handleViewProfile}
+      onLogout={handleLogout}
+      isOpen={isMenuOpen}
+      setIsOpen={setIsMenuOpen}
+      onStartTutorial={handleStartTutorial}
+    />
       
       <div className="logo-title" onClick={handleTitleClick} style={{cursor: 'pointer'}}>
         <img src={logoImage} alt="BoilerNav Logo" className="logo" />

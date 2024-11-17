@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const navigationRouter = require("express").Router();
 const { findPath, latLonToXY }  = require('../IndoorNav'); // Import pathfinding utility
+const IndoorData = require('../models/indoorData');
 
 navigationRouter.get('/path', async (req, res) => {
     const { building, start, end } = req.query;
@@ -30,7 +31,9 @@ navigationRouter.get('/path', async (req, res) => {
   });  
   
   async function getRoomPosition(name) {
-  // Load GeoJSON data once to use it across requests
+    // Nate note: Single source-of-truth is in MongoDB now.
+    /*
+    // Load GeoJSON data once to use it across requests
     const geoJsonPath = path.join(__dirname, "../Node0.geojson");
     const data = await fs.promises.readFile(geoJsonPath, "utf8");
     const features = JSON.parse(data).features;
@@ -41,6 +44,23 @@ navigationRouter.get('/path', async (req, res) => {
 
     const { coordinates: [lon, lat] } = room.geometry;
     return latLonToXY(lat, lon);
+    */
+    try {
+      // Fetch the room from the database
+      const room = await IndoorData.findOne({ 'features.properties.RoomName': name }, { 'features.$': 1 });
+      if (!room || !room.features || room.features.length === 0) {
+        return null;
+      }
+  
+      const feature = room.features[0];
+      const { coordinates } = feature.geometry;
+      const [lon, lat] = coordinates;
+  
+      return latLonToXY(lat, lon);
+    } catch (error) {
+      console.error('Error fetching room position from database:', error);
+      throw error;
+    }
 }
 
 navigationRouter.get('/position-from-name', async(req, res) => {
@@ -63,6 +83,7 @@ navigationRouter.get('/position-from-name', async(req, res) => {
   }
 })
 
+/*
 // Load GeoJSON data from file (can reuse if already implemented in IndoorNav.js)
 async function loadGeoJSON(path) {
   const data = await fs.promises.readFile(path, "utf8");
@@ -79,6 +100,24 @@ async function getNodesByFloor(floor) {
 
   return nodesOnFloor;
 }
+*/
+
+async function getNodesByFloor(buildingName, floor) {
+  try {
+    const indoorData = await IndoorData.findOne({ name: buildingName });
+    if (!indoorData) {
+      return [];
+    }
+
+    // Filter nodes by floor
+    const nodesOnFloor = indoorData.features.filter(feature => feature.properties.Floor === Number(floor));
+
+    return nodesOnFloor;
+  } catch (error) {
+    console.error('Error fetching nodes by floor from database:', error);
+    throw error;
+  }
+}
 
 navigationRouter.get('/get-floor-nodes', async (req, res) => {
   const { floor } = req.query;
@@ -88,7 +127,7 @@ navigationRouter.get('/get-floor-nodes', async (req, res) => {
   }
 
   try {
-    const nodes = await getNodesByFloor(floor);
+    const nodes = await getNodesByFloor("LawsonHall(LWSN)", floor);
     res.json(nodes);
   } catch (error) {
     console.error("Error fetching nodes by floor:", error);

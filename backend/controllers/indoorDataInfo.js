@@ -2,6 +2,51 @@ const indoorDataRouter = require('express').Router();
 const IndoorData = require('../models/indoorData');
 const UpdateRequest = require('../models/updateRequest');
 
+// POST endpoint to approve an update request
+indoorDataRouter.post('/approve-update-request/:id', async (request, response) => {
+  const id = request.params.id;
+  try {
+    const updateRequest = await UpdateRequest.findById(id);
+    if (!updateRequest) {
+      console.log("not found")
+      return response.status(404).json({ error: 'Update request not found' });
+    }
+
+    const { buildingName, roomId, newRoomName } = updateRequest;
+
+    // Find the indoor data for the building
+    const indoorData = await IndoorData.findOne({ name: buildingName.replace(/\s+/g, '') });
+    if (!indoorData) {
+      console.log("not found for buildign")
+      return response.status(404).json({ error: 'Indoor data not found for building' });
+    }
+
+    // Find the feature with the given roomId
+    const featureIndex = indoorData.features.findIndex(
+      feature => feature.properties.id === roomId
+    );
+
+    if (featureIndex === -1) {
+      console.log("room not found")
+      return response.status(404).json({ error: 'Room not found in indoor data' });
+    }
+
+    // Update the room name
+    indoorData.features[featureIndex].properties.RoomName = newRoomName;
+
+    // Save the updated indoor data
+    await indoorData.save();
+
+    // Delete the update request
+    await UpdateRequest.findByIdAndDelete(id);
+
+    response.status(200).json({ message: 'Update request approved and indoor data updated' });
+  } catch (error) {
+    console.error('Error approving update request:', error);
+    response.status(500).json({ error: 'Failed to approve update request' });
+  }
+});
+
 indoorDataRouter.post('/', async(request, response) => {   // post entire building data object
     const indoorData = request.body
 
@@ -14,6 +59,20 @@ indoorDataRouter.post('/', async(request, response) => {   // post entire buildi
         response.json(400, error)
     }
 })
+
+// GET endpoint to get ALL update requests.
+indoorDataRouter.get('/get-update-requests', async (request, response) => {
+  try {
+    const updateRequests = await UpdateRequest.find({})
+        if (!updateRequests) {
+            return response.status(404).send('indoor data not found')
+        }
+        response.json(updateRequests)
+  } catch (error) {
+    console.error('Error handling update request:', error);
+    response.status(500).json({ error: 'Failed to submit update request' });
+  }
+});
 
 indoorDataRouter.get('/:name', async(request, response) => {  // get building data by name
     const name = request.params.name.replace(' ', '')
@@ -33,7 +92,6 @@ indoorDataRouter.patch('/:name/:id', async(request, response) => {
     const name = request.params.name.replace(' ', '')
     const id = parseInt(request.params.id)
 
-    console.log("patch")
 
     try {
         const indoorData = await IndoorData.findOne({ name })
@@ -98,17 +156,18 @@ indoorDataRouter.post('/update-request', async (request, response) => {
     }
   });
 
-// GET endpoint to get ALL update requests.
-indoorDataRouter.get('/get-update-requests', async (request, response) => {
+// DELETE endpoint to decline (delete) an update request
+indoorDataRouter.delete('/update-request/:id', async (request, response) => {
+  const id = request.params.id;
   try {
-    const updateRequests = await UpdateRequest.find({})
-        if (!updateRequests) {
-            return response.status(404).send('indoor data not found')
-        }
-        response.json(updateRequests)
+    const deletedRequest = await UpdateRequest.findByIdAndDelete(id);
+    if (!deletedRequest) {
+      return response.status(404).json({ error: 'Update request not found' });
+    }
+    response.status(200).json({ message: 'Update request declined and deleted successfully' });
   } catch (error) {
-    console.error('Error handling update request:', error);
-    response.status(500).json({ error: 'Failed to submit update request' });
+    console.error('Error declining update request:', error);
+    response.status(500).json({ error: 'Failed to decline update request' });
   }
 });
 

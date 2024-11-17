@@ -5,7 +5,7 @@ input {
     border-radius: 3px; 
 }
 
-.dropdown {
+.search-dropdown {
     position: absolute; 
     padding: 8px;
     margin: 0px 0; 

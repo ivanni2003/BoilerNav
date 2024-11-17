@@ -12,6 +12,7 @@ import Profile from './components/Profile'
 import TransportationMode from './components/TransportationMode';
 import ErrorBoundary from './components/ErrorBoundary';
 import SavedLocationsList from './components/SavedLocationsList';
+import MostPopular from './components/MostPopular'
 
 const baseURL = 'http://localhost:3001'
 
@@ -249,7 +250,7 @@ function App() {
 
   useEffect(() => {   // removes scrollbar within main menu
     document.body.style.overflow = 'hidden';
-  }, []);
+  }, []); 
 
   useEffect(() => {
     const handleOpenFloorPlan = async (event) => {
@@ -638,6 +639,7 @@ const getTravelTime = (distance, selectedMode) => {
             updatePublicRoutes={fetchPublicRoutes}
           />
         ) : (
+        <div>
           <div className="map-content">
             <div className="map-container">
               {activeView == 'map' && (
@@ -676,6 +678,11 @@ const getTravelTime = (distance, selectedMode) => {
               handleTitleClick={handleTitleClick}
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
+            {<MostPopular 
+              items={[]} 
+              buttonName={'Most Popular Routes'} 
+              markRoom={null} 
+              viewSavedRoute={handleViewSavedRoute}/> }
             {notification && (
             <Notification
                 message={notification.message}
@@ -684,11 +691,11 @@ const getTravelTime = (distance, selectedMode) => {
               />
             )}
             {activeMenu === 'directions' ? (
-              <span className="directions-menu">
-              <DirectionsMenu
-                start={userLocation}
-                destination={destination}
-                closeDirections={() => {
+              <div className="directions-menu">
+                <DirectionsMenu
+                  start={userLocation}
+                  destination={destination}
+                  closeDirections={() => {
                   clearRoute();
                   setActiveMenu('search');
                 }}
@@ -705,7 +712,7 @@ const getTravelTime = (distance, selectedMode) => {
                 }}
                 updatePublicRoutes={fetchPublicRoutes}
               />
-              </span>
+              </div>
            ) : (
             <div className="search-container">
             <div className="search-box">
@@ -740,10 +747,11 @@ const getTravelTime = (distance, selectedMode) => {
               }}
               version={savedLocationsVersion}
             />
-          </div>
+          </div> 
               )}
             </>
           )}
+        </div>
         </div>
       </div>
      )}

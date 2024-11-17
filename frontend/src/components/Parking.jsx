@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Amenities.css'
+import './Parking.css'
 import axios from 'axios';
 
 const baseURL = 'http://localhost:3001'
@@ -67,7 +67,7 @@ const Amenities = ({updateMap, markParkingLots}) => {
 
     return (
         <div>
-            <button className='amenity-button' onClick={handleParkingClick}>View Parking</button>
+            <button className='feature-button' onClick={handleParkingClick}>View Parking</button>
             <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Parking Garages"} items={namedParking} updateMap={updateMap}></Popup>
         </div>
     );

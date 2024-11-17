@@ -57,7 +57,7 @@ const SearchBar = ({items, updateMap, markRoom, viewSavedRoute, searchStr}) => {
             placeholder={"Search For "  + searchStr}
           />
           {showDropdown &&   
-            <div className="dropdown">            
+            <div className="search-dropdown">            
                 {filteredItems.length > 0 ?  (
                 filteredItems.map((item, index) => (
                   <ul 

@@ -10,13 +10,15 @@ const geometrySchema = new mongoose.Schema({
     Type: { type: String, required: true },
     RoomName: { type: String, required: true },
     LinkedTo: { type: String, required: true },
-    Floor: { type: Number, required: true }
+    Floor: { type: Number, required: true },
+    DestinationCount: {type: Number, required: true, default: 0}
   });
 
   const featureSchema = new mongoose.Schema({
     type: { type: String, enum: ['Feature'], required: true },
     properties: propertiesSchema,
     geometry: geometrySchema
+
   });
 
   const featureCollectionSchema = new mongoose.Schema({

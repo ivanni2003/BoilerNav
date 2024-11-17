@@ -90,13 +90,23 @@
 
 .floor-plan-search {
   position: absolute;
-  top: 51px;
-  right: 10px;
+  top: 115px;
+  right: 20px;
   width: 250px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+
+.floor-plan-directions-menu {
+  position: absolute;
+  top: 115px;
+  right:0px;
+  width: 250px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
 
 .amenities-menu {
@@ -106,37 +116,6 @@
     z-index: 1000;
   }
 
-
-.submit-floor-plan {
-    position: absolute;
-    bottom: 0px; 
-    left: 0px;  
-    padding: 8px 15px;
-    background-color: white; 
-    color: black;
-    border-radius: 2px;
-    border: none;
-    cursor: pointer;
-    font-size: 12px;
-    z-index: 2000;
-  }
-
-  .submit-floor-plan-btn {
-    position: absolute;
-    background-color: #4CAF50; 
-    bottom: 0px; 
-    left: 0px;  
-    color: white;
-    border-radius: 2px;
-    border: none;
-    font-size: 12px;
-    padding: 8px 15px;
-    cursor: pointer;
-    z-index: 2000;
-    height: 40px; 
-    width: 180px;
-  }
-  
   .popup-form input[type="text"] {
     margin-bottom: 5px;
   }
@@ -223,4 +202,11 @@
     font-size: 24px;
     font-weight: bold;
     color: #333;
+  }
+
+  .most-popular-rooms {
+    position: absolute;
+    top: 115px;
+    left: 0px;
+    width: 200px;
   }

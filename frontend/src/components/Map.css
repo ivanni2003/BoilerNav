@@ -128,24 +128,25 @@
   cursor: pointer;
   font-size: 12px;
   z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
+/* Place edit-mode-btn vertically above submit-floor-plan-btn */
 .edit-mode-btn {
-  background-color: #4CAF50; 
+  background-color: #4CAF50;
   color: white; 
   border: none; 
   border-radius: 3px; 
-  padding: 10px 53px; 
+  padding: 10px 53px;
   cursor: pointer; 
   font-size: 14px; 
-  bottom: 100px;
 }
 
 .submit-floor-plan-btn {
   position: absolute;
   background-color: #4CAF50; 
-  bottom: 0px; 
-  left: 0px;  
   color: white;
   border-radius: 2px;
   border: none;

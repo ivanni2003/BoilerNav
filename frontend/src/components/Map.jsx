@@ -158,8 +158,6 @@ async function fetchHeatmapData() {
   }
 }
 
-
-
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
   const heatmapLayerRef = useRef(null);
@@ -246,6 +244,7 @@ const FloorPlanView = ({
   const [rooms, setRooms] = useState([])
   const [features, setFeatures] = useState([])
   const [selectedFeature, setSelectedFeature] = useState(null);
+  const [lastSelectedFeature, setLastSelectedFeature] = useState(null);
 
   const clearRoute = () => {
     setStart(null);
@@ -262,13 +261,7 @@ const FloorPlanView = ({
     setShowPopup(true); // Show the popup
     setShowDirectionsMenu(true) //  show the directions Menu 
 
-    // Get the bounding rectangle of the clicked element
-    const rect = event.target.getBoundingClientRect();
-
-    // Calculate the position relative to the floor-plan-content container
-    const containerRect = imageRef.current.getBoundingClientRect();
-    const x = rect.left - 100//- containerRect.left + rect.width / 2;
-    const y = rect.top - containerRect.top + rect.height / 2;
+    const { x, y } = room.geometry;
 
     setPopupPosition({ x, y });
   }
@@ -286,10 +279,11 @@ const FloorPlanView = ({
       },
       geometry: { x, y }
     }
-    setFeatures([...features, newFeature]);
     if (selectedFeature) {
       linkTwoFeatures(selectedFeature, newFeature);
     }
+    setFeatures([...features, newFeature]);
+    setLastSelectedFeature(selectedFeature);
     setSelectedFeature(newFeature);
     console.log("Added new feature:", newFeature);
   }
@@ -298,9 +292,12 @@ const FloorPlanView = ({
     if (!isEditModeOn) return;
     console.log("User clicked on feature:", feature);
     if (!selectedFeature) {
+      setLastSelectedFeature(null);
       setSelectedFeature(feature);
     } else if (selectedFeature.properties.id === feature.properties.id) {
+
     } else {
+      setLastSelectedFeature(selectedFeature);
       setSelectedFeature(feature);
     }
   }
@@ -314,14 +311,14 @@ const FloorPlanView = ({
   }, [initialStart, initialDestination]);
 
   const handleStartClick = () => {
-    setStart(selectedRoom.room); // Set the selected room as the destination
+    setStart(selectedRoom); // Set the selected room as the destination
     //console.log("Set start location for:", start);
     //console.log("Set destination location for:", destination);
     setShowPopup(false);
   };
 
   const handleDestinationClick = () => {
-    setDestination(selectedRoom.room); // Set the selected room as the destination
+    setDestination(selectedRoom); // Set the selected room as the destination
    // console.log("Set start location for:", start);
    // console.log("Set destination location for:", destination);
     setShowPopup(false);
@@ -343,12 +340,50 @@ const FloorPlanView = ({
     setSelectedFloorPlan(newSelectedFloorPlan);
   }
 
-  const handleEditModeButton = () => {
+  const calculateScale = async () => {
+    // Find the scale of the floor plan by comparing the locations of
+    // MaxNorth, MaxEast, MaxSouth, MaxWest nodes with
+    // the locations of building nodes from map data
+    const maxNorth = features.find((feature) => feature.properties.type === 'MaxNorth');
+    const maxSouth = features.find((feature) => feature.properties.type === 'MaxSouth');
+    const maxEast = features.find((feature) => feature.properties.type === 'MaxEast');
+    const maxWest = features.find((feature) => feature.properties.type === 'MaxWest');
+    if (!maxNorth || !maxSouth || !maxEast || !maxWest) {
+      console.error('Failed to find MaxNorth, MaxSouth, MaxEast, or MaxWest features');
+      return -1;
+    }
+    const nSDistance = Math.abs(maxNorth.geometry.y - maxSouth.geometry.y);
+    const eWDistance = Math.abs(maxEast.geometry.x - maxWest.geometry.x);
+    try {
+      const buildingWayResponse = await axios.get(`${baseURL}/api/ways/id/${building.id}`);
+      const buildingWay = buildingWayResponse.data[0];
+      const buildingNodeIDs = buildingWay.nodes.join(',');
+      const buildingNodesResponse = await axios.get(`${baseURL}/api/nodes/id/${buildingNodeIDs}`);
+      const buildingNodes = buildingNodesResponse.data;
+      const buildingNodesLat = buildingNodes.map((node) => node.lat);
+      const buildingNodesLon = buildingNodes.map((node) => node.lon);
+      const maxLat = Math.max(...buildingNodesLat);
+      const minLat = Math.min(...buildingNodesLat);
+      const maxLon = Math.max(...buildingNodesLon);
+      const minLon = Math.min(...buildingNodesLon);
+      const buildingNSDistanceMeters = Math.abs(maxLat - minLat) * 111111;
+      const buildingEWDistanceMeters = Math.abs((maxLon - minLon) * 111111 * Math.cos((maxLat + minLat) / 2));
+      const scaleNS = buildingNSDistanceMeters / nSDistance;
+      const scaleEW = buildingEWDistanceMeters / eWDistance;
+      const scale = (scaleNS + scaleEW) / 2;
+      return scale;
+    } catch (error) {
+      console.error('Failed to calculate scale:', error);
+      return -1;
+    }
+  }
+
+  const handleEditModeButton = async () => {
     if (isEditModeOn) {
       // TODO: Send update request to server instead of instant update
-      const indoorData = indoorNavData;
-      indoorData.features = features;
-      // Use indoorData as the body of the request
+      const scale = await calculateScale();
+      console.log("Scale:", scale);
+      const indoorData = { ...indoorNavData, features: features, scale: scale };
       const response = axios.post(`${baseURL}/api/indoordata`, indoorData);
       if (response.status === 400) {
         console.error('Failed to update indoor data:', response.data);
@@ -361,12 +396,28 @@ const FloorPlanView = ({
   const linkTwoFeatures = (feature1, feature2) => {
     if (!feature1 || !feature2) return;
     if (feature1.properties.id === feature2.properties.id) return;
+    const newFeature1 = { ...feature1 };
+    const newFeature2 = { ...feature2 };
     if (!feature1.properties.linkedTo.includes(feature2.properties.id)) {
-      feature1.properties.linkedTo.push(feature2.properties.id);
+      newFeature1.properties.linkedTo.push(feature2.properties.id);
     }
     if (!feature2.properties.linkedTo.includes(feature1.properties.id)) {
-      feature2.properties.linkedTo.push(feature1.properties.id);
+      newFeature2.properties.linkedTo.push(feature1.properties.id);
     }
+    const newFeatures = features.map((feature) => {
+      if (feature.properties.id === feature1.properties.id) {
+        return newFeature1;
+      }
+      if (feature.properties.id === feature2.properties.id) {
+        return newFeature2;
+      }
+      return feature;
+    });
+    setFeatures(newFeatures);
+  };
+
+  const handleLinkSelectedFeatures = () => {
+    linkTwoFeatures(selectedFeature, lastSelectedFeature);
   };
 
   const handleClose = (e) => {
@@ -398,10 +449,12 @@ const FloorPlanView = ({
 
   useEffect(() => {
     async function fetchIndoorNavData() {
+      const buildingNameNoSpaces = building.tags.name.replaceAll(' ', '');
+      setLastSelectedFeature(null);
+      setSelectedFeature(null);
       try {
         // Remove all spaces from building name
         // URL doesn't accept spaces?
-        const buildingNameNoSpaces = building.tags.name.replaceAll(' ', '');
         const response = await axios.get(`${baseURL}/api/indoordata/${buildingNameNoSpaces}`);
         if (response.status !== 200) {
           console.error("Failed to fetch indoor data:", response.data);
@@ -413,7 +466,6 @@ const FloorPlanView = ({
         setIndoorNavData(indoorData);
       // Catch 404 error and create new indoor data
       } catch (error) {
-        const buildingNameNoSpaces = building.tags.name.replaceAll(' ', '');
         if (error.response.status === 404) {
           console.error("Indoor data not found for building:", building.tags.name);
           showNotification('Indoor data not found for this building.', 'error');
@@ -434,6 +486,9 @@ const FloorPlanView = ({
           setIndoorNavData(indoorData);
           console.log("Created new indoor data:", indoorData);
           return;
+        } else {
+          console.error("Failed to fetch indoor data:", error);
+          showNotification('Failed to fetch indoor data.', 'error');
         }
       }
     }
@@ -455,7 +510,7 @@ const FloorPlanView = ({
       const features = indoorData.features;
       setFeatures(features)
       const filteredRooms = features.filter((feature) => {
-        if (feature.properties.type !== 'room') return false;
+        if (feature.properties.type !== 'Room') return false;
         if (feature.properties.floor !== floorIndex) return false;
         return true;
       })
@@ -526,10 +581,10 @@ const FloorPlanView = ({
                 </div>
       </div>
 
-      <SubmitFloorPlan user={user} building={building} showNotification={showNotification}/>
 
       <div className="floor-plan-editing">
         <button className="edit-mode-btn" onClick={() => handleEditModeButton()}>Toggle Edit Mode</button>
+        <SubmitFloorPlan user={user} building={building} showNotification={showNotification}/>
       </div>
       <div className="floor-plan-header">
         <select 
@@ -557,6 +612,8 @@ const FloorPlanView = ({
           isEditModeOn={isEditModeOn}
           selectedFloorPlan={selectedFloorPlan}
           selectedFeature={selectedFeature}
+          setFeatures={setFeatures}
+          linkSelectedFeatures={handleLinkSelectedFeatures}
         />
         
         {/* Path handler for interior */}
@@ -590,7 +647,7 @@ const FloorPlanView = ({
 
         {showPopup && selectedRoom && (
           <InteriorPopupContent
-            roomName={selectedRoom.room.properties.RoomName}
+            roomName={selectedRoom.properties.roomName}
             onStartClick={handleStartClick}
             onDestinationClick={handleDestinationClick}
             onClose={handleClosePopup}

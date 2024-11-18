@@ -1,5 +1,95 @@
 import React, { useRef, useState } from "react";
 
+const FeaturePopup = ({ feature, isFeaturePopupOpen, setFeatures, features, linkSelectedFeatures, setIsFeaturePopupOpen }) => {
+  const [editName, setEditName] = useState(false);
+  if (!isFeaturePopupOpen) return null;
+  const roomName = feature.properties.roomName;
+
+  const featureTypes = [
+    'Entrance', 'StairUp', 'StairDown', 'Restroom', 'Elevator', 'Room', 'Intersection', 
+    'MaxNorth', 'MaxSouth', 'MaxEast', 'MaxWest'
+  ];
+
+  const handleChangeFeatureType = (newType) => {
+    const updatedFeatures = features.map((f) => {
+      if (f.properties.id === feature.properties.id) {
+        f.properties.type = newType;
+      }
+      return f;
+    });
+    setFeatures(updatedFeatures);
+  };
+
+  const handleClickName = () => {
+    setEditName(true);
+  }
+
+  const handleChangeRoomName = (newName) => {
+    const updatedFeatures = features.map((f) => {
+      if (f.properties.id === feature.properties.id) {
+        f.properties.roomName = newName;
+      }
+      return f;
+    });
+    setFeatures(updatedFeatures);
+  }
+
+  const handleDeleteFeature = () => {
+    const linkedFeaturesIDs = feature.properties.linkedTo;
+    const filteredFeatures = features.filter((f) => f.properties.id !== feature.properties.id);
+    const updatedFeatures = filteredFeatures.map((f) => {
+      const newLinkedTo = f.properties.linkedTo.filter((id) => id !== feature.properties.id);
+      f.properties.linkedTo = newLinkedTo;
+      return f;
+    });
+    setIsFeaturePopupOpen(false);
+    setFeatures(updatedFeatures);
+  };
+
+  const handleLinkFeature = () => {
+    linkSelectedFeatures();
+  };
+    
+
+  const style = {
+    position: 'absolute',
+    top: feature.geometry.y,
+    left: feature.geometry.x,
+    transform: 'translate(-50%, -100%)', // Adjust as needed
+    zIndex: 1000,
+  };
+
+  return (
+    <div className="interior-popup" style={style}>
+      { !editName ? ( 
+      <h3 onClick={handleClickName}>{roomName}</h3>
+      ) : (
+      <input type="text" 
+            value={roomName}
+            onChange={(e) => handleChangeRoomName(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' ? setEditName(false) : null}
+      />
+      )}
+      <div className="button-group">
+        {/* Dropdown for feature type */}
+        <div className="dropdown">
+          <select
+            value={feature.properties.type}
+            onChange={(e) => handleChangeFeatureType(e.target.value)}
+          >
+          { featureTypes.map((type) => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+          </select>
+        </div>
+        <button onClick={handleDeleteFeature}>Delete</button>
+        <button onClick={handleLinkFeature}>Link With Last Selected</button>
+        <button className="popup-close" onClick={() => setIsFeaturePopupOpen(false)}>x</button>
+      </div>
+    </div>
+  );
+};
+
 const RenderRooms = ({ rooms, onRoomClick, selectedFloorPlan, isEditModeOn }) => {
   if (isEditModeOn) return null;
   if (!rooms) return null;
@@ -30,12 +120,12 @@ const RenderIndoorNav = ({ features, onSVGClick, selectedFloorPlan, isEditModeOn
   if (!features) return null;
   const selectedFloorIndex = selectedFloorPlan.floorIndex;
   // Have to return the feature and any lines to any connected features
+  let index = 0;
   const featureList = features.map((feature) => {
     if (feature.properties.floor !== selectedFloorIndex) return null;
     const { x, y } = feature.geometry;
-    const index = feature.properties.id;
     const featureOptions = {};
-    if (feature.properties.type === 'room') {
+    if (feature.properties.type === 'Room') {
       featureOptions.fill = 'lightgreen';
     } else if (feature.properties.type === 'Intersection') {
       featureOptions.fill = 'lightgray';
@@ -49,7 +139,7 @@ const RenderIndoorNav = ({ features, onSVGClick, selectedFloorPlan, isEditModeOn
     }
     return (
       <circle
-        key={index}
+        key={index++}
         cx={x}
         cy={y}
         r="7"
@@ -66,16 +156,17 @@ const RenderIndoorNav = ({ features, onSVGClick, selectedFloorPlan, isEditModeOn
     // Skip if the feature is not on the selected floor
     if (feature.properties.floor !== selectedFloorIndex) return null;
     const { x, y } = feature.geometry;
-    const index = feature.properties.id;
     const connectedFeatures = feature.properties.linkedTo;
     connectedFeatures.forEach((connectedFeatureId) => {
       if (connectedFeatureId < feature.properties.id) return null;
       const connectedFeature = features.find((feature) => feature.properties.id === connectedFeatureId);
+      if (!connectedFeature) return null;
       if (connectedFeature.properties.floor !== selectedFloorIndex) return null;
       const { x: connectedX, y: connectedY } = connectedFeature.geometry;
+      index++;
       lineList.push(
         <line
-          key={index + connectedFeatureId}
+          key={index}
           x1={x}
           y1={y}
           x2={connectedX}
@@ -86,8 +177,6 @@ const RenderIndoorNav = ({ features, onSVGClick, selectedFloorPlan, isEditModeOn
       )
     });
   });
-  console.log("featureList length: ", featureList.length);
-  console.log("lineList length: ", lineList.length);
   return (
     <>
       {lineList}
@@ -107,14 +196,19 @@ const FloorPlanImage = ({
   isEditModeOn,
   setSelectedRoom,
   selectedFloorPlan,
-  selectedFeature
+  selectedFeature,
+  setFeatures,
+  linkSelectedFeatures,
 }) => {
   const [viewBox, setViewBox] = useState("0 0 1000 1000");
+  const [isFeaturePopupOpen, setIsFeaturePopupOpen] = useState(false);
+  const [isRoomPopupOpen, setIsRoomPopupOpen] = useState(false);
 
   const handleFloorPlanClick = (e) => {
     const rect = e.target.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    setIsFeaturePopupOpen(false);
     onFloorPlanClick(x, y);
   };
 
@@ -124,7 +218,25 @@ const FloorPlanImage = ({
     setViewBox(`0 0 ${naturalWidth} ${naturalHeight}`);
   };
 
+  const handleFeatureClick = (e, feature) => {
+    if (selectedFeature?.properties?.id === feature.properties.id) {
+      setIsFeaturePopupOpen(!isFeaturePopupOpen);
+    } else {
+      setIsFeaturePopupOpen(false);
+    }
+    onFeatureClick(e, feature);
+  }
+
   return (
+    <> 
+    <FeaturePopup
+    feature={selectedFeature} 
+    isFeaturePopupOpen={isFeaturePopupOpen} 
+    setFeatures={setFeatures}
+    features={features}
+    setIsFeaturePopupOpen={setIsFeaturePopupOpen}
+    linkSelectedFeatures={linkSelectedFeatures}
+    /> 
     <svg
       width="100%"
       height="100%"
@@ -137,8 +249,9 @@ const FloorPlanImage = ({
         onLoad={(e) => handleImageLoad(e)}
       />
       <RenderRooms rooms={rooms} onRoomClick={onRoomClick} selectedFloorPlan={selectedFloorPlan} isEditModeOn={isEditModeOn} />
-      <RenderIndoorNav features={features} onSVGClick={onFeatureClick} selectedFloorPlan={selectedFloorPlan} isEditModeOn={isEditModeOn} selectedFeature={selectedFeature} />
+      <RenderIndoorNav features={features} onSVGClick={handleFeatureClick} selectedFloorPlan={selectedFloorPlan} isEditModeOn={isEditModeOn} selectedFeature={selectedFeature} />
     </svg>
+    </>
   );
 };
 

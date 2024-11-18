@@ -11,6 +11,7 @@ const propertiesSchema = new mongoose.Schema({
   roomName: { type: String, required: true },
   linkedTo: [{ type: Number }],
   floor: { type: Number, required: true },
+  destinationCount: { type: Number, required: true, default: 0 },
 });
 
 const featureSchema = new mongoose.Schema({
@@ -27,7 +28,7 @@ const featureCollectionSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   floors: [floorSchema],
   features: [featureSchema],
-  scale: { type: Number, required: true },
+  scale: { type: Number, required: true, default: -1 },
 });
 
 module.exports = mongoose.model("IndoorNav", featureCollectionSchema);

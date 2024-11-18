@@ -14,6 +14,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import SavedLocationsList from './components/SavedLocationsList';
 import MostPopular from './components/MostPopular'
 import BurgerMenu from './components/BurgerMenu';
+import Tutorial from './components/Tutorial';
 import { Menu } from 'lucide-react';
 
 const baseURL = 'http://localhost:3001'
@@ -32,6 +33,8 @@ function App() {
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [floorPlans, setFloorPlans] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isTutorialActive, setIsTutorialActive] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
 
   const [buildings, setBuildings] = useState([])
   const [publicRoutes, setPublicRoutes] = useState([])
@@ -613,8 +616,58 @@ const getTravelTime = (distance, selectedMode) => {
   }
 
   const handleStartTutorial = () => {
-    // Tutorial logic will go here
-    console.log("Starting tutorial...");
+    setIsMenuOpen(false);
+    setIsTutorialActive(true);
+    setTutorialStep(0);
+  };
+  
+  const handleTutorialNext = () => {
+    setTutorialStep(prev => prev + 1);
+  };
+  
+  const handleCloseTutorial = () => {
+    setIsTutorialActive(false);
+    setTutorialStep(0);
+  };
+
+  useEffect(() => {
+    const transportationMode = document.querySelector('.transportation-mode');
+    const searchContainer = document.querySelector('.search-container');
+    
+    if (isTutorialActive) {
+      if (tutorialStep === 1) {
+        // Transportation step
+        if (transportationMode) {
+          transportationMode.style.zIndex = '10000';
+        }
+      } else if (tutorialStep === 2) {
+        // Search step
+        if (searchContainer) {
+          searchContainer.style.zIndex = '10000';
+        }
+      }
+    } else {
+      // Reset
+      if (transportationMode) {
+        transportationMode.style.zIndex = '';
+      }
+      if (searchContainer) {
+        searchContainer.style.zIndex = '';
+      }
+    }
+  
+    return () => {
+      if (transportationMode) {
+        transportationMode.style.zIndex = '';
+      }
+      if (searchContainer) {
+        searchContainer.style.zIndex = '';
+      }
+    };
+  }, [isTutorialActive, tutorialStep]);
+
+  const handleTutorialPrevious = () => {
+    setTutorialStep(prev => prev - 1);
   };
 
   return (
@@ -770,6 +823,13 @@ const getTravelTime = (distance, selectedMode) => {
       </div>
      )}
     </div>
+    <Tutorial 
+      isActive={isTutorialActive}
+      currentStep={tutorialStep}
+      onClose={handleCloseTutorial}
+      onNext={handleTutorialNext}
+      onPrevious={handleTutorialPrevious}
+    />
   </div>
   </ErrorBoundary>
   );

@@ -236,6 +236,36 @@ const FloorPlanView = ({
   const [start, setStart] = useState(initialStart); // Initialize with prop
   const [destination, setDestination] = useState(initialDestination); // Initialize with prop
 
+  // Inside the FloorPlanView component
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [newRoomName, setNewRoomName] = useState('');
+
+  const handleUpdateClick = () => {
+    if (!user) {
+      showNotification('Please log in to submit an update request', 'error');
+      return;
+    }
+    setShowPopup(false); // Close the room popup
+    setShowUpdateForm(true); // Show the update form
+  };
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${baseURL}/api/indoordata/update-request`, {
+        buildingName: building.tags.name,
+        roomId: selectedRoom.room.properties.id,
+        newRoomName: newRoomName,
+        username: user ? user.username : 'Guest'
+      });
+      showNotification('Update request submitted successfully', 'success');
+      setShowUpdateForm(false);
+      setNewRoomName(''); // Clear the input field
+    } catch (error) {
+      console.error('Error submitting update request:', error);
+      showNotification('Failed to submit update request', 'error');
+    }
+  };
 
   const clearRoute = () => {
     setStart(null);
@@ -490,17 +520,41 @@ const FloorPlanView = ({
           </div>
         )}
 
-
         {showPopup && selectedRoom && (
           <InteriorPopupContent
-            roomName={selectedRoom.room.properties.RoomName}
-            onStartClick={handleStartClick}
-            onDestinationClick={handleDestinationClick}
-            onClose={handleClosePopup}
-            position={popupPosition}
+          roomName={selectedRoom.room.properties.RoomName}
+          onStartClick={handleStartClick}
+          onDestinationClick={handleDestinationClick}
+          onUpdateClick={handleUpdateClick}
+          onClose={handleClosePopup}
+          position={popupPosition}
           />
         )}
       </div>
+
+      {showUpdateForm && (
+        <div className="update-form-overlay">
+          <div className="update-form">
+            <h2>Request Interior Update</h2>
+            <form onSubmit={handleUpdateSubmit}>
+              <p><strong>Current Room Name:</strong> {selectedRoom.room.properties.RoomName}</p>
+              <label>
+                New Room Name:
+                <input
+                  type="text"
+                  value={newRoomName}
+                  onChange={(e) => setNewRoomName(e.target.value)}
+                  required
+                />
+              </label>
+              <div className="form-buttons">
+                <button type="submit">SUBMIT</button>
+                <button type="button" onClick={() => setShowUpdateForm(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {showDirectionsMenu && selectedRoom && (
         <div className="floor-plan-directions-menu"> 

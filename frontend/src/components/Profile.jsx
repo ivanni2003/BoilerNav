@@ -34,6 +34,66 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   const [selectedUserSubmissions, setSelectedUserSubmissions] = useState([]);
   const [selectedUsername, setSelectedUsername] = useState('');
 
+  const [showUpdateRequests, setShowUpdateRequests] = useState(false);
+  const [updateRequests, setUpdateRequests] = useState([]);
+
+  // Open Review Update Requests
+  const handleOpenReviewUpdateRequests = () => {
+    setShowUpdateRequests(true);
+  };
+
+  // Close Ban Panel
+  const handleCloseReviewUpdateRequests = () => {
+    // setBanUnbanMessage('');
+    setShowUpdateRequests(false);
+  };
+
+  // Fetch all users except the logged-in user when Ban Panel is opened
+  useEffect(() => {
+    if (showUpdateRequests) {
+      // setBanUnbanMessage('');
+      fetchUpdateRequests();
+    }
+  }, [showUpdateRequests]);
+
+  const fetchUpdateRequests = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/indoordata/get-update-requests', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setUpdateRequests(response.data);
+    } catch (error) {
+      console.error('Error fetching update requests:', error);
+      showNotification('Failed to fetch update requests', 'error');
+    }
+  };
+
+  const handleApproveRequest = async (requestId) => {
+    try {
+      await axios.post(`http://localhost:3001/api/indoordata/approve-update-request/${requestId}`, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      showNotification('Update request approved', 'success');
+      setUpdateRequests(prev => prev.filter(req => req._id !== requestId));
+    } catch (error) {
+      console.error('Error approving update request:', error);
+      showNotification('Failed to approve update request', 'error');
+    }
+  };
+  
+  const handleDeclineRequest = async (requestId) => {
+    try {
+      await axios.delete(`http://localhost:3001/api/indoordata/update-request/${requestId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      showNotification('Update request declined', 'success');
+      setUpdateRequests(prev => prev.filter(req => req._id !== requestId));
+    } catch (error) {
+      console.error('Error declining update request:', error);
+      showNotification('Failed to decline update request', 'error');
+    }
+  };
+
   const handleViewSubmissions = async (username) => {
     try {
       const response = await axios.get(`http://localhost:3001/api/users/username/${username}`, {
@@ -661,6 +721,21 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
         </div>
       )}
 
+       {/* Add the Review Update Requests Frame */}
+       {isElevated && (
+        <div className="open-ban-panel">
+          <div className="open-ban-panel-header">
+            <h2>Review   </h2>
+            <button
+              className="open-review-requests-button"
+              onClick={handleOpenReviewUpdateRequests}
+            >
+              REVIEW UPDATE REQUESTS
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="delete-account-section">
         {!showDeleteConfirmation ? (
           <button className="delete-account-button" onClick={() => setShowDeleteConfirmation(true)}>
@@ -681,6 +756,36 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
       </div>
         {error && <div className="error-message">{error}</div>}
       </div>
+
+      {/* Show Review Update Requests Overlay */}
+      {showUpdateRequests && (
+        <div className="update-requests-overlay">
+          <div className="update-requests-content">
+            <div className="update-requests-header">
+              <h2>Review Update Requests</h2>
+              <button className="close-update-requests-button" onClick={handleCloseReviewUpdateRequests}>×</button>
+            </div>
+            {updateRequests.length > 0 ? (
+              <ul className="update-request-list">
+                {updateRequests.map(request => (
+                  <li key={request._id} className="update-request-item">
+                    <p><strong>Building Name:</strong> {request.buildingName}</p>
+                    <p><strong>Room ID:</strong> {request.roomId}</p>
+                    <p><strong>New Room Name:</strong> {request.newRoomName}</p>
+                    <p><strong>Submitted by:</strong> {request.username}</p>
+                    <div className="update-request-actions">
+                      <button className="approve-button" onClick={() => handleApproveRequest(request._id)}>APPROVE</button>
+                      <button className="decline-button" onClick={() => handleDeclineRequest(request._id)}>DECLINE</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No update requests found.</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Ban Panel Overlay */}
       {showBanPanel && (

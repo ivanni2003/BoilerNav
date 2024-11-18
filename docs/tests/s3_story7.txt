@@ -1,0 +1,71 @@
+Test Case 3_7_1
+System: BanSystem
+Phase: 3
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+- Test the ban system backend and frontend
+- Verify that elevated users can ban/unban and banned users are locked out 
+    of their account.
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Click on profile icon
+4. Click on "View Profile"
+5. Click on "OPEN BAN PANEL"
+
+C. Expected Result:
+1. A ban panel list should display of all users, an option to ban, 
+    and review submissions.
+
+-------------------
+
+Test Case 3_7_2
+System: BanSystem
+Phase: 3
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+- Test the ban system backend and frontend
+- Verify that elevated users can ban/unban and banned users are locked out 
+    of their account.
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Click on profile icon
+4. Click on "View Profile"
+5. Click on "OPEN BAN PANEL"
+6. Click "BAN" on a user
+
+C. Expected Result:
+1. The user will be banned, and an option to unban will show up to unban the
+    user.
+2. A message saying "BAN SUCCESS" will display
+
+-------------------
+
+Test Case 3_7_4
+System: BanSystem
+Phase: 3
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+- Test the ban system backend and frontend
+- Verify that elevated users can ban/unban and banned users are locked out 
+    of their account.
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Enter username and password of a banned account
+3. Click "Log In"
+
+C. Expected Result:
+1. A message will display "YOU ARE BANNED" and you will not be logged into 
+    your account.
+
+-------------------

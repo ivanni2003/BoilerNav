@@ -1,0 +1,84 @@
+Test Case 3_6_1
+System: ReviewMapRequests
+Phase: 3
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+- Test room form system
+- Verify the user can change a room name using the form from a room node.
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account that is an elevated user
+3. VIew indoor of Lawson
+4. Click on a green room node button
+5. Click on "Update"
+6. Fill out a name
+7. Click "SUBMIT"
+
+C. Expected Result:
+1. Popup should be gone
+2. Message that displays "Update request submitted successfully"
+3. The room update request is populated to the database for elevated users to 
+    view
+
+-------------------
+
+Test Case 3_6_2
+System: ReviewMapRequests
+Phase: 3
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+- Test room form system
+- Verify that elevated users can DECLINE room requests.
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account that is an elevated user
+3. VIew indoor of Lawson
+4. Click on a green room node button
+5. Click on "Update"
+6. Fill out a name
+7. Click "SUBMIT"
+8. Click on "BoilerNav" to return to the map.
+9. Click on profile icon and click "View Profile"
+10. Click on the blue "REVIEW UPDATE REQUESTS" button
+11. Click "DECLINE" on the request that was submitted
+
+C. Expected Result:
+1. The submitted request will disappear form the list.
+2. The room name will not change.
+
+-------------------
+
+Test Case 3_6_3
+System: ReviewMapRequests
+Phase: 3
+Server startup check with profile section
+Severity: 1
+
+A. Identification and classification
+- Test room form system
+- Verify that elevated users can APPROVE room requests.
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account that is an elevated user
+3. VIew indoor of Lawson
+4. Click on a green room node button
+5. Click on "Update"
+6. Fill out a name
+7. Click "SUBMIT"
+8. Click on "BoilerNav" to return to the map.
+9. Click on profile icon and click "View Profile"
+10. Click on the blue "REVIEW UPDATE REQUESTS" button
+11. Click "APPROVE" on the request that was submitted
+
+C. Expected Result:
+1. The submitted request will disappear form the list.
+2. The room name will change to the name requested by the user.
+
+-------------------

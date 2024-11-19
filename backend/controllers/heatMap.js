@@ -1,5 +1,6 @@
 const heatMapRouter = require("express").Router();
 const Heatmap = require("../models/HeatMap");
+const RoomLink = require("../models/RoomLink")
 const mongoose = require("mongoose");
 
 

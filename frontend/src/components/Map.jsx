@@ -249,6 +249,39 @@ const FloorPlanView = ({
     setShowUpdateForm(true); // Show the update form
   };
 
+  function getDaysSinceJan1() {
+    const now = new Date(); // Current date
+    const startOfYear = new Date(now.getFullYear(), 0, 1); // January 1 of the current year
+    const diffInMilliseconds = now - startOfYear; // Difference in milliseconds
+    const diffInDays =  1 + Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24)); // Convert to days
+    return diffInDays;
+}
+  
+  const handleReserveClick = (event, RoomName, building) => {
+    console.log(building);
+    if (RoomName.indexOf(' ') == -1) {
+      RoomName = RoomName;
+    }
+    else {
+      RoomName = RoomName.substring(0, RoomName.indexOf(' '));
+    }
+    console.log(RoomName);
+    const currentDate = new Date();
+  const currentMonth = currentDate.getMonth(); // January is 0, December is 11
+  const currentYear = currentDate.getFullYear();
+
+  // Determine if the semester is Fall or Spring based on the current month
+  let semester = "Fall";
+  if (currentMonth >= 1 && currentMonth <= 5) {  // January to May
+    semester = "Spring";
+  }
+
+  // Format the semester and year, e.g., "Fall2024"
+  const term = `${semester}${currentYear}`;
+    const start = "https://timetable.mypurdue.purdue.edu/Timetabling/gwt.jsp?page=availability#dates=" + getDaysSinceJan1() + "&rooms=flag%253AEvent+" + "LWSN" + "+" + RoomName + "&term=" + term + "PWL";
+    window.location.href = start;
+  };
+
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -526,6 +559,7 @@ const FloorPlanView = ({
           onStartClick={handleStartClick}
           onDestinationClick={handleDestinationClick}
           onUpdateClick={handleUpdateClick}
+          onReserveClick={(e) => handleReserveClick(e, selectedRoom.room.properties.RoomName, building)}
           onClose={handleClosePopup}
           position={popupPosition}
           />

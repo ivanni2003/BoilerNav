@@ -15,7 +15,8 @@ import SavedLocationsList from './components/SavedLocationsList';
 import MostPopular from './components/MostPopular'
 import BurgerMenu from './components/BurgerMenu';
 import Tutorial from './components/Tutorial';
-import { Menu } from 'lucide-react';
+import ShareRoute from './components/ShareRoute';
+import { Menu, Share } from 'lucide-react';
 
 const baseURL = 'http://localhost:3001'
 
@@ -521,6 +522,7 @@ function App() {
   const handleGetDirections = (building) => {  // get direction menu within popup
     clearRoute();
     setStart(userLocation)  // start is curr. location by default
+    console.log("building:", building);
     setDestination(building)
     setActiveMenu('directions');
 }
@@ -831,6 +833,13 @@ const getTravelTime = (distance, selectedMode) => {
       onPrevious={handleTutorialPrevious}
     />
   </div>
+  <ShareRoute 
+      userLocation={userLocation}
+      handleRouting={handleRouting}
+      setStart={setStart}
+      setDestination={setDestination}
+      setActiveMenu={setActiveMenu}
+    ></ShareRoute>
   </ErrorBoundary>
   );
 

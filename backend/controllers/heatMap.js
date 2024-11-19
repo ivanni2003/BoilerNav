@@ -35,8 +35,8 @@ heatMapRouter.get('/heatmap-add', async (req, res) => {
     try {
         const expirationDate = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
         //console.log("Expiration Date1:", expirationDate);
-        const roundedLat = parseFloat(lat).toFixed(3);
-        const roundedLong = parseFloat(long).toFixed(3);
+        const roundedLat = parseFloat(lat).toFixed(5);
+        const roundedLong = parseFloat(long).toFixed(5);
         const heatmapEntry = await Heatmap.findOneAndUpdate(
             { uid }, // Match by UID
             { lat: roundedLat, long: roundedLong, uid, expirationDate }, // Update fields

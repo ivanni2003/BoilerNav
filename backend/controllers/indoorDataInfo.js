@@ -136,8 +136,8 @@ indoorDataRouter.get('/get-update-requests', async (request, response) => {
           console.log(request._id)
           floorPlanRequests.push({
             ...request.toObject(),
-            username: local_user.username,
-            userId: local_user.id,
+            username: request.username,
+            userId: request.id,
             requestId: request._id
           });
         });

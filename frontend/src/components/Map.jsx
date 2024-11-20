@@ -291,15 +291,42 @@ const FloorPlanView = ({
     //window.location.href = start;
     window.open(start, "_blank", "noopener,noreferrer");
     if (user != null) {
+      /*
       axios.post(`${baseURL}/api/ShareRouteEmail`, {
         email: user.email,
         resetLink: route
       });
+      */
+     sendRouteEmailtoSelf(route);
     }
     else {
       window.location.href=route;
     }
   };
+
+  const sendRouteEmailtoSelf = (routeLink) => {
+    if (user != null) {
+        axios.post('http://localhost:3001/api/ShareRouteEmail', {
+          email: user.email,
+          resetLink: routeLink
+        })
+          .then(response => {
+            console.log('Email sent successfully', response.data);  // Response from server
+            showNotification('Email sent successfully', 'info');
+          })
+          .catch(error => {
+            console.error('Error sending email:', error.response || error.message);
+            if (error.response) {
+              // Server responded with a status code that falls out of the range of 2xx
+              console.error('Server response:', error.response.data);
+            } else {
+              // Something went wrong with the request itself
+              console.error('Request error:', error.message);
+            }
+            showNotification('Error sending email', 'error');
+          });
+    }
+  }
 
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();

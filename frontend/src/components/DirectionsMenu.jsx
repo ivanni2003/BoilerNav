@@ -172,10 +172,25 @@ const DirectionsMenu = ({
       console.error('Async: Could not copy text: ', err);
     });
     if (user != null) {
-      axios.post(`localhost:3001/api/ShareRouteEmail`, {
+      axios.post('http://localhost:3001/api/ShareRouteEmail', {
         email: user.email,
         resetLink: text
-      });
+      })
+        .then(response => {
+          console.log('Email sent successfully', response.data);  // Response from server
+          showNotification('Email sent successfully', 'info');
+        })
+        .catch(error => {
+          console.error('Error sending email:', error.response || error.message);
+          if (error.response) {
+            // Server responded with a status code that falls out of the range of 2xx
+            console.error('Server response:', error.response.data);
+          } else {
+            // Something went wrong with the request itself
+            console.error('Request error:', error.message);
+          }
+          showNotification('Error sending email', 'error');
+        });
     }
   }
 

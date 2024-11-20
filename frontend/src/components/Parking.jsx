@@ -1,39 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './Parking.css'
 import axios from 'axios';
+import PopupDropdown from './PopupDropdown'
 
 const baseURL = 'http://localhost:3001'
 
-const Popup = ({isVisible, onClose, heading, items, updateMap}) => {
-    if (!isVisible) {
-        return null
-    }
-
-    const handleItemClick = (item) => {
-        updateMap(item.buildingPosition.lat, item.buildingPosition.lon, 20)
-    }
-
-    return (
-        <div className="amenity-popup">
-            <div className="popup-content">
-            <span className="close" onClick={onClose}>&times;</span>
-                <h2 style={{ fontSize: '18px'}}>{heading}</h2>
-                <ul className="popup-items">
-                    {items.length > 0 ? (
-                        items.map((item, index) => (
-                            <ul className="popup-item" onClick={() => handleItemClick(item)} key={index}>
-                                {item.tags.name ? item.tags.name : 'Unnamed'}
-                            </ul>
-                        ))
-                    ) : (
-                        <ul>No parking garages found.</ul>
-                    )}
-                </ul>
-            </div>
-        </div>
-    )
-
-}
 const Amenities = ({updateMap, markParkingLots}) => {
     const [parkingLots, setParkingLots] = useState([])
     const [namedParking, setNamedParking] = useState([])
@@ -68,7 +39,9 @@ const Amenities = ({updateMap, markParkingLots}) => {
     return (
         <div>
             <button className='feature-button' onClick={handleParkingClick}>View Parking</button>
-            <Popup isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Parking Garages"} items={namedParking} updateMap={updateMap}></Popup>
+            <div className='parking-popup'> 
+                <PopupDropdown className='parking-popup' isVisible={isParkingPopupVisible} onClose={closeParkingPopup} heading={"Parking Garages"} items={namedParking} updateMap={updateMap} viewSavedRoute={null}></PopupDropdown>
+            </div>
         </div>
     );
 }

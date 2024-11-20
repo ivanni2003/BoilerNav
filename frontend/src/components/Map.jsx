@@ -849,8 +849,6 @@ const Map = ({ latitude,
 
     const markParkingLots = (lots) => {
       setParkingLots(lots)
-      console.log(parkingLots)
-
     }
 
     const markBusStops = (stops) => {

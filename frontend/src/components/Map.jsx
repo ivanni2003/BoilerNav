@@ -157,11 +157,26 @@ async function fetchHeatmapData() {
   }
 }
 
+async function fetchhistoricalHeatmapData() {
+  try {
+    const response = await fetch('http://localhost:3001/api/heatmap/historical-heatmap-get'); 
+    if (!response.ok) {
+      throw new Error('Failed to fetch heatmap data');
+    }
+    const data = await response.json();
+    //console.log('Heatmap Data:', data); // This will include lat, long, and intensity
+    return data;
+  } catch (error) {
+    console.error('Error fetching heatmap data:', error);
+  }
+}
+
 
 
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
   const heatmapLayerRef = useRef(null);
+  const historicalHeatmapLayerRef = useRef(null);
 
   let SouthWestCoords = [40.40815, -86.95308];
   let NorthEastCoords = [40.44628, -86.89712];
@@ -180,18 +195,30 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
     // Remove existing heatmap layer if it exists
     async function updateHeatmap() {
       const heatmapData = await fetchHeatmapData();
+      const historicalHeatmapData = await fetchhistoricalHeatmapData();
       if (heatmapLayerRef.current) {
         map.removeLayer(heatmapLayerRef.current);
+      }
+      if (historicalHeatmapLayerRef.current) {
+        map.removeLayer(historicalHeatmapLayerRef.current);
       }
 
       // Convert data to Leaflet.heat format
       const heatData = heatmapData.map(({ lat, long, intensity }) => [lat, long, intensity]);
+      const historicalHeatmapDataFormatted = historicalHeatmapData.map(({ lat, long, intensity }) => [lat, long, intensity]);
 
       // Add the new heatmap layer
       heatmapLayerRef.current = L.heatLayer(heatData, {
         radius: 20,
         blur: 10,
         maxZoom: 17,
+      }).addTo(map);
+      historicalHeatmapLayerRef.current = L.heatLayer(historicalHeatmapDataFormatted, {
+        radius: 15, // Slightly smaller radius for historical data
+        blur: 15,   // Slightly more blur for historical data
+        maxZoom: 17,
+        opacity: 0.5, // Reduced opacity to distinguish from the current layer
+        gradient: {0: 'yellow', 0.5: 'orange', 1: 'red'}, // Optional gradient for styling
       }).addTo(map);
     }
 
@@ -202,8 +229,11 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
       if (heatmapLayerRef.current) {
         map.removeLayer(heatmapLayerRef.current);
       }
+      if (historicalHeatmapLayerRef.current) {
+        map.removeLayer(historicalHeatmapLayerRef.current);
+      }
     };
-  }, [latitude, longitude, zoom, map, heatData]); 
+  }, [latitude, longitude, zoom, map]); 
 
   return null;
 };

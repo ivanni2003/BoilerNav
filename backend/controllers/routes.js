@@ -104,16 +104,41 @@ routesRouter.post('/', authenticateToken, async (request, response) => {
     response.status(400).json({ error: error.message });
   }
 });
-// Get all public routes
-routesRouter.get("/public", async (request, response) => {
+// Get all outdoor public routes
+routesRouter.get("/public/outdoor", async (request, response) => {
   try {
-    const routes = await Route.find({ isPublic: true });
+    const routes = await Route.find({ isPublic: true, travelMode: "footpath" });
     response.json(routes);
   } catch (error) {
     console.error("Error fetching public routes:", error);
     response.status(400).json({ error: error.message });
   }
 });
+
+// Get top outdoor routes that are public
+routesRouter.get("/public/outdoor/topRoutes", async (request, response) => {
+  try {
+    const routes = await Route.find({ isPublic: true, travelMode: "footpath"});
+    const routeMap = new Map()
+
+    routes.forEach(route => {  // map[endLocation] = list of routes with endLocation
+      const endLocation = route.endLocation.name
+
+      if (routeMap.has(endLocation)) {
+        routeMap.get(endLocation).push(route)
+      } else {
+        routeMap.set(endLocation, [route])
+      }
+    })
+
+    // sort by endLocation and return corresponding list
+    const sortedEndLocations = [...routeMap.entries()].sort((a, b) => b[1].length - a[1].length)
+    response.json(sortedEndLocations.slice(0, 3))
+  } catch (error) {
+    console.error("Error fetching top outdoor routes:", error);
+    response.status(400).json({ error: error.message });
+  }
+})
 
 // Get user's routes (both public and private)
 routesRouter.get("/:userId", authenticateToken, async (request, response) => {

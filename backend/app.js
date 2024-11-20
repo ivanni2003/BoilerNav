@@ -15,7 +15,7 @@ const floorPlanRouter = require("./controllers/floorPlans");
 const routesRouter = require("./controllers/routes");
 const indoorDataRouter = require("./controllers/indoorDataInfo");
 const indoorNavRouter = require('./controllers/navigation')
-const heatMapRouter = require("./controllers/Heatmap");
+const heatMapRouter = require("./controllers/heatMap");
 const Route = require('./models/route');
 
 

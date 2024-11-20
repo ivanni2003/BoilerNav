@@ -38,6 +38,7 @@ function App() {
 
   const [buildings, setBuildings] = useState([])
   const [publicRoutes, setPublicRoutes] = useState([])
+  const [topRoutes, setTopRoutes] = useState([])
 
   const [latitude, setLatitude] = useState(40.4274);
   const [longitude, setLongitude] = useState(-86.9132);
@@ -96,12 +97,21 @@ function App() {
 
   const fetchPublicRoutes = async () => {
     try {
-      const response = await axios.get(`${baseURL}/api/routes/public`);
+      const response = await axios.get(`${baseURL}/api/routes/public/outdoor`);
       setPublicRoutes(response.data); 
     } catch (error) {
       console.log(error); 
     }
   };
+
+  const fetchTopRoutes = async () => {
+    try {
+      const response = await axios.get(`${baseURL}/api/routes/public/outdoor/topRoutes`);
+      setTopRoutes(response.data)
+    } catch (error) {
+      console.log(error); 
+    }
+  }
 
   const fetchFavoriteLocations = useCallback(async (userId, token) => {
     setIsLoadingFavorites(true);
@@ -315,6 +325,7 @@ function App() {
     if (!showLogin) {
       fetchBuildings();
       fetchPublicRoutes();
+      fetchTopRoutes();
     }
 
     // Geolocation watching
@@ -746,10 +757,11 @@ const getTravelTime = (distance, selectedMode) => {
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
             {<MostPopular 
-              items={[]} 
+              items={topRoutes} 
               buttonName={'Most Popular Routes'} 
               markRoom={null} 
-              viewSavedRoute={handleViewSavedRoute}/> }
+              viewSavedRoute={handleViewSavedRoute}/>
+               }
             {notification && (
             <Notification
                 message={notification.message}

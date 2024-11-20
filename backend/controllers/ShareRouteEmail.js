@@ -27,8 +27,8 @@ const mg = mailgun.client({
         const msg = await mg.messages.create('sandbox19bae2ebb0364a398da14766ce80414c.mailgun.org', {
             from: "Excited User <mailgun@sandbox19bae2ebb0364a398da14766ce80414c.mailgun.org>",
             to: [email],
-            subject: "Reserved Route",
-            text: "You Reserved a Room.",
+            subject: "Route to Building",
+            text: "You wanted a Route to a Building.",
             html: `<h1>Route to Building</h1><br>
                    <body>
                      <p>Click to go to that Building:</p>

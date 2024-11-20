@@ -17,6 +17,7 @@ const indoorDataRouter = require("./controllers/indoorDataInfo");
 const indoorNavRouter = require('./controllers/navigation')
 const heatMapRouter = require("./controllers/Heatmap");
 const Route = require('./models/route');
+const ShareRouterouter = require("./controllers/ShareRouteEmail");
 
 
 const url =
@@ -38,6 +39,7 @@ app.use("/api/login", loginRouter);
 app.use("/api/reset-password", resetPasswordRouter);
 app.use("/api/floorplans", floorPlanRouter);
 app.use("/api/indoordata", indoorDataRouter);
+app.use("/api/ShareRouteEmail", ShareRouterouter);
 
 
 app.use('/api/nodes', nodeRouter)

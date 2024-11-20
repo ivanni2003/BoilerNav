@@ -257,8 +257,9 @@ const FloorPlanView = ({
     return diffInDays;
 }
   
-  const handleReserveClick = (event, RoomName, building) => {
-    console.log(building);
+  const handleReserveClick = (event, RoomName, building, user) => {
+    console.log("building:", building);
+    console.log("user: ", user);
     if (RoomName.indexOf(' ') == -1) {
       RoomName = RoomName;
     }
@@ -278,8 +279,26 @@ const FloorPlanView = ({
 
   // Format the semester and year, e.g., "Fall2024"
   const term = `${semester}${currentYear}`;
-    const start = "https://timetable.mypurdue.purdue.edu/Timetabling/gwt.jsp?page=availability#dates=" + getDaysSinceJan1() + "&rooms=flag%253AEvent+" + "LWSN" + "+" + RoomName + "&term=" + term + "PWL";
-    window.location.href = start;
+
+    const name = building.tags.name;
+    const matches = name.match(/\((.*?)\)/);
+    const abbreviation = matches ? matches[1] : null;
+    console.log(`Abbreviation: ${abbreviation}`);
+    const start = "https://timetable.mypurdue.purdue.edu/Timetabling/gwt.jsp?page=availability#dates=" + getDaysSinceJan1() + "&rooms=flag%253AEvent+" + abbreviation + "+" + RoomName + "&term=" + term + "PWL";
+    const latitude = building.buildingPosition.lat;
+    const longitude = building.buildingPosition.lon;
+    const route = "http://localhost:5173?lat=" + latitude + "&lon=" + longitude + "&nam=" + name;
+    //window.location.href = start;
+    window.open(start, "_blank", "noopener,noreferrer");
+    if (user != null) {
+      axios.post(`${baseURL}/api/ShareRouteEmail`, {
+        email: user.email,
+        resetLink: route
+      });
+    }
+    else {
+      window.location.href=route;
+    }
   };
 
   const handleUpdateSubmit = async (e) => {
@@ -559,7 +578,7 @@ const FloorPlanView = ({
           onStartClick={handleStartClick}
           onDestinationClick={handleDestinationClick}
           onUpdateClick={handleUpdateClick}
-          onReserveClick={(e) => handleReserveClick(e, selectedRoom.room.properties.RoomName, building)}
+          onReserveClick={(e) => handleReserveClick(e, selectedRoom.room.properties.RoomName, building, user)}
           onClose={handleClosePopup}
           position={popupPosition}
           />

@@ -164,6 +164,36 @@ const DirectionsMenu = ({
     }
   };
 
+  const CopyRoute = () => {
+    var text = "http://localhost:5173?lat=" + destination.buildingPosition.lat + "&lon=" + destination.buildingPosition.lon + "&nam=" + destination.tags.name;
+    navigator.clipboard.writeText(text).then(function() {
+      showNotification('Copied to Clipboard', 'info');
+    }, function(err) {
+      console.error('Async: Could not copy text: ', err);
+    });
+    if (user != null) {
+      axios.post('http://localhost:3001/api/ShareRouteEmail', {
+        email: user.email,
+        resetLink: text
+      })
+        .then(response => {
+          console.log('Email sent successfully', response.data);  // Response from server
+          showNotification('Email sent successfully', 'info');
+        })
+        .catch(error => {
+          console.error('Error sending email:', error.response || error.message);
+          if (error.response) {
+            // Server responded with a status code that falls out of the range of 2xx
+            console.error('Server response:', error.response.data);
+          } else {
+            // Something went wrong with the request itself
+            console.error('Request error:', error.message);
+          }
+          showNotification('Error sending email', 'error');
+        });
+    }
+  }
+
   const transportation_string = selectedMode === "bike" ? "Biking" : 
                               selectedMode === "bus" ? "Busing" : 
                               "Walking";
@@ -186,6 +216,7 @@ const DirectionsMenu = ({
       />
       <div className="button-container">
         <button className="directions-button" onClick={handleClose}>Close</button>
+        <button className="directions-button" onClick={CopyRoute}>Copy Route</button>
         <button className="directions-button" onClick={handleRouting}>Go</button>
       </div>
       {!isInterior && manhattanDistance && travelTime && (

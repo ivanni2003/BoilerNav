@@ -157,11 +157,26 @@ async function fetchHeatmapData() {
   }
 }
 
+async function fetchhistoricalHeatmapData() {
+  try {
+    const response = await fetch('http://localhost:3001/api/heatmap/historical-heatmap-get'); 
+    if (!response.ok) {
+      throw new Error('Failed to fetch heatmap data');
+    }
+    const data = await response.json();
+    //console.log('Heatmap Data:', data); // This will include lat, long, and intensity
+    return data;
+  } catch (error) {
+    console.error('Error fetching heatmap data:', error);
+  }
+}
+
 
 
 const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const map = useMap(); 
   const heatmapLayerRef = useRef(null);
+  const historicalHeatmapLayerRef = useRef(null);
 
   let SouthWestCoords = [40.40815, -86.95308];
   let NorthEastCoords = [40.44628, -86.89712];
@@ -180,18 +195,30 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
     // Remove existing heatmap layer if it exists
     async function updateHeatmap() {
       const heatmapData = await fetchHeatmapData();
+      const historicalHeatmapData = await fetchhistoricalHeatmapData();
       if (heatmapLayerRef.current) {
         map.removeLayer(heatmapLayerRef.current);
+      }
+      if (historicalHeatmapLayerRef.current) {
+        map.removeLayer(historicalHeatmapLayerRef.current);
       }
 
       // Convert data to Leaflet.heat format
       const heatData = heatmapData.map(({ lat, long, intensity }) => [lat, long, intensity]);
+      const historicalHeatmapDataFormatted = historicalHeatmapData.map(({ lat, long, intensity }) => [lat, long, intensity]);
 
       // Add the new heatmap layer
       heatmapLayerRef.current = L.heatLayer(heatData, {
         radius: 20,
         blur: 10,
         maxZoom: 17,
+      }).addTo(map);
+      historicalHeatmapLayerRef.current = L.heatLayer(historicalHeatmapDataFormatted, {
+        radius: 15, // Slightly smaller radius for historical data
+        blur: 15,   // Slightly more blur for historical data
+        maxZoom: 17,
+        opacity: 0.5, // Reduced opacity to distinguish from the current layer
+        gradient: {0: 'yellow', 0.5: 'orange', 1: 'red'}, // Optional gradient for styling
       }).addTo(map);
     }
 
@@ -202,8 +229,11 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
       if (heatmapLayerRef.current) {
         map.removeLayer(heatmapLayerRef.current);
       }
+      if (historicalHeatmapLayerRef.current) {
+        map.removeLayer(historicalHeatmapLayerRef.current);
+      }
     };
-  }, [latitude, longitude, zoom, map, heatData]); 
+  }, [latitude, longitude, zoom, map]); 
 
   return null;
 };
@@ -257,8 +287,9 @@ const FloorPlanView = ({
     return diffInDays;
 }
   
-  const handleReserveClick = (event, RoomName, building) => {
-    console.log(building);
+  const handleReserveClick = (event, RoomName, building, user) => {
+    console.log("building:", building);
+    console.log("user: ", user);
     if (RoomName.indexOf(' ') == -1) {
       RoomName = RoomName;
     }
@@ -278,9 +309,54 @@ const FloorPlanView = ({
 
   // Format the semester and year, e.g., "Fall2024"
   const term = `${semester}${currentYear}`;
-    const start = "https://timetable.mypurdue.purdue.edu/Timetabling/gwt.jsp?page=availability#dates=" + getDaysSinceJan1() + "&rooms=flag%253AEvent+" + "LWSN" + "+" + RoomName + "&term=" + term + "PWL";
-    window.location.href = start;
+
+    const name = building.tags.name;
+    const matches = name.match(/\((.*?)\)/);
+    const abbreviation = matches ? matches[1] : null;
+    console.log(`Abbreviation: ${abbreviation}`);
+    const start = "https://timetable.mypurdue.purdue.edu/Timetabling/gwt.jsp?page=availability#dates=" + getDaysSinceJan1() + "&rooms=flag%253AEvent+" + abbreviation + "+" + RoomName + "&term=" + term + "PWL";
+    const latitude = building.buildingPosition.lat;
+    const longitude = building.buildingPosition.lon;
+    const route = "http://localhost:5173?lat=" + latitude + "&lon=" + longitude + "&nam=" + name;
+    //window.location.href = start;
+    window.open(start, "_blank", "noopener,noreferrer");
+    if (user != null) {
+      /*
+      axios.post(`${baseURL}/api/ShareRouteEmail`, {
+        email: user.email,
+        resetLink: route
+      });
+      */
+     sendRouteEmailtoSelf(route);
+    }
+    else {
+      window.location.href=route;
+    }
   };
+
+  const sendRouteEmailtoSelf = (routeLink) => {
+    if (user != null) {
+        axios.post('http://localhost:3001/api/ShareRouteEmail', {
+          email: user.email,
+          resetLink: routeLink
+        })
+          .then(response => {
+            console.log('Email sent successfully', response.data);  // Response from server
+            showNotification('Email sent successfully', 'info');
+          })
+          .catch(error => {
+            console.error('Error sending email:', error.response || error.message);
+            if (error.response) {
+              // Server responded with a status code that falls out of the range of 2xx
+              console.error('Server response:', error.response.data);
+            } else {
+              // Something went wrong with the request itself
+              console.error('Request error:', error.message);
+            }
+            showNotification('Error sending email', 'error');
+          });
+    }
+  }
 
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
@@ -559,7 +635,7 @@ const FloorPlanView = ({
           onStartClick={handleStartClick}
           onDestinationClick={handleDestinationClick}
           onUpdateClick={handleUpdateClick}
-          onReserveClick={(e) => handleReserveClick(e, selectedRoom.room.properties.RoomName, building)}
+          onReserveClick={(e) => handleReserveClick(e, selectedRoom.room.properties.RoomName, building, user)}
           onClose={handleClosePopup}
           position={popupPosition}
           />

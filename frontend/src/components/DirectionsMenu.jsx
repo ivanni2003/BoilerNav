@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Lock, Unlock, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import './DirectionsMenu.css';
+import { convertDistance, formatDistance } from '../utils/distanceUtils';
 
 const DirectionsMenu = ({
   start,
@@ -18,6 +19,20 @@ const DirectionsMenu = ({
   updatePublicRoutes,
   isInterior,
 }) => {
+
+  const displayDistance = (distance) => {
+    if (distance == null || isNaN(Number(distance))) {
+      return 'Calculating...';
+    }
+    
+    const unit = user?.distanceUnit || 'metric';
+    const convertedDistance = unit === 'imperial' 
+      ? convertDistance(distance, 'km', 'miles')
+      : Number(distance);
+      
+    return formatDistance(convertedDistance, unit);
+  };
+
   const [isSaving, setIsSaving] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [globalPrivacySetting, setGlobalPrivacySetting] = useState(true);
@@ -191,11 +206,20 @@ const DirectionsMenu = ({
       {!isInterior && manhattanDistance && travelTime && (
         <div className="route-save-section">
           <div className="distance-info">
-            <p><strong>Distance:</strong> {manhattanDistance} miles</p>
-            <p><strong>Est. {selectedMode === "bike" ? "Biking" : 
-                          selectedMode === "bus" ? "Busing" : 
-                          "Walking"} Time:</strong> {travelTime} minutes</p>
-          </div>
+        {manhattanDistance != null ? (
+          <>
+            <p><strong>Distance:</strong> {displayDistance(manhattanDistance)}</p>
+            <p>
+              <strong>Est. {selectedMode === "bike" ? "Biking" : 
+                          selectedMode === "bus" ? "Bus" : 
+                          "Walking"} Time:</strong> {
+              travelTime != null ? `${Number(travelTime).toFixed(1)} minutes` : 'Calculating...'
+            }</p>
+          </>
+        ) : (
+          <p>Calculating route details...</p>
+        )}
+      </div>
           
           {user && isDuplicate && (
             <div className="duplicate-route-notice">

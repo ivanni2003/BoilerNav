@@ -709,22 +709,23 @@ const getTravelTime = (distance, selectedMode) => {
     <ErrorBoundary>
     <div className="app-container">
     <header className="app-header" style={{ position: 'relative', zIndex: isMenuOpen ? 10000 : 1 }}>
-    <BurgerMenu 
-      user={user}
-      onCreateAccount={handleCreateAccount}
-      onLogin={handleLogin}
-      onViewProfile={handleViewProfile}
-      onLogout={handleLogout}
-      isOpen={isMenuOpen}
-      setIsOpen={setIsMenuOpen}
-      onStartTutorial={handleStartTutorial}
-    />
-      
-      <div className="logo-title" onClick={handleTitleClick} style={{cursor: 'pointer'}}>
-        <img src={logoImage} alt="BoilerNav Logo" className="logo" />
-        <h1>BoilerNav</h1>
-      </div>
-    </header>
+        <div className="burger-menu">
+          <BurgerMenu 
+            user={user}
+            onCreateAccount={handleCreateAccount}
+            onLogin={handleLogin}
+            onViewProfile={handleViewProfile}
+            onLogout={handleLogout}
+            isOpen={isMenuOpen}
+            setIsOpen={setIsMenuOpen}
+            onStartTutorial={handleStartTutorial}
+          />
+        </div>
+        <div className="logo-title" onClick={handleTitleClick} style={{cursor: 'pointer'}}>
+          <img src={logoImage} alt="BoilerNav Logo" className="logo" />
+          <h1>BoilerNav</h1>
+        </div>
+      </header>
       <div className="content">
         {showCreateAccount ? (
           <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} showNotification={showNotification}/>

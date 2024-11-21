@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, Unlock, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { convertDistance, formatDistance } from '../utils/distanceUtils';
 
 const IndoorRouteMenu = ({ 
   start, 
@@ -18,6 +19,29 @@ const IndoorRouteMenu = ({
   const [hasBeenSaved, setHasBeenSaved] = useState(false);
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [existingRoute, setExistingRoute] = useState(null);
+
+  const displayDistance = (distanceInMeters) => {
+    if (!distanceInMeters || isNaN(Number(distanceInMeters))) {
+      return 'Calculating...';
+    }
+
+    const unit = user?.distanceUnit || 'metric';
+    let displayValue;
+    let unitLabel;
+
+    // Convert from meters to appropriate unit
+    if (unit === 'imperial') {
+      // Convert meters to feet
+      displayValue = (distanceInMeters * 3.28084).toFixed(2);
+      unitLabel = 'feet';
+    } else {
+      // Keep in meters
+      displayValue = Number(distanceInMeters).toFixed(2);
+      unitLabel = 'meters';
+    }
+
+    return `${displayValue} ${unitLabel}`;
+  };
 
   useEffect(() => {
     setHasBeenSaved(false);
@@ -170,7 +194,7 @@ const IndoorRouteMenu = ({
       padding: '16px'
     }}>
       <div className="distance-info">
-        <p><strong>Distance:</strong> {distance} meters</p>
+        <p><strong>Distance:</strong> {displayDistance(distance)}</p>
         <p><strong>Est. Walking Time:</strong> {time} minutes</p>
       </div>
       

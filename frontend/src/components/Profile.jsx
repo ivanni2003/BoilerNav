@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Pencil, Check, Trash2, Minus, Eye, EyeOff, Map, Lock, Unlock, Info  } from 'lucide-react';
 import './Profile.css';
+import UnitPreferenceToggle from './UnitPreferenceToggle'
+const baseURL = 'http://localhost:3001';
 
 const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onViewSavedRoute, updatePublicRoutes }) => {
   const [editMode, setEditMode] = useState({
@@ -215,6 +217,23 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
     setIsElevated(user.isElevated); // this might cause a infinite loop?
     // here is where i want to set the visibility of the "open ban panel button"
   }, [isElevated]);
+
+  useEffect(() => {
+    const refreshRoutes = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/api/routes/${user.id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        setSavedRoutes(response.data);
+      } catch (error) {
+        console.error('Error fetching saved routes:', error);
+        setError('Failed to fetch saved routes');
+      }
+    };
+  
+    // Refresh routes when unit preference changes
+    refreshRoutes();
+  }, [user.distanceUnit]);
 
   const handleGlobalPrivacyToggle = async () => {
     setIsUpdatingPrivacy(true);
@@ -597,7 +616,35 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
     }
   };
 
-  const renderSavedRoutes = () => (
+  // In Profile.jsx
+
+const renderSavedRoutes = () => {
+  const formatRouteDistance = (route) => {
+    if (!route.distance || isNaN(Number(route.distance))) {
+      return 'N/A';
+    }
+
+    const distanceValue = Number(route.distance);
+    const unit = user?.distanceUnit || 'metric';
+    
+    if (route.travelMode === 'indoor') {
+      // Handle indoor routes (distance in meters)
+      if (unit === 'imperial') {
+        const feet = distanceValue * 3.28084;
+        return `${feet.toFixed(2)} feet`;
+      }
+      return `${distanceValue.toFixed(2)} meters`;
+    } else {
+      // Handle outdoor routes (distance in km)
+      if (unit === 'imperial') {
+        const miles = distanceValue * 0.621371;
+        return `${miles.toFixed(2)} miles`;
+      }
+      return `${distanceValue.toFixed(2)} km`;
+    }
+  };
+
+  return (
     <div className="saved-routes-list">
       {savedRoutes.length > 0 ? (
         savedRoutes.map((route) => (
@@ -605,7 +652,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
             <div className="route-info">
               <span>
                 {route.startLocation?.name || 'Unknown'} to {route.endLocation?.name || 'Unknown'}
-                {' '}({route.distance?.toFixed(2) || 'N/A'} {route.travelMode === 'indoor' ? 'meters' : 'miles'}, 
+                {' '}({formatRouteDistance(route)}, 
                 {route.duration?.toFixed(0) || 'N/A'} min)
                 {route.travelMode === 'indoor' && ' (Indoor)'}
               </span>
@@ -626,6 +673,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
       )}
     </div>
   );
+};
 
   return (
     <div className="profile-container">
@@ -646,6 +694,24 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
           {renderField("Email", "email")}
           {renderField("Major", "major")}
           {renderField("Affiliation", "affiliation")}
+          <UnitPreferenceToggle 
+            currentPreference={user.distanceUnit || 'metric'} 
+            onPreferenceChange={async (newPreference) => {
+              try {
+                const response = await axios.put(`${baseURL}/api/users/${user.id}`, {
+                  distanceUnit: newPreference
+                }, {
+                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+                
+                onUpdateUser({ ...user, distanceUnit: newPreference });
+                showNotification('Distance unit preference updated successfully', 'success');
+              } catch (error) {
+                console.error('Error updating distance unit preference:', error);
+                showNotification('Failed to update distance unit preference', 'error');
+              }
+            }}
+          />
         </div>
         <div className="favorite-locations">
           <h3>Saved Locations</h3>

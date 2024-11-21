@@ -25,10 +25,10 @@ const Tutorial = ({
   );
 
   React.useEffect(() => {
-    if (currentStep === 4 && lawsonBuilding) {
+    if (currentStep === 5 && lawsonBuilding) {
       onLawsonClick(lawsonBuilding);
     }
-    if (currentStep !== 4 && onCloseIndoorView) {
+    if (currentStep !== 5 && onCloseIndoorView) {
       onCloseIndoorView();
     }
     if (currentStep === 6 && user) {
@@ -37,57 +37,84 @@ const Tutorial = ({
   }, [currentStep, lawsonBuilding, onCloseIndoorView, user, onViewProfile]);
 
   React.useEffect(() => {
-    if (currentStep === 5) {
-      // Make only map options and parking controls interactive
-      const mapOptionsElements = document.querySelectorAll('.amenities-menu');
-      const otherElements = document.querySelectorAll('.leaflet-container, .search-container, .transportation-mode');
-      
-      mapOptionsElements.forEach(element => {
-        element.style.zIndex = '9999';
+    const resetAllElements = () => {
+      const allElements = document.querySelectorAll(
+        '.search-container, .transportation-mode, .amenities-menu, ' +
+        '.app-header, .logo-title, .burger-menu, .leaflet-container'
+      );
+      allElements.forEach(element => {
+        element.style.zIndex = '';
+        element.style.opacity = '0.7';
+        element.style.pointerEvents = 'none';
+      });
+    };
+
+    const highlightElement = (selector) => {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach(element => {
+        element.style.zIndex = '1001';
         element.style.opacity = '1';
         element.style.pointerEvents = 'auto';
       });
+    };
 
-      otherElements.forEach(element => {
-        element.style.opacity = '0.3';
-        element.style.pointerEvents = 'none';
-      });
-    } else if (currentStep === 3) {
-      const mapContainer = document.querySelector('.leaflet-container');
-      const searchContainer = document.querySelector('.search-container');
-      const buildingMarkers = document.querySelectorAll('.leaflet-marker-icon, .leaflet-marker-shadow');
-      const otherMapElements = document.querySelectorAll('.transportation-mode, .amenities-menu');
-      
-      if (mapContainer) {
-        mapContainer.style.zIndex = '9999';
-        mapContainer.style.pointerEvents = 'auto';
-      }
-      if (searchContainer) {
-        searchContainer.style.zIndex = '9999';
-        searchContainer.style.pointerEvents = 'auto';
-      }
+    resetAllElements();
 
-      buildingMarkers.forEach(marker => {
-        marker.style.zIndex = '9999';
-        marker.style.opacity = '1';
-        marker.style.pointerEvents = 'auto';
-      });
-
-      otherMapElements.forEach(element => {
-        element.style.opacity = '0.3';
-        element.style.pointerEvents = 'none';
-      });
+    switch (currentStep) {
+      case 1:
+        highlightElement('.search-container');
+        break;
+      case 2:
+        highlightElement('.transportation-mode');
+        break;
+      case 3:
+        highlightElement('.amenities-menu');
+        break;
+      case 4:
+        // Make both map and search container interactive
+        const interactiveElements = document.querySelectorAll('.leaflet-container, .map-container, .search-container');
+        interactiveElements.forEach(element => {
+          element.style.opacity = '1';
+          element.style.pointerEvents = 'auto';
+          element.style.zIndex = '1001';
+        });
+        
+        // Keep header blurred
+        const headerElements = document.querySelectorAll('.app-header, .logo-title, .burger-menu');
+        headerElements.forEach(element => {
+          element.style.opacity = '0.7';
+          element.style.pointerEvents = 'none';
+        });
+        break;
+      default:
+        break;
     }
 
     return () => {
-      const allElements = document.querySelectorAll('.leaflet-container, .search-container, .leaflet-marker-icon, .leaflet-marker-shadow, .transportation-mode, .amenities-menu');
+      const allElements = document.querySelectorAll(
+        '.search-container, .transportation-mode, .amenities-menu, ' +
+        '.app-header, .logo-title, .burger-menu, .leaflet-container'
+      );
       allElements.forEach(element => {
         element.style.zIndex = '';
-        element.style.opacity = '';
-        element.style.pointerEvents = '';
+        element.style.opacity = '1';
+        element.style.pointerEvents = 'auto';
       });
     };
   }, [currentStep]);
+
+  const overlayStyle = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: '90%',
+    width: '100vw',
+    height: '100vh',
+    background: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
+    pointerEvents: 'all'
+  };
 
   const steps = [
     {
@@ -95,11 +122,7 @@ const Tutorial = ({
       content: "Let's take a quick tour of all the features that will help you navigate around campus efficiently."
     },
     {
-      title: "Transportation Modes", 
-      content: "Choose how you want to travel! Walking provides the most direct pedestrian routes, biking shows bike-friendly paths, and bus mode helps you find and navigate bus routes around campus. Try clicking the different modes to see how they work!"
-    },
-    {
-      title: "Finding Your Way",
+      title: "Finding Your Way 🔍",
       content: `You have three ways to find your destination:
 
 1. Search directly for any location using the 'Search For Destination' bar
@@ -109,8 +132,21 @@ const Tutorial = ({
 3. Quick-access your favorite spots from the 'Saved Locations' box (requires login)`
     },
     {
-      title: "Campus Buildings",
-      content: "The golden circles on the map represent campus buildings. Click on any building to see its name and access options like indoor navigation, directions, and saving to favorites. Feel free to build a route to any building from your current location (upward facing arrow). We will explore indoor building viewer in the next stage of the tutorial"
+      title: "Transportation Modes 🚶‍♂️",
+      content: "Choose how you want to travel! Walking provides the most direct pedestrian routes, biking shows bike-friendly paths, and bus mode helps you find and navigate bus routes around campus. Try clicking the different modes to see how they work!"
+    },
+    {
+      title: "Map Options & Parking 🚗",
+      content: `In the bottom left corner, you'll find additional map controls:
+
+1. Map Options: Toggle features like automatic rerouting and bike rack visibility
+2. View Parking: See and navigate to available parking lots around campus
+
+Click on these options to explore parking locations and customize your navigation experience!`
+    },
+    {
+      title: "Campus Buildings 🏛️",
+      content: "The golden circles on the map represent campus buildings. You can either click on any building to see its details and options, or use the search bars to find specific locations and routes. Feel free to try creating a route either by clicking buildings or searching! When you're ready, we'll explore indoor navigation next."
     },
     {
       title: "Indoor Navigation 🏢",
@@ -123,15 +159,6 @@ const Tutorial = ({
 5. Save and access your favorite indoor routes
 
 Try clicking on different rooms to see how the indoor navigation works!`
-    },
-    {
-      title: "Map Options & Parking 🚗",
-      content: `In the bottom left corner, you'll find additional map controls:
-
-1. Map Options: Toggle features like automatic rerouting and bike rack visibility
-2. View Parking: See and navigate to available parking lots around campus
-
-Click on these options to explore parking locations and customize your navigation experience!`
     },
     {
       title: "User Account & Personalization 👤",
@@ -159,27 +186,8 @@ Would you like to create an account or log in now?`,
   ];
 
   const currentStepData = steps[currentStep];
-  const isDraggable = currentStep === 3 || currentStep === 4 || currentStep === 6;
-
-  const overlayStyle = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100vw',
-    height: '100vh',
-    background: currentStep === 3 ? 'rgba(0, 0, 0, 0.3)' : 
-                currentStep === 4 ? 'rgba(0, 0, 0, 0)' :  
-                currentStep === 5 ? 'rgba(0, 0, 0, 0.3)' :
-                currentStep === 6 ? 'rgba(0, 0, 0, 0)' :
-                'rgba(0, 0, 0, 0.5)',
-    backdropFilter: currentStep === 3 || currentStep === 4 || currentStep === 6 ? 'none' : 
-                   currentStep === 5 ? 'blur(4px)' : 'blur(4px)',
-    zIndex: currentStep >= 3 ? 1000 : 9998,
-    pointerEvents: currentStep >= 3 ? 'none' : 'auto'
-  };
-
+  const isDraggable = currentStep === 4 || currentStep === 5 || currentStep === 6;
+  
   const renderAuthButtons = () => {
     if (!currentStepData.showButtons) return null;
 
@@ -236,6 +244,24 @@ Would you like to create an account or log in now?`,
     );
   };
 
+  const handleCloseOrFinish = () => {
+    // Restore header functionality
+    const headerElements = document.querySelectorAll('.app-header, .logo-title, .burger-menu');
+    headerElements.forEach(element => {
+      element.style.opacity = '1';
+      element.style.pointerEvents = 'auto';
+      if (element.classList.contains('logo-title')) {
+        element.style.cursor = 'pointer';
+      }
+    });
+    onClose();
+    resetAllElements();
+    if (currentStep === steps.length - 1) {
+      onReset();
+      resetAllElements();
+    }
+  };
+
   const dialogContent = (
     <div style={{
       background: 'white',
@@ -248,7 +274,7 @@ Would you like to create an account or log in now?`,
       cursor: isDraggable ? 'move' : 'default'
     }}>
       <button
-        onClick={onClose}
+        onClick={handleCloseOrFinish}
         style={{
           position: 'absolute',
           top: '10px',
@@ -310,7 +336,7 @@ Would you like to create an account or log in now?`,
         )}
 
         <button 
-          onClick={currentStep < steps.length - 1 ? onNext : onReset}
+          onClick={currentStep < steps.length - 1 ? onNext : handleCloseOrFinish}
           style={{
             padding: '12px 24px',
             background: '#4CAF50',
@@ -342,39 +368,37 @@ Would you like to create an account or log in now?`,
       </div>
     </div>
   );
-
-  const dialogContainer = isDraggable ? (
-    <Draggable handle=".handle">
-      <div style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 9999,
-      }}>
-        <div className="handle">
-          {dialogContent}
-        </div>
-      </div>
-    </Draggable>
-  ) : (
-    <div style={{
-      position: 'fixed',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      zIndex: 9999,
-    }}>
-      {dialogContent}
-    </div>
-  );
-
-  return (
-    <>
-      <div style={overlayStyle} />
-      {dialogContainer}
-    </>
-  );
+const dialogContainer = isDraggable ? (
+<Draggable handle=".handle">
+<div style={{
+position: 'fixed',
+top: '50%',
+left: '50%',
+transform: 'translate(-50%, -50%)',
+zIndex: 9999,
+}}>
+<div className="handle">
+{dialogContent}
+</div>
+</div>
+</Draggable>
+) : (
+<div style={{
+position: 'fixed',
+top: '50%',
+left: '50%',
+transform: 'translate(-50%, -50%)',
+zIndex: 9999,
+}}>
+{dialogContent}
+</div>
+);
+return (
+<>
+<div style={overlayStyle} />
+{dialogContainer}
+</>
+);
 };
 
 export default Tutorial;

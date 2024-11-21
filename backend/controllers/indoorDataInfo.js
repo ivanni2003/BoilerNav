@@ -1,6 +1,8 @@
 const indoorDataRouter = require('express').Router();
 const IndoorData = require('../models/indoorData');
 const UpdateRequest = require('../models/updateRequest');
+const User = require('../models/user');
+const FloorPlan = require('../models/floorPlan')
 
 // POST endpoint to approve an update request
 indoorDataRouter.post('/approve-update-request/:id', async (request, response) => {
@@ -47,6 +49,59 @@ indoorDataRouter.post('/approve-update-request/:id', async (request, response) =
   }
 });
 
+// POST endpoint to approve a floor plan request
+indoorDataRouter.post('/approve-floor-plan-request', async (request, response) => {
+  try {
+    const { request: floorPlanRequest } = request.body;
+
+    // Create a new FloorPlan document
+    const floorPlan = new FloorPlan({
+      buildingId: floorPlanRequest.buildingID,
+      floorNumber: floorPlanRequest.floorNumber,
+      imageUrl: floorPlanRequest.imageURL
+    });
+
+    await floorPlan.save();
+
+    // Remove the floor plan request from the user's floorPlanRequests
+    await User.updateMany(
+      {},
+      { $pull: { floorPlanRequests: { 
+        username: floorPlanRequest.username,
+        imageURL: floorPlanRequest.imageURL,
+        buildingID: floorPlanRequest.buildingID
+       } } }
+    );
+
+    response.status(200).json({ message: 'Floor plan request approved and floor plan added' });
+  } catch (error) {
+    console.error('Error approving floor plan request:', error);
+    response.status(500).json({ error: 'Failed to approve floor plan request' });
+  }
+});
+
+// POST endpoint to decline a floor plan request
+indoorDataRouter.post('/decline-floor-plan-request', async (request, response) => {
+  try {
+    const { request: floorPlanRequest } = request.body;
+
+    // Remove the floor plan request from the user's floorPlanRequests
+    await User.updateMany(
+      {},
+      { $pull: { floorPlanRequests: { 
+        username: floorPlanRequest.username,
+        imageURL: floorPlanRequest.imageURL,
+        buildingID: floorPlanRequest.buildingID
+       } } }
+    );
+
+    response.status(200).json({ message: 'Floor plan request declined and removed' });
+  } catch (error) {
+    console.error('Error declining floor plan request:', error);
+    response.status(500).json({ error: 'Failed to decline floor plan request' });
+  }
+});
+
 indoorDataRouter.post('/', async(request, response) => {   // post entire building data object
     const indoorData = request.body
 
@@ -64,10 +119,32 @@ indoorDataRouter.post('/', async(request, response) => {   // post entire buildi
 indoorDataRouter.get('/get-update-requests', async (request, response) => {
   try {
     const updateRequests = await UpdateRequest.find({})
-        if (!updateRequests) {
-            return response.status(404).send('indoor data not found')
-        }
-        response.json(updateRequests)
+    if (!updateRequests) {
+        return response.status(404).send('indoor data not found')
+    }
+
+    const data = request.query;
+    const username = data.username;
+
+    // Output all the floor plan requests in each user.
+    const users = await User.find({ username: username });
+    let floorPlanRequests = [];
+
+    users.forEach(local_user => {
+      if (local_user.floorPlanRequests && local_user.floorPlanRequests.length > 0) {
+        local_user.floorPlanRequests.forEach(request => {
+          console.log(request._id)
+          floorPlanRequests.push({
+            ...request.toObject(),
+            username: request.username,
+            userId: request.id,
+            requestId: request._id
+          });
+        });
+      }
+    })
+
+    response.json({updateRequests, floorPlanRequests})
   } catch (error) {
     console.error('Error handling update request:', error);
     response.status(500).json({ error: 'Failed to submit update request' });

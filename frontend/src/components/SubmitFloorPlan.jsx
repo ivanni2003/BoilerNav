@@ -25,16 +25,20 @@ const PopupForm = ({isVisible, onClose, user, building, showNotification}) => {
   
       try {
 
-        if (imageURL.length == 0 || !(imageURL.startsWith("https://") || imageURL.startsWith("http://"))) {
-          showNotification('Please enter a valid URL (https:// or http://)', 'error')
+        if (imageURL.length == 0 || floorNumber.length == 0) {
+          showNotification('Please enter information in the input fields.', 'error')
+          return
+        }
+        if (!(imageURL.startsWith("https://") || imageURL.startsWith("http://"))) {
+          showNotification('Please enter a valid URL (https:// or http://).', 'error')
           return
         }
 
         const floorNum = Number(floorNumber)
 
-        if (floorNumber.length == 0 || floorNumber.length > 2 || !(Number.isInteger(floorNum))) {
+        if (!(Number.isInteger(floorNum))) {
           console.log('int error')
-          showNotification('Please enter a valid Floor Number', 'error')
+          showNotification('Please enter a valid Floor Number.', 'error')
           return
         }
 

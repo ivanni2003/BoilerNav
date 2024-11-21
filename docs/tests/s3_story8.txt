@@ -1,0 +1,75 @@
+Test Case 3_8_1
+System: Most Popular Routes
+Phase: 3
+Most Popular Routes Visibility
+Severity: 1
+
+A. Identification and classification
+- Test visibility of Most Popular Routes button.
+- Verify existence of Most Popular Routes button in application.
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+
+C. Expected Result:
+  1. Most Popular Routes Button is visible towards top left of application.
+
+------------------------------------
+Test Case 3_8_2
+System: Most Popular Routes
+Phase: 3
+Most Popular Routes Menu
+Severity: 1
+
+A. Identification and classification
+- Test contents of most popular routes menu.
+- Verify that most popular routes menu displays dropdown items associated with destination in sorted order.
+- Verify that popup associated dropdown items contain created routes associated
+  with destination.
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Click 'Most Popular Routes' button in top left of application.
+  4. Select an item from the dropdown menu, observe number of items in popup that appears, close the popup.
+    Repeat for all items in dropdown menu.
+
+C. Expected Result:
+  1. Application should display dropdown of the 3 most popular destinations of created routes 
+    from other users after step 3. Note that if all publicly available routes collectively only
+    have x destinations, x items will appear in the popup. 
+  2. In step 4, selecting an item from the dropdown menu should display all created
+    routes from other users to the the popular destination selected.
+    Observe how the popups associated routes towards the top of the dropdown menu 
+    contain >= the number of routes associated with those below it.
+
+  Note: These expected results depend on publicly created routes from yourself or 
+        other users existing before following these instructions. If no routes
+        have been created, please create routes following directions from s2_story1.txt.
+
+
+
+------------------------------------
+Test Case 3_8_3
+System: Most Popular Routes
+Phase: 3
+Most Popular Routes Click Functionality
+Severity: 1
+
+A. Identification and classification
+- Test functionality of selecting popular route within most popular routes menu.
+- Verify that selecting a route renders the route onto the screen.
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Click 'Most Popular Routes' button in top left of application.
+  4. Select an item from the dropdown menu, then select a route from the resulting popup.
+
+C. Expected Result:
+  1. Application should render the route onto the screen.
+
+Note: These expected results depend on publicly created routes by yourself or 
+        other users existing before following these instructions. If no routes
+        have been created, please create routes following directions from s2_story1.txt.

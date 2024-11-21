@@ -1,0 +1,67 @@
+Test Case 3_4_1
+System: Floor plan and Room submission
+Phase: 3
+Floor Plan Submission Access
+Severity: 1
+
+A. Identification and classification
+- Test functionality of floor plan submission feature.
+- Verify existence of submit floor plan button in indoor view of named buildings.
+- Verify that you can only submit floor plans when logged into an account.
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Select the popup circle associated with any building and ensure that the building is named (not just named 'Building')
+  4. Select view indoors.
+  5. Select the 'Submit Floor Plan Image' button on bottom left of screen.
+
+C. Expected Result:
+  1. Application should display a notification stating 'Please login to your account' in the top right.
+
+------------------------------------
+Test Case 3_4_2
+System: Floor plan and Room submission
+Phase: 3
+Floor Plan Submission Form Behavior
+Severity: 1
+
+A. Identification and classification
+- Test functionality of floor plan submission feature.
+- Verify that you can submit floor plans when logged into an account.
+- Verify floor plan submission form displays expected input fields.
+- Verify floor plan submission error handling prevents empty submissions, 
+    submissions of 'Floor Plan URL' not beginning with 'http://' or 'https://', and 
+    non-integer submissions for 'Floor Number'.
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Select the button with 3 lines on the top left of the screen.
+  4. If you have previously created an account, select login and login to your account. 
+        Otherwise, select create account and follow the directions to 
+        create a new account.
+  4. Select the popup circle associated with any building and ensure that the building is named (not just named 'Building')
+  4. Select view indoors.
+  5. Select the 'Submit Floor Plan Image' button on bottom left of screen.
+  6. Click 'Submit' button without entering information to the input fields.
+  7. Enter a url starting with 'https://' or 'http://' for the Floor Plan URL field.
+    Enter something that is not an integer for the Floor Number field.
+    Click 'Submit' button.
+  8. Enter valid integer for Floor Number field. 
+    Enter something not starting with 'https://' or 'http://' for the Floor Plan URL field.
+    Click 'Submit' button.
+  9. Enter a url starting with 'https://' or 'http://' in the 'Floor Plan URL' field
+    and a valid integer in the 'Floor Number' field.
+
+C. Expected Result:
+  1. After step 5, application should display form containing input fields
+        for 'Floor Plan URL' and 'Floor Number'
+  2. After step 6, application should display notification asking you to 
+    fill the input fields before submission.
+  3. After step 7, application should display notification asking you to
+    enter a valid floor number.
+  4. After step 8, application should display notification asking you to enter 
+    a valid url.
+  5. After step 9, applciation should display a notification telling you your submission was successful.
+

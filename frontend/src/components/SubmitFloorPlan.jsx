@@ -24,13 +24,27 @@ const PopupForm = ({isVisible, onClose, user, building, showNotification}) => {
       e.preventDefault()
   
       try {
+
+        if (imageURL.length == 0 || !(imageURL.startsWith("https://") || imageURL.startsWith("http://"))) {
+          showNotification('Please enter a valid URL (https:// or http://)', 'error')
+          return
+        }
+
+        const floorNum = Number(floorNumber)
+
+        if (floorNumber.length == 0 || floorNumber.length > 2 || !(Number.isInteger(floorNum))) {
+          console.log('int error')
+          showNotification('Please enter a valid Floor Number', 'error')
+          return
+        }
+
         const response = await axios.post(`${baseURL}/api/users/floorPlanRequests`, {
           username: user.username,
           imageURL: imageURL,
           buildingID: building.id,
           floorNumber: floorNumber
         })
-  
+        console.log("success")
         showNotification('Request submitted successfully', 'success')
       }
       catch (error) {

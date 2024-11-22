@@ -208,6 +208,7 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
       const historicalHeatmapDataFormatted = historicalHeatmapData.map(({ lat, long, intensity }) => [lat, long, intensity]);
 
       // Add the new heatmap layer
+      
       heatmapLayerRef.current = L.heatLayer(heatData, {
         radius: 20,
         blur: 10,
@@ -218,8 +219,8 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
         blur: 15,   // Slightly more blur for historical data
         maxZoom: 17,
         opacity: 0.5, // Reduced opacity to distinguish from the current layer
-        gradient: {0: 'yellow', 0.5: 'orange', 1: 'red'}, // Optional gradient for styling
-      }).addTo(map);
+        gradient: {0: 'yellow', 0.5: 'orange', 1: 'black'}, // Optional gradient for styling
+      }).addTo(map); 
     }
 
     updateHeatmap();

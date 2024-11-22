@@ -18,7 +18,6 @@ heatMapRouter.get('/heatmap-get', async (req, res) => {
         });
 
         const processedData = Object.values(intensityMap);
-
         res.json(processedData);
     } catch (error) {
         console.error("Error retrieving heatmap data:", error);
@@ -30,6 +29,7 @@ heatMapRouter.get('/historical-heatmap-get', async(req, res) => {
     try {
         const now = new Date();
         const currentHour = now.getHours();
+        //const currentHour = 0;
 
         const aggregatedData = await HistoricalHeatmap.aggregate([
             {
@@ -58,18 +58,18 @@ heatMapRouter.get('/historical-heatmap-get', async(req, res) => {
             },
             {
               $match: {
-                uidCount: { $gt: 3 } // Only include locations with more than 3 unique UIDs
+                uidCount: { $gt: 0 } // Only include locations with more than 3 unique UIDs
               }
             }
           ]);
+          
       
           // Map the data into a format suitable for the heatmap
           const heatmapData = aggregatedData.map(entry => ({
-            latitude: entry.lat,
-            longitude: entry.long,
+            lat: entry.lat,
+            long: entry.long,
             intensity: entry.uidCount // Use the UID count as the intensity value
           }));
-          console.log(heatmapData);
           res.json(heatmapData);
     }
     catch (error) {
@@ -123,7 +123,7 @@ heatMapRouter.get('/heatmap-add', async (req, res) => {
             Date: { $gte: hourStart, $lt: hourEnd }
           });
         if (existingEntry) {
-            console.log("updating");
+            //console.log("updating");
             const updatedEntry = await HistoricalHeatmap.findOneAndUpdate(
                 { _id: existingEntry._id }, // Find the document by its _id
                 { 

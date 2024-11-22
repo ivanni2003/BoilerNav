@@ -28,8 +28,7 @@ export const getDeviceId = () => {
   }
   return deviceId
 }
-
-const baseURL = process.env.API_BASE_URL;
+const baseURL = process.env.REACT_APP_API_BASE_URL;
 
 const DEFAULT_LAT = 40.4237;
 const DEFAULT_LON = -86.9212;

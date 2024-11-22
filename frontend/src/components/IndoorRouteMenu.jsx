@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Lock, Unlock, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
+const baseURL = process.env.REACT_APP_API_BASE_URL;
+
 const IndoorRouteMenu = ({ 
   start, 
   destination, 
@@ -23,7 +25,6 @@ const IndoorRouteMenu = ({
     setHasBeenSaved(false);
   }, [start, destination]);
 
-  const baseURL = process.env.API_BASE_URL;
 
   useEffect(() => {
     const fetchGlobalPrivacySetting = async () => {

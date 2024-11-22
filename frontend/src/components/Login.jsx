@@ -3,14 +3,14 @@ import axios from 'axios';
 import './Login.css';
 import ForgotPassword from './ForgotPassword';
 
+const baseURL = process.env.REACT_APP_API_BASE_URL;
+
 const Login = ({ onClose, onLoginSuccess, showNotification }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showBannedPopup, setShowBannedPopup] = useState(false);
-
-  const baseURL = process.env.API_BASE_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

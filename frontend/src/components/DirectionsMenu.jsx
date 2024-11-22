@@ -3,6 +3,8 @@ import { Lock, Unlock, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import './DirectionsMenu.css';
 
+const baseURL = process.env.REACT_APP_API_BASE_URL;
+
 const DirectionsMenu = ({
   start,
   destination,
@@ -32,8 +34,6 @@ const DirectionsMenu = ({
     destination: destination?.buildingPosition,
     selectedMode
   });
-
-  const baseURL = process.env.API_BASE_URL;
 
   useEffect(() => {
     // Reset hasBeenSaved when route changes

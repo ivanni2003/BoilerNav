@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './ForgotPassword.css';
 
+const baseURL = process.env.REACT_APP_API_BASE_URL;
+
 const ForgotPassword = ({ onClose }) => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const baseURL = process.env.API_BASE_URL;
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

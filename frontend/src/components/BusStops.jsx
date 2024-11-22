@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './BusStops.css'
 import axios from 'axios';
 
-const baseURL = process.env.API_BASE_URL;
+const baseURL = process.env.REACT_APP_API_BASE_URL;
 
 const BusStops = ({updateMap, markBusStops}) => {
     const [busStops, setBusStops] = useState([])

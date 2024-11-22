@@ -18,7 +18,7 @@ import Tutorial from './components/Tutorial';
 import ShareRoute from './components/ShareRoute';
 import { Menu, Share } from 'lucide-react';
 
-const baseURL = process.env.API_BASE_URL;
+const baseURL = process.env.REACT_APP_API_BASE_URL;
 
 function App() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);

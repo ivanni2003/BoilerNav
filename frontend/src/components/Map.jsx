@@ -691,7 +691,7 @@ const FloorPlanView = ({
   );
 };
 
-const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
+const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle, handleScheduleBuildingSelect }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showFloorPlan, setShowFloorPlan] = useState(false);
@@ -769,6 +769,11 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
         </button>
         <button className="popup-button"
         onClick={() => getDirections(building)}>Directions</button>
+        <button
+          className="popup-button"
+          onClick={() => handleScheduleBuildingSelect(building)}>
+          Add to Schedule
+        </button>
       </div>
     </div>
   );
@@ -786,7 +791,7 @@ const BikeRackPopupContent = ({ rack }) => {
   );
 }
 
-const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
+const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle, handleScheduleBuildingSelect }) => {
   const buildingPathOptions = {
     color: 'black',
     fillColor: 'gold',
@@ -813,7 +818,9 @@ const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, sho
         showNotification={showNotification}
         favoriteLocations={favoriteLocations}
         isLoadingFavorites={isLoadingFavorites}
-        onFavoriteToggle={onFavoriteToggle}/>
+        onFavoriteToggle={onFavoriteToggle}
+        handleScheduleBuildingSelect={handleScheduleBuildingSelect}
+        />
       </Popup>
     </CircleMarker>
   });
@@ -953,7 +960,10 @@ const Map = ({ latitude,
   indoorDestination,
   setIndoorStart,
   setIndoorDestination,
-  handleTitleClick }) => {
+  handleTitleClick,
+  handleScheduleClick,
+  handleScheduleBuildingSelect,
+}) => {
     const [parkingLots, setParkingLots] = useState([])
     const [busStops, setBusStops] = useState([]);
     const [bikeRacks, setBikeRacks] = useState([]);
@@ -1157,6 +1167,7 @@ const Map = ({ latitude,
         favoriteLocations={favoriteLocations}
         isLoadingFavorites={isLoadingFavorites}
         onFavoriteToggle={onFavoriteToggle}
+        handleScheduleBuildingSelect={handleScheduleBuildingSelect}
       />
       <BikeRacksRenderer bikeRacks={bikeRacks} isBikeRacksVisible={mapOptions.isBikeRacksVisible} />
       {parkingLots.map((lot, index) => (
@@ -1200,6 +1211,7 @@ const Map = ({ latitude,
     </MapContainer>
     <div className="amenities-menu">
         <MapOptions mapOptions={mapOptions} />
+        <button onClick={(e) => handleScheduleClick()}>Schedule</button>
         <Parking updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
         <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
       </div>

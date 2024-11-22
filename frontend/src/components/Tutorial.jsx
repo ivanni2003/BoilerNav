@@ -19,6 +19,32 @@ const Tutorial = ({
 }) => {
   if (!isActive) return null;
 
+  const resetAllElements = () => {
+    const allElements = document.querySelectorAll(
+      '.search-container, .transportation-mode, .amenities-menu, ' +
+      '.app-header, .logo-title, .burger-menu, .leaflet-container, ' +
+      '.map-container, .content'
+    );
+    
+    allElements.forEach(element => {
+      if (element) {
+        element.style.zIndex = '';
+        element.style.opacity = '1';
+        element.style.pointerEvents = 'auto';
+        element.style.filter = 'none';
+        element.style.cursor = element.classList.contains('logo-title') ? 'pointer' : 'auto';
+      }
+    });
+
+    const contentDiv = document.querySelector('.content');
+    if (contentDiv) {
+      contentDiv.style.filter = 'none';
+      contentDiv.style.pointerEvents = 'auto';
+    }
+
+    document.body.style.overflow = 'hidden';
+  };
+
   const lawsonBuilding = buildings.find(building => 
     building.tags && building.tags.name && 
     building.tags.name.toLowerCase().includes('lawson')
@@ -33,32 +59,62 @@ const Tutorial = ({
     }
     if (currentStep === 6 && user) {
       onViewProfile();
+      const profileView = document.querySelector('.profile-view');
+      if (profileView) {
+        profileView.style.opacity = '1';
+        profileView.style.pointerEvents = 'auto';
+        profileView.style.zIndex = '1001';
+      }
+      // Also make the entire content area interactive for the profile view
+      const contentArea = document.querySelector('.content');
+      if (contentArea) {
+        contentArea.style.opacity = '1';
+        contentArea.style.pointerEvents = 'auto';
+        contentArea.style.filter = 'none';
+      }
     }
+
+    return () => {
+      resetAllElements();
+    };
   }, [currentStep, lawsonBuilding, onCloseIndoorView, user, onViewProfile]);
 
   React.useEffect(() => {
-    const resetAllElements = () => {
-      const allElements = document.querySelectorAll(
-        '.search-container, .transportation-mode, .amenities-menu, ' +
-        '.app-header, .logo-title, .burger-menu, .leaflet-container'
-      );
-      allElements.forEach(element => {
-        element.style.zIndex = '';
-        element.style.opacity = '0.7';
-        element.style.pointerEvents = 'none';
-      });
-    };
-
     const highlightElement = (selector) => {
       const elements = document.querySelectorAll(selector);
       elements.forEach(element => {
-        element.style.zIndex = '1001';
-        element.style.opacity = '1';
-        element.style.pointerEvents = 'auto';
+        if (element) {
+          element.style.zIndex = '1001';
+          element.style.opacity = '1';
+          element.style.pointerEvents = 'auto';
+        }
       });
     };
-
+  
     resetAllElements();
+  
+    // Don't apply blur effect if we're on the profile step and user is logged in
+    if (!(currentStep === 6 && user)) {
+      let dimSelectors;
+      switch (currentStep) {
+        case 1:
+          dimSelectors = '.transportation-mode, .amenities-menu, .app-header, .logo-title, .burger-menu, .leaflet-container';
+          break;
+        case 2:
+          dimSelectors = '.search-container, .amenities-menu, .app-header, .logo-title, .burger-menu, .leaflet-container';
+          break;
+        default:
+          dimSelectors = '.search-container, .transportation-mode, .amenities-menu, .app-header, .logo-title, .burger-menu, .leaflet-container';
+      }
+      
+      const allElements = document.querySelectorAll(dimSelectors);
+      allElements.forEach(element => {
+        if (element) {
+          element.style.opacity = '0.7';
+          element.style.pointerEvents = 'none';
+        }
+      });
+    }
 
     switch (currentStep) {
       case 1:
@@ -71,37 +127,44 @@ const Tutorial = ({
         highlightElement('.amenities-menu');
         break;
       case 4:
-        // Make both map and search container interactive
         const interactiveElements = document.querySelectorAll('.leaflet-container, .map-container, .search-container');
         interactiveElements.forEach(element => {
-          element.style.opacity = '1';
-          element.style.pointerEvents = 'auto';
-          element.style.zIndex = '1001';
-        });
-        
-        // Keep header blurred
-        const headerElements = document.querySelectorAll('.app-header, .logo-title, .burger-menu');
-        headerElements.forEach(element => {
-          element.style.opacity = '0.7';
-          element.style.pointerEvents = 'none';
+          if (element) {
+            element.style.opacity = '1';
+            element.style.pointerEvents = 'auto';
+            element.style.zIndex = '1001';
+          }
         });
         break;
+        case 6:
+          // For step 6, make everything except the tutorial overlay interactive
+          if (user) {
+            const elements = document.querySelectorAll('body > *:not(.tutorial-overlay)');
+            elements.forEach(element => {
+              element.style.opacity = '1';
+              element.style.pointerEvents = 'auto';
+              element.style.filter = 'none';
+              element.style.zIndex = '';
+            });
+          }
+          break;
       default:
         break;
     }
 
     return () => {
-      const allElements = document.querySelectorAll(
-        '.search-container, .transportation-mode, .amenities-menu, ' +
-        '.app-header, .logo-title, .burger-menu, .leaflet-container'
-      );
-      allElements.forEach(element => {
-        element.style.zIndex = '';
-        element.style.opacity = '1';
-        element.style.pointerEvents = 'auto';
-      });
+      resetAllElements();
     };
-  }, [currentStep]);
+  }, [currentStep, user]);
+
+  const handleCloseOrFinish = () => {
+    resetAllElements();
+    onClose();
+    
+    if (currentStep === steps.length - 1) {
+      onReset();
+    }
+  };
 
   const overlayStyle = {
     position: 'fixed',
@@ -111,9 +174,9 @@ const Tutorial = ({
     bottom: '90%',
     width: '100vw',
     height: '100vh',
-    background: 'rgba(0, 0, 0, 0.5)',
+    background: currentStep === 6 ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.5)',
     zIndex: 1000,
-    pointerEvents: 'all'
+    pointerEvents: currentStep === 6 ? 'none' : 'all'
   };
 
   const steps = [
@@ -242,24 +305,6 @@ Would you like to create an account or log in now?`,
         </button>
       </div>
     );
-  };
-
-  const handleCloseOrFinish = () => {
-    // Restore header functionality
-    const headerElements = document.querySelectorAll('.app-header, .logo-title, .burger-menu');
-    headerElements.forEach(element => {
-      element.style.opacity = '1';
-      element.style.pointerEvents = 'auto';
-      if (element.classList.contains('logo-title')) {
-        element.style.cursor = 'pointer';
-      }
-    });
-    onClose();
-    resetAllElements();
-    if (currentStep === steps.length - 1) {
-      onReset();
-      resetAllElements();
-    }
   };
 
   const dialogContent = (
@@ -395,9 +440,9 @@ zIndex: 9999,
 );
 return (
 <>
-<div style={overlayStyle} />
-{dialogContainer}
-</>
+      <div style={overlayStyle} className="tutorial-overlay" />
+      {dialogContainer}
+    </>
 );
 };
 

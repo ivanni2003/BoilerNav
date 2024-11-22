@@ -38,6 +38,37 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
 
   const [showUpdateRequests, setShowUpdateRequests] = useState(false);
   const [updateRequests, setUpdateRequests] = useState([]);
+  const [floorPlanRequests, setFloorPlanRequests] = useState([]);
+
+  useEffect(() => {   // prevent scrolling in user menu
+    document.body.style.overflow = 'hidden';
+  }, []); 
+
+  const handleApproveFloorPlanRequest = async (request) => {
+    try {
+      await axios.post(`http://localhost:3001/api/indoordata/approve-floor-plan-request`, { request }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      showNotification('Floor plan request approved', 'success');
+      setFloorPlanRequests(prev => prev.filter(r => r.requestId !== request.requestId));
+    } catch (error) {
+      console.error('Error approving floor plan request:', error);
+      showNotification('Failed to approve floor plan request', 'error');
+    }
+  };
+
+  const handleDeclineFloorPlanRequest = async (request) => {
+    try {
+      await axios.post(`http://localhost:3001/api/indoordata/decline-floor-plan-request`, { request }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      showNotification('Floor plan request declined', 'success');
+      setFloorPlanRequests(prev => prev.filter(r => r.requestId !== request.requestId));
+    } catch (error) {
+      console.error('Error declining floor plan request:', error);
+      showNotification('Failed to decline floor plan request', 'error');
+    }
+  };
 
   // Open Review Update Requests
   const handleOpenReviewUpdateRequests = () => {
@@ -61,9 +92,13 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   const fetchUpdateRequests = async () => {
     try {
       const response = await axios.get('http://localhost:3001/api/indoordata/get-update-requests', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        params: {
+          username: user ? user.username : 'Guest'
+        }
       });
-      setUpdateRequests(response.data);
+      setUpdateRequests(response.data.updateRequests || []);
+      setFloorPlanRequests(response.data.floorPlanRequests || []);
     } catch (error) {
       console.error('Error fetching update requests:', error);
       showNotification('Failed to fetch update requests', 'error');
@@ -848,6 +883,27 @@ const renderSavedRoutes = () => {
               </ul>
             ) : (
               <p>No update requests found.</p>
+            )}
+            
+            {/* Floor Plan Requests */}
+            <h3>Floor Plan Requests</h3>
+            {floorPlanRequests.length > 0 ? (
+              <ul className="floor-plan-request-list">
+                {floorPlanRequests.map(request => (
+                  <li key={request.requestId} className="floor-plan-request-item">
+                    <p><strong>Building ID:</strong> {request.buildingID}</p>
+                    <p><strong>Floor Number:</strong> {request.floorNumber}</p>
+                    <p><strong>Image URL:</strong> <a href={request.imageURL} target="_blank" rel="noopener noreferrer">View Image</a></p>
+                    <p><strong>Submitted by:</strong> {request.username}</p>
+                    <div className="floor-plan-request-actions">
+                      <button className="approve-button" onClick={() => handleApproveFloorPlanRequest(request)}>APPROVE</button>
+                      <button className="decline-button" onClick={() => handleDeclineFloorPlanRequest(request)}>DECLINE</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No floor plan requests found.</p>
             )}
           </div>
         </div>

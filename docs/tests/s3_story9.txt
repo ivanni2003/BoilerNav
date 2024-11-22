@@ -1,0 +1,77 @@
+Test Case 3_9_1
+System: Most Popular Rooms
+Phase: 3
+Most Popular Rooms Button Visibility
+Severity: 1
+
+A. Identification and classification
+- Test visibility of Most Popular Rooms button.
+- Verify existence of Most Popular Rooms button in application.
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Select the popup circle associated with any building and ensure that the building is named (not just named 'Building').
+  4. Click on the associated popup circle for 'Lawson Hall (LWSN)', then click the 'View Indoors' button.
+
+
+C. Expected Result:
+  1. Most Popular Rooms Button is visible towards top left of application.
+
+------------------------------------
+Test Case 3_9_2
+System: Most Popular Rooms
+Phase: 3
+Most Popular Rooms Menu
+Severity: 1
+
+A. Identification and classification
+- Test contents of most popular rooms menu.
+- Verify that most popular rooms menu displays most popular routes in sorted order.
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Search for 'Lawson Hall (LWSN)' on the search for destination field on the top right and select it.
+  4. Click on the associated popup circle for 'Lawson Hall (LWSN)', then click the 'View Indoors' button.
+  5. Click 'Most Popular Rooms' button in top left
+
+
+C. Expected Result:
+  1. Most popular rooms button should display menu containing popular rooms in descending order.
+
+  Note: The count of a room is incremented when it is selected as a destination during 
+       indoor routing and is updated when application is refreshed. If x destinations unique 
+       destinations have only ever been selected, there will only be x unique destinations in associated menu.
+       We use Lawson for this test since we have data for the building.
+    
+
+
+------------------------------------
+Test Case 3_9_3
+System: Most Popular Rooms
+Phase: 3
+Most Popular Rooms Click Functionality
+Severity: 1
+
+A. Identification and classification
+- Test functionality of selecting popular room within most popular rooms menu.
+- Verify that selecting a room marks the room on the screen.
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Search for 'Lawson Hall (LWSN)' on the search for destination field on the top right and select it.
+  4. Click on the associated popup circle for 'Lawson Hall (LWSN)', then click the 'View Indoors' button.
+  5. Click 'Most Popular Rooms' button in top left
+  6. Select one of the rooms in the dropdown menu.
+
+C. Expected Result:
+  1. The selected room is marked with a small red dot that indicates
+     its location.
+
+  Note: The count of a room is incremented when it is selected as a destination during 
+       indoor routing and is updated when application is refreshed. If x destinations unique 
+       destinations have only ever been selected, there will only be x unique destinations in associated menu.
+       We use Lawson for this test since we have data for the building.
+    

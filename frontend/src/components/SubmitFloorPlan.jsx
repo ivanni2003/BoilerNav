@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import './SubmitFloorPlan.css';
 
 const baseURL = "http://localhost:3001";
@@ -12,7 +13,6 @@ const PopupForm = ({isVisible, onClose, user, building, showNotification}) => {
   
     const handleImageURLChange = (e) => {
       setImageURL(e.target.value);
-      console.log(imageURL)
     }
   
     const handleFloorNumberChange = (e) => {
@@ -23,13 +23,31 @@ const PopupForm = ({isVisible, onClose, user, building, showNotification}) => {
       e.preventDefault()
   
       try {
+
+        if (imageURL.length == 0 || floorNumber.length == 0) {
+          showNotification('Please enter information in the input fields', 'error')
+          return
+        }
+        if (!(imageURL.startsWith("https://") || imageURL.startsWith("http://"))) {
+          showNotification('Please enter a valid URL (https:// or http://)', 'error')
+          return
+        }
+
+        const floorNum = Number(floorNumber)
+
+        if (!(Number.isInteger(floorNum))) {
+          console.log('int error')
+          showNotification('Please enter a valid Floor Number', 'error')
+          return
+        }
+
         const response = await axios.post(`${baseURL}/api/users/floorPlanRequests`, {
           username: user.username,
           imageURL: imageURL,
           buildingID: building.id,
           floorNumber: floorNumber
         })
-  
+        console.log("success")
         showNotification('Request submitted successfully', 'success')
       }
       catch (error) {
@@ -46,7 +64,7 @@ const PopupForm = ({isVisible, onClose, user, building, showNotification}) => {
                   <div>
                     <label>
                       Floor Plan URL:
-                      <input type="text" placeholder="enter image url" onChange={handleImageURLChange} value={imageURL}/>
+                      <input type="text" placeholder="Enter Image URL" onChange={handleImageURLChange} value={imageURL}/>
                     </label>
                   </div>
                   <div>
@@ -54,7 +72,7 @@ const PopupForm = ({isVisible, onClose, user, building, showNotification}) => {
                       Floor Number:
                       <input type="text" 
                             value={floorNumber}
-                            placeholder="-1: basement, 0: ground, 1: floor 1, ..." 
+                            placeholder="-1: Basement, 0: Ground, 1: Floor 1, ..." 
                             onChange={handleFloorNumberChange}/>
                     </label>
                   </div>
@@ -80,7 +98,7 @@ const SubmitFloorPlan = ({user, building, showNotification}) => {
         }
         else {
           console.log("notification")
-          showNotification('Please login to your account.', 'info');
+          showNotification('Please login to submit floor plans', 'info');
         }
       }
 

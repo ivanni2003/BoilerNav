@@ -39,6 +39,7 @@ const DirectionsMenu = ({
   const [hasBeenSaved, setHasBeenSaved] = useState(false);
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [existingRoute, setExistingRoute] = useState(null);
+  const [savedRouteStartName, setSavedRouteStartName] = useState('');
 
   // Create a unique identifier for the current route
   const routeIdentifier = JSON.stringify({
@@ -117,9 +118,16 @@ const DirectionsMenu = ({
     closeDirections();
   };
 
-  const saveRoute = async () => {
+  const saveRoute = async (e) => {
+    e.preventDefault()
+
     if (!user) {
       showNotification('Please log in to save routes', 'error');
+      return;
+    }
+
+    if (savedRouteStartName.length == 0) {
+      showNotification('Please enter a descriptive start location to save this route', 'error');
       return;
     }
 
@@ -135,7 +143,7 @@ const DirectionsMenu = ({
         startLocation: {
           lat: start[0],
           lon: start[1],
-          name: 'Start Location'
+          name: savedRouteStartName
         },
         endLocation: {
           lat: destination.buildingPosition.lat,
@@ -179,6 +187,40 @@ const DirectionsMenu = ({
     }
   };
 
+  const handleSavedRouteStartChange = (e) => {
+    setSavedRouteStartName(e.target.value);
+  }
+
+  const CopyRoute = () => {
+    var text = "http://localhost:5173?lat=" + destination.buildingPosition.lat + "&lon=" + destination.buildingPosition.lon + "&nam=" + destination.tags.name;
+    navigator.clipboard.writeText(text).then(function() {
+      showNotification('Copied to Clipboard', 'info');
+    }, function(err) {
+      console.error('Async: Could not copy text: ', err);
+    });
+    if (user != null) {
+      axios.post('http://localhost:3001/api/ShareRouteEmail', {
+        email: user.email,
+        resetLink: text
+      })
+        .then(response => {
+          console.log('Email sent successfully', response.data);  // Response from server
+          showNotification('Email sent successfully', 'info');
+        })
+        .catch(error => {
+          console.error('Error sending email:', error.response || error.message);
+          if (error.response) {
+            // Server responded with a status code that falls out of the range of 2xx
+            console.error('Server response:', error.response.data);
+          } else {
+            // Something went wrong with the request itself
+            console.error('Request error:', error.message);
+          }
+          showNotification('Error sending email', 'error');
+        });
+    }
+  }
+
   const transportation_string = selectedMode === "bike" ? "Biking" : 
                               selectedMode === "bus" ? "Busing" : 
                               "Walking";
@@ -201,6 +243,7 @@ const DirectionsMenu = ({
       />
       <div className="button-container">
         <button className="directions-button" onClick={handleClose}>Close</button>
+        <button className="directions-button" onClick={CopyRoute}>Copy Route</button>
         <button className="directions-button" onClick={handleRouting}>Go</button>
       </div>
       {!isInterior && manhattanDistance && travelTime && (
@@ -239,17 +282,25 @@ const DirectionsMenu = ({
               </div>
             </div>
           )}
-
-          <button
-            className="save-route-button"
-            onClick={saveRoute}
-            disabled={isSaving || isDuplicate || isChecking}
-          >
-            {isChecking ? 'Checking...' :
-             isSaving ? 'Saving...' :
-             isDuplicate ? 'Route Already Saved' :
-             'Save Route as Favorite'}
+          <form onSubmit={saveRoute}>
+            <div className='save-route-input'>
+              <label>
+                <input type="text" placeholder="Enter Start Location for Saved Route" onChange={handleSavedRouteStartChange} value={savedRouteStartName}/>
+              </label>  
+            </div>
+              <div>
+              <button
+                className="save-route-button"
+                disabled={isSaving || isDuplicate || isChecking}
+              >
+                {isChecking ? 'Checking...' :
+                isSaving ? 'Saving...' :
+                isDuplicate ? 'Route Already Saved' :
+                'Save Route as Favorite'}
           </button>
+              </div>
+          </form>
+          
         </div>
       )}
     </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './ForgotPassword.css';
 
-const baseURL = process.env.REACT_APP_API_BASE_URL;
+const baseURL = process.env.VITE_APP_URL;
 
 const ForgotPassword = ({ onClose }) => {
   const [email, setEmail] = useState('');

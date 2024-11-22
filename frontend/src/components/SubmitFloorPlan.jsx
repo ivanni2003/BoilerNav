@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './SubmitFloorPlan.css';
 
-const baseURL = process.env.REACT_APP_API_BASE_URL;
+const baseURL = process.env.VITE_APP_URL;
 
 const PopupForm = ({isVisible, onClose, user, building, showNotification}) => {
     const [imageURL, setImageURL] = useState('')

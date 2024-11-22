@@ -3,7 +3,7 @@ import axios from 'axios';
 import './Login.css';
 import ForgotPassword from './ForgotPassword';
 
-const baseURL = process.env.REACT_APP_API_BASE_URL;
+const baseURL = process.env.VITE_APP_URL;
 
 const Login = ({ onClose, onLoginSuccess, showNotification }) => {
   const [username, setUsername] = useState('');

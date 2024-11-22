@@ -3,7 +3,7 @@ import { Lock, Unlock, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import './DirectionsMenu.css';
 
-const baseURL = process.env.REACT_APP_API_BASE_URL;
+const baseURL = process.env.VITE_APP_URL;
 
 const DirectionsMenu = ({
   start,

@@ -3,7 +3,7 @@ import './Parking.css'
 import axios from 'axios';
 import PopupDropdown from './PopupDropdown'
 
-const baseURL = process.env.REACT_APP_API_BASE_URL;
+const baseURL = process.env.VITE_APP_URL;
 
 const Amenities = ({updateMap, markParkingLots}) => {
     const [parkingLots, setParkingLots] = useState([])

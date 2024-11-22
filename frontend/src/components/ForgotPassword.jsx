@@ -7,10 +7,12 @@ const ForgotPassword = ({ onClose }) => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  const baseURL = process.env.API_BASE_URL;
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3001/api/reset-password', { email });
+      const response = await axios.post(`${baseURL}/api/reset-password`, { email });
       setMessage(response.data.message);
       setError('');
     } catch (error) {

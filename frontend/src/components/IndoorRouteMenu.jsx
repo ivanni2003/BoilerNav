@@ -23,11 +23,13 @@ const IndoorRouteMenu = ({
     setHasBeenSaved(false);
   }, [start, destination]);
 
+  const baseURL = process.env.API_BASE_URL;
+
   useEffect(() => {
     const fetchGlobalPrivacySetting = async () => {
       if (user) {
         try {
-          const response = await axios.get(`http://localhost:3001/api/routes/${user.id}`, {
+          const response = await axios.get(`${baseURL}/api/routes/${user.id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
           if (response.data.length > 0) {
@@ -48,7 +50,7 @@ const IndoorRouteMenu = ({
       setIsChecking(true);
       try {
         const response = await axios.post(
-          'http://localhost:3001/api/routes/check-duplicate',
+          `${baseURL}/api/routes/check-duplicate`,
           {
             userId: user.id,
             startLocation: {
@@ -135,7 +137,7 @@ const IndoorRouteMenu = ({
   
       console.log('Sending route data:', routeData);
   
-      const response = await axios.post('http://localhost:3001/api/routes', routeData, {
+      const response = await axios.post(`${baseURL}/api/routes`, routeData, {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'

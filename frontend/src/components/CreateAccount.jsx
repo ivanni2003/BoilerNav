@@ -11,11 +11,13 @@ const CreateAccount = ({ onClose, onCreateSuccess, showNotification }) => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
 
+  const baseURL = process.env.API_BASE_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post('http://localhost:3001/api/users', {
+      const response = await axios.post(`${baseURL}/api/users`, {
         fullName,
         major,
         affiliation,

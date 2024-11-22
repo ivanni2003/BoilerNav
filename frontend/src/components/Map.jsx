@@ -29,7 +29,7 @@ export const getDeviceId = () => {
   return deviceId
 }
 
-const baseURL = "http://localhost:3001";
+const baseURL = process.env.API_BASE_URL;
 
 const DEFAULT_LAT = 40.4237;
 const DEFAULT_LON = -86.9212;
@@ -69,7 +69,7 @@ const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, ma
       }
 
       try {
-        const response = await fetch(`http://localhost:3001/api/indoornav/path?building=${building.tags.name}&start=${startNode}&end=${endNode}`);
+        const response = await fetch(`${baseURL}/api/indoornav/path?building=${building.tags.name}&start=${startNode}&end=${endNode}`);
         const data = await response.json();
 
         if (data.route) {
@@ -82,7 +82,7 @@ const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, ma
 
           try {   // updating destination count of room
             const buildingName = building.tags.name.replace(' ', '')
-            await axios.patch(`http://localhost:3001/api/indoordata/${buildingName}/${endNode}`)
+            await axios.patch(`${baseURL}/api/indoordata/${buildingName}/${endNode}`)
           } catch (error) {
             console.log(error)
           }
@@ -145,7 +145,7 @@ const FloorPlan = ({ startNode, endNode, rooms, setDistancetime, floorNumber, ma
 
 async function fetchHeatmapData() {
   try {
-    const response = await fetch('http://localhost:3001/api/heatmap/heatmap-get'); 
+    const response = await fetch(`${baseURL}/api/heatmap/heatmap-get`); 
     if (!response.ok) {
       throw new Error('Failed to fetch heatmap data');
     }
@@ -159,7 +159,7 @@ async function fetchHeatmapData() {
 
 async function fetchhistoricalHeatmapData() {
   try {
-    const response = await fetch('http://localhost:3001/api/heatmap/historical-heatmap-get'); 
+    const response = await fetch(`${baseURL}/api/heatmap/historical-heatmap-get`); 
     if (!response.ok) {
       throw new Error('Failed to fetch heatmap data');
     }
@@ -337,7 +337,7 @@ const FloorPlanView = ({
 
   const sendRouteEmailtoSelf = (routeLink) => {
     if (user != null) {
-        axios.post('http://localhost:3001/api/ShareRouteEmail', {
+        axios.post(`${baseURL}/api/ShareRouteEmail`, {
           email: user.email,
           resetLink: routeLink
         })

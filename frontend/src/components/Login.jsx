@@ -10,10 +10,12 @@ const Login = ({ onClose, onLoginSuccess, showNotification }) => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showBannedPopup, setShowBannedPopup] = useState(false);
 
+  const baseURL = process.env.API_BASE_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3001/api/login', {
+      const response = await axios.post(`${baseURL}/api/login`, {
         username,
         password
       });

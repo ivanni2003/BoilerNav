@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, X, User, LogIn, UserPlus, LogOut, UserCog, HelpCircle } from 'lucide-react';
 
+
 const BurgerMenu = ({
   user,
   onCreateAccount,

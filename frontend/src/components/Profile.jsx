@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Pencil, Check, Trash2, Minus, Eye, EyeOff, Map, Lock, Unlock, Info  } from 'lucide-react';
 import './Profile.css';
 
+const baseURL = process.env.API_BASE_URL;
+
 const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onViewSavedRoute, updatePublicRoutes }) => {
   const [editMode, setEditMode] = useState({
     name: false,
@@ -44,7 +46,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
 
   const handleApproveFloorPlanRequest = async (request) => {
     try {
-      await axios.post(`http://localhost:3001/api/indoordata/approve-floor-plan-request`, { request }, {
+      await axios.post(`${baseURL}/api/indoordata/approve-floor-plan-request`, { request }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       showNotification('Floor plan request approved', 'success');
@@ -57,7 +59,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
 
   const handleDeclineFloorPlanRequest = async (request) => {
     try {
-      await axios.post(`http://localhost:3001/api/indoordata/decline-floor-plan-request`, { request }, {
+      await axios.post(`${baseURL}/api/indoordata/decline-floor-plan-request`, { request }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       showNotification('Floor plan request declined', 'success');
@@ -89,7 +91,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
 
   const fetchUpdateRequests = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/indoordata/get-update-requests', {
+      const response = await axios.get(`${baseURL}/api/indoordata/get-update-requests`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         params: {
           username: user ? user.username : 'Guest'
@@ -105,7 +107,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
 
   const handleApproveRequest = async (requestId) => {
     try {
-      await axios.post(`http://localhost:3001/api/indoordata/approve-update-request/${requestId}`, {}, {
+      await axios.post(`${baseURL}/api/indoordata/approve-update-request/${requestId}`, {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       showNotification('Update request approved', 'success');
@@ -118,7 +120,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   
   const handleDeclineRequest = async (requestId) => {
     try {
-      await axios.delete(`http://localhost:3001/api/indoordata/update-request/${requestId}`, {
+      await axios.delete(`${baseURL}/api/indoordata/update-request/${requestId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       showNotification('Update request declined', 'success');
@@ -131,7 +133,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
 
   const handleViewSubmissions = async (username) => {
     try {
-      const response = await axios.get(`http://localhost:3001/api/users/username/${username}`, {
+      const response = await axios.get(`${baseURL}/api/users/username/${username}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
   
@@ -176,7 +178,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   const fetchAllUsers = async () => {
     try {
       console.log("Getting users")
-      const response = await axios.get(`http://localhost:3001/api/users`, {
+      const response = await axios.get(`${baseURL}/api/users`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       console.log("reponse: ", response)
@@ -193,7 +195,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   const handleBanUser = async (username) => {
     try {
       await axios.post(
-        `http://localhost:3001/api/users/ban`,
+        `${baseURL}/api/users/ban`,
         { username },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -215,7 +217,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   const handleUnbanUser = async (username) => {
     try {
       await axios.post(
-        `http://localhost:3001/api/users/unban`,
+        `${baseURL}/api/users/unban`,
         { username },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -259,7 +261,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
       // Update all routes in the database
       const updatePromises = savedRoutes.map(route =>
         axios.patch(
-          `http://localhost:3001/api/routes/${route._id}/privacy`,
+          `${baseURL}/api/routes/${route._id}/privacy`,
           { isPublic: newPrivacyStatus },
           {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -294,7 +296,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
 
   const fetchFavoriteLocations = async () => {
     try {
-      const response = await axios.get(`http://localhost:3001/api/users/${user.id}/favorites`, {
+      const response = await axios.get(`${baseURL}/api/users/${user.id}/favorites`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setFavoriteLocations(response.data);
@@ -306,7 +308,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
 
   const fetchSavedRoutes = async () => {
     try {
-      const response = await axios.get(`http://localhost:3001/api/routes/${user.id}`, {
+      const response = await axios.get(`${baseURL}/api/routes/${user.id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setSavedRoutes(response.data);
@@ -318,7 +320,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
 
   const handleRemoveFavorite = async (buildingId) => {
     try {
-      await axios.delete(`http://localhost:3001/api/users/${user.id}/favorites/${buildingId}`, {
+      await axios.delete(`${baseURL}/api/users/${user.id}/favorites/${buildingId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setFavoriteLocations(prevFavorites => prevFavorites.filter(fav => fav.buildingId !== buildingId));
@@ -330,7 +332,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
 
   const handleRemoveRoute = async (routeId) => {
     try {
-      await axios.delete(`http://localhost:3001/api/routes/${routeId}`, {
+      await axios.delete(`${baseURL}/api/routes/${routeId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setSavedRoutes(prevRoutes => prevRoutes.filter(route => route._id !== routeId));
@@ -352,7 +354,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
         throw new Error('User ID is missing. Please log out and log in again.');
       }
 
-      const response = await axios.delete(`http://localhost:3001/api/users/${user.id}`, {
+      const response = await axios.delete(`${baseURL}/api/users/${user.id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -401,7 +403,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
       if (!user.id) {
         throw new Error('User ID is missing. Please log out and log in again.');
       }
-      const response = await axios.put(`http://localhost:3001/api/users/${user.id}`, {
+      const response = await axios.put(`${baseURL}/api/users/${user.id}`, {
         [field]: editedUser[field]
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -518,7 +520,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
       }
       try {
         const updatedRoute = await axios.patch(
-          `http://localhost:3001/api/routes/${route._id}/duration`,
+          `${baseURL}/api/routes/${route._id}/duration`,
           { duration: durationAsNumber },
           {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -557,7 +559,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
     if (route.travelMode === 'indoor') {
       try {
         // Fetch building data
-        const response = await axios.get(`http://localhost:3001/api/ways/buildings`);
+        const response = await axios.get(`${baseURL}/api/ways/buildings`);
         const buildings = response.data;
         const building = buildings.find(b => b.id === route.buildingId);
         
@@ -567,7 +569,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
         }
 
         // Fetch floor plans
-        const floorPlansResponse = await axios.get(`http://localhost:3001/api/floorplans/building/${building.id}`);
+        const floorPlansResponse = await axios.get(`${baseURL}/api/floorplans/building/${building.id}`);
         
         if (!floorPlansResponse.data || floorPlansResponse.data.length === 0) {
           showNotification('No floor plans available for this building', 'info');
@@ -578,7 +580,7 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
         building.floorPlans = floorPlansResponse.data;
 
         // Fetch indoor data for room details
-        const indoorDataResponse = await axios.get(`http://localhost:3001/api/indoordata/${building.tags.name}`);
+        const indoorDataResponse = await axios.get(`${baseURL}/api/indoordata/${building.tags.name}`);
         if (!indoorDataResponse.data) {
           showNotification('Indoor data not available', 'error');
           return;

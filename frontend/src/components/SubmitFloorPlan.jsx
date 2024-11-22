@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './SubmitFloorPlan.css';
 
-const baseURL = "http://localhost:3001";
+const baseURL = import.meta.env.VITE_API_URL;
 
 const PopupForm = ({isVisible, onClose, user, building, showNotification}) => {
     const [imageURL, setImageURL] = useState('')

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const baseURL = import.meta.env.VITE_API_URL;
+
 function ResetPassword() {
   const [newPassword, setNewPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -30,7 +32,7 @@ function ResetPassword() {
     }
     console.log("post");
     try {
-      await axios.post('http://localhost:3001/api/reset-password/reset-password', { token, newPassword });
+      await axios.post(`${baseURL}/api/reset-password/reset-password`, { token, newPassword });
       alert('Password reset successful!');
       navigate('/');
     } catch (error) {

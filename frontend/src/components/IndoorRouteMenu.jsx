@@ -3,6 +3,8 @@ import { Lock, Unlock, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import { convertDistance, formatDistance } from '../utils/distanceUtils';
 
+const baseURL = import.meta.env.VITE_API_URL;
+
 const IndoorRouteMenu = ({ 
   start, 
   destination, 
@@ -47,11 +49,12 @@ const IndoorRouteMenu = ({
     setHasBeenSaved(false);
   }, [start, destination]);
 
+
   useEffect(() => {
     const fetchGlobalPrivacySetting = async () => {
       if (user) {
         try {
-          const response = await axios.get(`http://localhost:3001/api/routes/${user.id}`, {
+          const response = await axios.get(`${baseURL}/api/routes/${user.id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
           if (response.data.length > 0) {
@@ -72,7 +75,7 @@ const IndoorRouteMenu = ({
       setIsChecking(true);
       try {
         const response = await axios.post(
-          'http://localhost:3001/api/routes/check-duplicate',
+          `${baseURL}/api/routes/check-duplicate`,
           {
             userId: user.id,
             startLocation: {
@@ -159,7 +162,7 @@ const IndoorRouteMenu = ({
   
       console.log('Sending route data:', routeData);
   
-      const response = await axios.post('http://localhost:3001/api/routes', routeData, {
+      const response = await axios.post(`${baseURL}/api/routes`, routeData, {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'

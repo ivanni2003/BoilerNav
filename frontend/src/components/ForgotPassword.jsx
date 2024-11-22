@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './ForgotPassword.css';
 
+const baseURL = import.meta.env.VITE_API_URL;
+
 const ForgotPassword = ({ onClose }) => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3001/api/reset-password', { email });
+      const response = await axios.post(`${baseURL}/api/reset-password`, { email });
       setMessage(response.data.message);
       setError('');
     } catch (error) {

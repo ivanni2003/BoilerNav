@@ -3,6 +3,8 @@ import axios from 'axios';
 import './Login.css';
 import ForgotPassword from './ForgotPassword';
 
+const baseURL = import.meta.env.VITE_API_URL;
+
 const Login = ({ onClose, onLoginSuccess, showNotification }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -13,7 +15,7 @@ const Login = ({ onClose, onLoginSuccess, showNotification }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3001/api/login', {
+      const response = await axios.post(`${baseURL}/api/login`, {
         username,
         password
       });

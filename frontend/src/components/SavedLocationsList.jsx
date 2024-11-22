@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Navigation, LogIn } from 'lucide-react';
 import './SavedLocationsList.css';
 
+const baseURL = import.meta.env.VITE_API_URL;
+
 const SavedLocationsList = ({ 
   user, 
   userLocation, 
@@ -28,7 +30,7 @@ const SavedLocationsList = ({
 
   const fetchSavedLocations = async () => {
     try {
-      const response = await axios.get(`http://localhost:3001/api/users/${user.id}/favorites`, {
+      const response = await axios.get(`${baseURL}/api/users/${user.id}/favorites`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setSavedLocations(response.data);

@@ -3,7 +3,7 @@ import './Parking.css'
 import axios from 'axios';
 import PopupDropdown from './PopupDropdown'
 
-const baseURL = 'http://localhost:3001'
+const baseURL = import.meta.env.VITE_API_URL;
 
 const Amenities = ({updateMap, markParkingLots}) => {
     const [parkingLots, setParkingLots] = useState([])

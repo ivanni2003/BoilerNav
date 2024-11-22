@@ -17,6 +17,7 @@
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "dom": "^0.0.3",
+    "dotenv": "^16.4.5",
     "jsonwebtoken": "^9.0.2",
     "leaflet": "^1.9.4",
     "leaflet.heat": "^0.2.0",

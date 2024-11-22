@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './CreateAccount.css';
 
+const baseURL = import.meta.env.VITE_API_URL;
+
 const CreateAccount = ({ onClose, onCreateSuccess, showNotification }) => {
   const [fullName, setFullName] = useState('');
   const [major, setMajor] = useState('');
@@ -11,11 +13,12 @@ const CreateAccount = ({ onClose, onCreateSuccess, showNotification }) => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post('http://localhost:3001/api/users', {
+      const response = await axios.post(`${baseURL}/api/users`, {
         fullName,
         major,
         affiliation,

@@ -4,6 +4,8 @@ import axios from 'axios';
 import './DirectionsMenu.css';
 import { convertDistance, formatDistance } from '../utils/distanceUtils';
 
+const baseURL = import.meta.env.VITE_API_URL;
+
 const DirectionsMenu = ({
   start,
   destination,
@@ -58,7 +60,7 @@ const DirectionsMenu = ({
     const fetchGlobalPrivacySetting = async () => {
       if (user && !isInterior) {
         try {
-          const response = await axios.get(`http://localhost:3001/api/routes/${user.id}`, {
+          const response = await axios.get(`${baseURL}/api/routes/${user.id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
           if (response.data.length > 0) {
@@ -80,7 +82,7 @@ const DirectionsMenu = ({
       setIsChecking(true);
       try {
         const response = await axios.post(
-          'http://localhost:3001/api/routes/check-duplicate',
+          `${baseURL}/api/routes/check-duplicate`,
           {
             userId: user.id,
             startLocation: {
@@ -157,7 +159,7 @@ const DirectionsMenu = ({
         isPublic: globalPrivacySetting
       };
 
-      const response = await axios.post('http://localhost:3001/api/routes', routeData, {
+      const response = await axios.post(`${baseURL}/api/routes`, routeData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
@@ -199,7 +201,7 @@ const DirectionsMenu = ({
       console.error('Async: Could not copy text: ', err);
     });
     if (user != null) {
-      axios.post('http://localhost:3001/api/ShareRouteEmail', {
+      axios.post(`${baseURL}/api/ShareRouteEmail`, {
         email: user.email,
         resetLink: text
       })

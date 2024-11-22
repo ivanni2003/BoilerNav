@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './BusStops.css'
 import axios from 'axios';
 
-const baseURL = 'http://localhost:3001'
+const baseURL = import.meta.env.VITE_API_URL;
 
 const BusStops = ({updateMap, markBusStops}) => {
     const [busStops, setBusStops] = useState([])
@@ -24,22 +24,6 @@ const BusStops = ({updateMap, markBusStops}) => {
 
         fetchBusStops();
     }, [markBusStops]); 
-
-    // const handleBusStopsClick = () => {
-    //     setIsBusStopsPopupVisible(!isBusStopsPopupVisible);
-    //     markBusStops(busStops);
-    // };
-
-    // const closeBusStopsPopup = () => {
-    //     setIsBusStopsPopupVisible(false);
-    //     markBusStops([])
-    // };
-
-    // return (
-    //     <div>
-    //         <button className='busstops-button' onClick={handleBusStopsClick}>View Bus Stops</button>
-    //     </div>
-    // );
 }
 
 

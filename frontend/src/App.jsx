@@ -18,7 +18,8 @@ import Tutorial from './components/Tutorial';
 import ShareRoute from './components/ShareRoute';
 import { Menu, Share } from 'lucide-react';
 
-const baseURL = 'http://localhost:3001'
+const baseURL = import.meta.env.VITE_API_URL;
+console.log(baseURL)
 
 function App() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);

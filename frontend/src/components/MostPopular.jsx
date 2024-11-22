@@ -38,7 +38,7 @@ const MostPopular = ({items, buttonName, markRoom, viewSavedRoute}) => {
                             onClick={() => handleItemClick(item)} 
                                 style={{ cursor: 'pointer' }}
                         >
-                            {item.properties.RoomName}
+                            {`${item.properties.RoomName} (${item.properties.DestinationCount})`}
                         </ul>
                         )
                     ) :  items.length > 0 && viewSavedRoute ? (

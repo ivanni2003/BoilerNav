@@ -24,6 +24,7 @@ const DirectionsMenu = ({
   const [hasBeenSaved, setHasBeenSaved] = useState(false);
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [existingRoute, setExistingRoute] = useState(null);
+  const [savedRouteStartName, setSavedRouteStartName] = useState('');
 
   // Create a unique identifier for the current route
   const routeIdentifier = JSON.stringify({
@@ -102,9 +103,16 @@ const DirectionsMenu = ({
     closeDirections();
   };
 
-  const saveRoute = async () => {
+  const saveRoute = async (e) => {
+    e.preventDefault()
+
     if (!user) {
       showNotification('Please log in to save routes', 'error');
+      return;
+    }
+
+    if (savedRouteStartName.length == 0) {
+      showNotification('Please enter a descriptive start location to save this route', 'error');
       return;
     }
 
@@ -120,7 +128,7 @@ const DirectionsMenu = ({
         startLocation: {
           lat: start[0],
           lon: start[1],
-          name: 'Start Location'
+          name: savedRouteStartName
         },
         endLocation: {
           lat: destination.buildingPosition.lat,
@@ -163,6 +171,10 @@ const DirectionsMenu = ({
       closeDirections();
     }
   };
+
+  const handleSavedRouteStartChange = (e) => {
+    setSavedRouteStartName(e.target.value);
+  }
 
   const CopyRoute = () => {
     var text = "http://localhost:5173?lat=" + destination.buildingPosition.lat + "&lon=" + destination.buildingPosition.lon + "&nam=" + destination.tags.name;
@@ -246,17 +258,25 @@ const DirectionsMenu = ({
               </div>
             </div>
           )}
-
-          <button
-            className="save-route-button"
-            onClick={saveRoute}
-            disabled={isSaving || isDuplicate || isChecking}
-          >
-            {isChecking ? 'Checking...' :
-             isSaving ? 'Saving...' :
-             isDuplicate ? 'Route Already Saved' :
-             'Save Route as Favorite'}
+          <form onSubmit={saveRoute}>
+            <div className='save-route-input'>
+              <label>
+                <input type="text" placeholder="Enter Start Location for Saved Route" onChange={handleSavedRouteStartChange} value={savedRouteStartName}/>
+              </label>  
+            </div>
+              <div>
+              <button
+                className="save-route-button"
+                disabled={isSaving || isDuplicate || isChecking}
+              >
+                {isChecking ? 'Checking...' :
+                isSaving ? 'Saving...' :
+                isDuplicate ? 'Route Already Saved' :
+                'Save Route as Favorite'}
           </button>
+              </div>
+          </form>
+          
         </div>
       )}
     </div>

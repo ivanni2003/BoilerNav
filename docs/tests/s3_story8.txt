@@ -1,7 +1,7 @@
 Test Case 3_8_1
 System: Most Popular Routes
 Phase: 3
-Most Popular Routes Visibility
+Most Popular Routes Button Visibility
 Severity: 1
 
 A. Identification and classification
@@ -25,7 +25,7 @@ Severity: 1
 A. Identification and classification
 - Test contents of most popular routes menu.
 - Verify that most popular routes menu displays dropdown items associated with destination in sorted order.
-- Verify that popup associated dropdown items contain created routes associated
+- Verify that popup associated with dropdown items contain created routes associated
   with destination.
 
 B. Instructions
@@ -38,10 +38,10 @@ B. Instructions
 C. Expected Result:
   1. Application should display dropdown of the 3 most popular destinations of created routes 
     from other users after step 3. Note that if all publicly available routes collectively only
-    have x destinations, x items will appear in the popup. 
+    have x unique destinations, x items will appear in the dropdown. 
   2. In step 4, selecting an item from the dropdown menu should display all created
     routes from other users to the the popular destination selected.
-    Observe how the popups associated routes towards the top of the dropdown menu 
+    The popups associated with the dropdown items towards the top of the dropdown menu 
     contain >= the number of routes associated with those below it.
 
   Note: These expected results depend on publicly created routes from yourself or 
@@ -58,7 +58,7 @@ Most Popular Routes Click Functionality
 Severity: 1
 
 A. Identification and classification
-- Test functionality of selecting popular route within most popular routes menu.
+- Test functionality of selecting route within the popup of an item of the most popular routes dropdown menu.
 - Verify that selecting a route renders the route onto the screen.
 
 B. Instructions

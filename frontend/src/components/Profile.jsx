@@ -38,6 +38,10 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   const [updateRequests, setUpdateRequests] = useState([]);
   const [floorPlanRequests, setFloorPlanRequests] = useState([]);
 
+  useEffect(() => {   // prevent scrolling in user menu
+    document.body.style.overflow = 'hidden';
+  }, []); 
+
   const handleApproveFloorPlanRequest = async (request) => {
     try {
       await axios.post(`http://localhost:3001/api/indoordata/approve-floor-plan-request`, { request }, {

@@ -1,5 +1,5 @@
 Test Case 3_4_1
-System: Floor plan and Room submission
+System: Floor Plan and Room Submission
 Phase: 3
 Floor Plan Submission Access
 Severity: 1
@@ -12,16 +12,16 @@ A. Identification and classification
 B. Instructions
   1. Open frontend folder in one tab and backend folder in another.
   2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
-  3. Select the popup circle associated with any building and ensure that the building is named (not just named 'Building')
+  3. Select the popup circle associated with any building and ensure that the building is named (not just named 'Building').
   4. Select view indoors.
   5. Select the 'Submit Floor Plan Image' button on bottom left of screen.
 
 C. Expected Result:
-  1. Application should display a notification stating 'Please login to your account' in the top right.
+  1. Application should display a notification stating 'Please login submit floor plans' in the top right.
 
 ------------------------------------
 Test Case 3_4_2
-System: Floor plan and Room submission
+System: Floor Plan and Room Submission
 Phase: 3
 Floor Plan Submission Form Behavior
 Severity: 1

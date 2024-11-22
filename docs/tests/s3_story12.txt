@@ -1,0 +1,64 @@
+Test Case 3_12_1
+System: Reservation
+Phase: 3
+Reservation Existence
+Severity: 1
+
+A. Identification and classification
+- Verify Existence of Reservation Button.
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Click on Lawson Hall (LWSN) Building and click View Indoors
+  4. Click on B151 Classroom
+
+
+C. Expected Result:
+  1. The B151 Classroom popup should have a button titled Reserve.
+
+------------------------------------
+
+Test Case 3_12_2
+System: Reservation
+Phase: 3
+Reservation Email
+Severity: 1
+
+A. Identification and classification
+- Test Reservation Email Ability
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Click the Hamburger Menu in the Top Left and click Log In
+  4. Login with a valid account that has a valid Email
+  5. Click on Lawson Hall (LWSN) Building and click View Indoors
+  6. Click on B151 Classroom
+  7. Click Reserve
+
+
+C. Expected Result:
+  1. After a momentary delay, you should receive an email with a link to a route to Lawson.
+
+------------------------------------
+
+Test Case 3_12_3
+System: Reservation
+Phase: 3
+Reservation Redirect
+Severity: 1
+
+A. Identification and classification
+- Verify Reservation Redirect to Unitime/LibCal
+
+B. Instructions
+  1. Navigate to Unitime for Purdue and login to your Purdue Career Account. You can close out of Unitime after you login.
+  2. Open frontend folder in one tab and backend folder in another.
+  3. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  4. Click on Lawson Hall (LWSN) Building and click View Indoors
+  5. Click on B151 Classroom and click on Reserve.
+
+
+C. Expected Result:
+  1. After a momentary delay, you should be redirected to the Unitime Reservation system with LWSN 151 pulled up on the current day.

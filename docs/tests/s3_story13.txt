@@ -1,0 +1,88 @@
+Test Case 3_13_1
+System: Route Sharing
+Phase: 3
+Route Sharing Existence
+Severity: 1
+
+A. Identification and classification
+- Verify Existence of Route Sharing
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Click on Bechtel Innovation Design Center (BIDC) Building
+  4. Click Directions
+
+
+C. Expected Result:
+  1. In the Top Right, there is a Copy Route Button
+
+------------------------------------
+
+Test Case 3_13_2
+System: Route Sharing
+Phase: 3
+Route Sharing Functionality
+Severity: 1
+
+A. Identification and classification
+- Verify Funcitonality of Route Sharing
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Click on Bechtel Innovation Design Center (BIDC) Building
+  4. Click Directions
+  5. Click Copy Route
+  6. Paste from your clipboard in a new tab, and hit enter.
+  7. On that new tab, allow it to use your location.
+
+
+C. Expected Result:
+  1. Copied to your clipboard should be a link with a route to the Betchel Innovation Design Center.
+  2. On the new tab, it should have the route pulled up.
+
+------------------------------------
+
+Test Case 3_13_3
+System: Route Sharing
+Phase: 3
+Route Sharing and Reservation Functionality
+Severity: 1
+
+A. Identification and classification
+- Verify Funcitonality of Route Sharing and Reservation
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Login with a valid account with a valid email
+  4. Click on Lawson Hall (LWSN) Building
+  5. Click View Indoors
+  6. Click on B146 Instructional Lab and click Reserve
+
+
+C. Expected Result:
+  1. After a momentary delay, you should receive an email with a link to a route to Lawson
+
+------------------------------------
+
+Test Case 3_13_4
+System: Route Sharing
+Phase: 3
+Route Sharing Email
+Severity: 1
+
+A. Identification and classification
+- Verify Funcitonality of Route Sharing Emails
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Login with a valid account with a valid email
+  4. Click on Class of 1950 Lecture Hall (CL50) Building
+  5. Click Directions
+  6. Click Copy Route
+
+C. Expected Result:
+  1. After a momentary delay, you should receive an email with a link to a route to CL50

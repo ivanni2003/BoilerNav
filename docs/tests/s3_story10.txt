@@ -1,0 +1,85 @@
+Test Case 3_10_1
+System: HeatMap
+Phase: 3
+Heatmap Visibility
+Severity: 1
+
+A. Identification and classification
+- Test visibility of Heatmap.
+- Verify existence of Heatmap in application.
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Allow the webpage to access your location.
+  4. Reload the page.
+
+
+C. Expected Result:
+  1. At your location, it shows colors to indicate people (you) are there.
+
+------------------------------------
+
+Test Case 3_10_2
+System: HeatMap
+Phase: 3
+Heatmap Going Away
+Severity: 1
+
+A. Identification and classification
+- Test the heatmap going away when there is no traffic
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs and navigate to the URL `localhost:5173` to open the app.
+  3. Allow the webpage to access your location.
+  4. Close the webpage and wait 10 minutes
+  5. Reopen the webpage
+
+
+C. Expected Result:
+  1. At your location, the heatmap disappears after 10 minutes.
+
+------------------------------------
+
+Test Case 3_10_3
+System: HeatMap
+Phase: 3
+High Traffic Heatmap
+Severity: 1
+
+A. Identification and classification
+- Test the heatmap distinguishing between high traffic
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs
+  3. Navigate to the URL `localhost:5173` to open the app.
+  4. Allow the webpage to access your location.
+  5. In two different web applications (not the same application) repeat steps 3 and 4. 
+
+
+C. Expected Result:
+  1. At your location, the colors should be different from the single test in order to indicate that multiple users have shown up in your location
+
+  ------------------------------------
+
+Test Case 3_10_4
+System: HeatMap
+Phase: 3
+Historical Heatmap
+Severity: 1
+
+A. Identification and classification
+- Test the heatmap showing high traffic in previous days
+
+B. Instructions
+  1. Open frontend folder in one tab and backend folder in another.
+  2. Run npm run dev in the terminal of both tabs
+  3. Navigate to the URL `localhost:5173` to open the app.
+  4. Allow the webpage to access your location.
+  5. One day later (same hour), repeat steps 1,2, and 3
+
+
+C. Expected Result:
+  1. At about your previous location, there will be other colors to indicate that there was high traffic there previously.

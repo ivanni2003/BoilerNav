@@ -45,8 +45,8 @@ function dijkstra(graph, indoorData, startNode, endNode) {
           const prevFeature = features.find(
             (f) => f.properties.id === prevNode,
           );
-          const { x1, y1 } = currentFeature.geometry;
-          const { x2, y2 } = prevFeature.geometry;
+          const { x: x1, y: y1 } = currentFeature.geometry;
+          const { x: x2, y: y2 } = prevFeature.geometry;
           const currentFloor = prevFeature.properties.Floor;
           totalDistance +=
             Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2) * indoorData.scale;
@@ -59,16 +59,19 @@ function dijkstra(graph, indoorData, startNode, endNode) {
         }
         node = prevNode;
       }
-      return { route: path, distanceXY: totalDistance };
+      return { route: path, distance: totalDistance };
     }
 
+    const currentNodeFeature = features.find(
+      (f) => f.properties.id === currentNode,
+    );
+    const { x: x1, y: y1 } = currentNodeFeature.geometry;
+
     graph.get(currentNode).forEach((neighbor) => {
-      const { x1, y1 } = features.find(
-        (f) => f.properties.id === currentNode,
-      ).geometry;
-      const { x2, y2 } = features.find(
+      const neighborFeature = features.find(
         (f) => f.properties.id === neighbor,
-      ).geometry;
+      );
+      const { x: x2, y: y2 } = neighborFeature.geometry;
       const distance =
         Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2) * indoorData.scale;
       const newCost = cost.get(currentNode) + distance;
@@ -80,7 +83,7 @@ function dijkstra(graph, indoorData, startNode, endNode) {
       }
     });
   }
-  return null; // No path found
+  return { route: [], distance: 0 };
 }
 
 // Main function to load GeoJSON and find path

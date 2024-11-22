@@ -24,7 +24,8 @@ navigationRouter.get("/path", async (req, res) => {
     }
 
     // Call the pathfinding function (implement this in a separate utility file)
-    const { route, distance } = await findPath(indoorData, start, end);
+    const response = await findPath(indoorData, start, end);
+    const { route, distance } = response;
     // console.log(route);
 
     if (route) {

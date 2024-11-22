@@ -269,13 +269,15 @@ const FloorPlanView = ({
   const handleFloorPlanClick = (x, y) => {
     if (!isEditModeOn) return;
     console.log("User clicked on the floor plan at: ", x, y);
+    // Find the greatest id in the features array
+    const maxId = features.reduce((max, feature) => feature.properties.id > max ? feature.properties.id : max, 0);
     const newFeature = {
       properties: {
-        id: features.length,
-        type: "Intersection",
+        id: maxId + 1,
+        Type: "Intersection",
         RoomName: "Intersection",
         LinkedTo: [],
-        Floor: selectedFloorPlan.FloorNumber,
+        Floor: selectedFloorPlan.floorIndex,
         DestinationCount: 0
       },
       geometry: { x, y }
@@ -427,6 +429,33 @@ const FloorPlanView = ({
     onClose();
   };
 
+  const handleRouting = async () => {
+    console.log("Routing from:", start, "to:", destination);
+    if (!start || !destination) return;
+    const buildingNameNoSpaces = building.tags.name.replaceAll(' ', '');
+    try {
+      const response = await axios.get(`${baseURL}/api/indoornav/path?building=${buildingNameNoSpaces}&start=${start.properties.id}&end=${destination.properties.id}`);
+      const data = response.data;
+      if (data.route) {
+        const avgMsRate = 1.3;
+        const distance = (data.distance).toFixed(2);
+        const time = ((distance / avgMsRate) / 60).toFixed(2);
+        setDistancetime(distance, time);
+        try {
+          await axios.patch(`http://localhost:3001/api/indoordata/${buildingNameNoSpaces}/${destination.properties.id}`)
+        } catch (error) {
+          console.log(error);
+        }
+        setRoute(data.route);
+      }
+    } catch (error) {
+      console.error("Failed to fetch path data:", error);
+      showNotification('Failed to fetch path data.', 'error');
+    }
+  };
+
+        
+
   const convertFloorLevel = (selectedFloorPlan) => {   // assuming no ground level rn?
     if (selectedFloorPlan == "Basement") {
       return -1
@@ -507,9 +536,8 @@ const FloorPlanView = ({
           "\nAvailable floors:", indoorData.floors);
         return;
       }
-      const floorIndex = floorFromFeatureCollection.floorIndex;
       const features = indoorData.features;
-      setFeatures(features)
+      const floorIndex = floorFromFeatureCollection.floorIndex;
       const filteredRooms = features.filter((feature) => {
         if (feature.properties.Type !== 'Room') return false;
         if (feature.properties.Floor !== floorIndex) return false;
@@ -518,7 +546,12 @@ const FloorPlanView = ({
       setRooms(filteredRooms);
     }
     setFilteredRooms();
-  }, [indoorNavData, selectedFloorPlan, building]);
+  }, [indoorNavData, selectedFloorPlan]);
+
+  useEffect(() => {
+    if (!indoorNavData) return;
+    setFeatures(indoorNavData.features);
+  }, [indoorNavData]);
 
 
   const handleRouteClose = () => {
@@ -663,7 +696,7 @@ const FloorPlanView = ({
           start={start} // Assuming current location for start
           destination={destination} // Pass selected room data as destination
           closeDirections={handleRouteClose}
-          handleRouting={() => { /* Define the routing function if needed */ }}
+          handleRouting={handleRouting}
           manhattanDistance={distance}
           travelTime={time}
           selectedMode="walking" // You can dynamically set this based on user choice

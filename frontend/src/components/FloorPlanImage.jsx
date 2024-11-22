@@ -3,7 +3,7 @@ import React, { useRef, useState } from "react";
 const FeaturePopup = ({ feature, isFeaturePopupOpen, setFeatures, features, linkSelectedFeatures, setIsFeaturePopupOpen }) => {
   const [editName, setEditName] = useState(false);
   if (!isFeaturePopupOpen) return null;
-  const roomName = feature.properties.roomName;
+  const roomName = feature.properties.RoomName;
 
   const featureTypes = [
     'Entrance', 'StairUp', 'StairDown', 'Restroom', 'Elevator', 'Room', 'Intersection', 
@@ -13,7 +13,7 @@ const FeaturePopup = ({ feature, isFeaturePopupOpen, setFeatures, features, link
   const handleChangeFeatureType = (newType) => {
     const updatedFeatures = features.map((f) => {
       if (f.properties.id === feature.properties.id) {
-        f.properties.type = newType;
+        f.properties.Type = newType;
       }
       return f;
     });
@@ -27,7 +27,7 @@ const FeaturePopup = ({ feature, isFeaturePopupOpen, setFeatures, features, link
   const handleChangeRoomName = (newName) => {
     const updatedFeatures = features.map((f) => {
       if (f.properties.id === feature.properties.id) {
-        f.properties.roomName = newName;
+        f.properties.RoomName = newName;
       }
       return f;
     });
@@ -35,11 +35,11 @@ const FeaturePopup = ({ feature, isFeaturePopupOpen, setFeatures, features, link
   }
 
   const handleDeleteFeature = () => {
-    const linkedFeaturesIDs = feature.properties.linkedTo;
+    const linkedFeaturesIDs = feature.properties.LinkedTo;
     const filteredFeatures = features.filter((f) => f.properties.id !== feature.properties.id);
     const updatedFeatures = filteredFeatures.map((f) => {
-      const newLinkedTo = f.properties.linkedTo.filter((id) => id !== feature.properties.id);
-      f.properties.linkedTo = newLinkedTo;
+      const newLinkedTo = f.properties.LinkedTo.filter((id) => id !== feature.properties.id);
+      f.properties.LinkedTo = newLinkedTo;
       return f;
     });
     setIsFeaturePopupOpen(false);
@@ -74,7 +74,7 @@ const FeaturePopup = ({ feature, isFeaturePopupOpen, setFeatures, features, link
         {/* Dropdown for feature type */}
         <div className="dropdown">
           <select
-            value={feature.properties.type}
+            value={feature.properties.Type}
             onChange={(e) => handleChangeFeatureType(e.target.value)}
           >
           { featureTypes.map((type) => (
@@ -96,7 +96,7 @@ const RenderRooms = ({ rooms, onRoomClick, selectedFloorPlan, isEditModeOn }) =>
   const selectedFloorIndex = selectedFloorPlan.floorIndex;
   
   return rooms.map((room) => {
-    if (room.properties.floor !== selectedFloorIndex) return null;
+    if (room.properties.Floor !== selectedFloorIndex) return null;
     const { x, y } = room.geometry;
     const index = room.properties.id;
     return (
@@ -122,12 +122,12 @@ const RenderIndoorNav = ({ features, onSVGClick, selectedFloorPlan, isEditModeOn
   // Have to return the feature and any lines to any connected features
   let index = 0;
   const featureList = features.map((feature) => {
-    if (feature.properties.floor !== selectedFloorIndex) return null;
+    if (feature.properties.Floor !== selectedFloorIndex) return null;
     const { x, y } = feature.geometry;
     const featureOptions = {};
-    if (feature.properties.type === 'Room') {
+    if (feature.properties.Type === 'Room') {
       featureOptions.fill = 'lightgreen';
-    } else if (feature.properties.type === 'Intersection') {
+    } else if (feature.properties.Type === 'Intersection') {
       featureOptions.fill = 'lightgray';
     } else {
       featureOptions.fill = 'red';
@@ -154,14 +154,14 @@ const RenderIndoorNav = ({ features, onSVGClick, selectedFloorPlan, isEditModeOn
   const lineList = [];
   features.forEach((feature) => {
     // Skip if the feature is not on the selected floor
-    if (feature.properties.floor !== selectedFloorIndex) return null;
+    if (feature.properties.Floor !== selectedFloorIndex) return null;
     const { x, y } = feature.geometry;
-    const connectedFeatures = feature.properties.linkedTo;
+    const connectedFeatures = feature.properties.LinkedTo;
     connectedFeatures.forEach((connectedFeatureId) => {
       if (connectedFeatureId < feature.properties.id) return null;
       const connectedFeature = features.find((feature) => feature.properties.id === connectedFeatureId);
       if (!connectedFeature) return null;
-      if (connectedFeature.properties.floor !== selectedFloorIndex) return null;
+      if (connectedFeature.properties.Floor !== selectedFloorIndex) return null;
       const { x: connectedX, y: connectedY } = connectedFeature.geometry;
       index++;
       lineList.push(
@@ -213,6 +213,7 @@ const FloorPlanImage = ({
   };
 
   const handleImageLoad = (e) => {
+    // return; // I think this handler ended up being unnecessary
     const { naturalWidth, naturalHeight } = e.target;
     if (!naturalWidth || !naturalHeight) return;
     setViewBox(`0 0 ${naturalWidth} ${naturalHeight}`);

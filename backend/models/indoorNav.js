@@ -7,11 +7,11 @@ const geometrySchema = new mongoose.Schema({
 
 const propertiesSchema = new mongoose.Schema({
   id: { type: Number, required: true },
-  type: { type: String, required: true },
-  roomName: { type: String, required: true },
-  linkedTo: [{ type: Number }],
-  floor: { type: Number, required: true },
-  destinationCount: { type: Number, required: true, default: 0 },
+  Type: { type: String, required: true },
+  RoomName: { type: String, required: true },
+  LinkedTo: [{ type: Number }],
+  Floor: { type: Number, required: true },
+  DestinationCount: { type: Number, required: true, default: 0 },
 });
 
 const featureSchema = new mongoose.Schema({

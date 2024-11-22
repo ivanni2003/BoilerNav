@@ -586,9 +586,9 @@ const getClosestBusStop = async (lat, lon, searchRadiusDegrees) => {
       }
     }
   });
-  console.log('Closest osmNode Bus Stop: ', closestBusStop)
+  console.log("Closest osmNode Bus Stop: ", closestBusStop);
 
-  const tolerance = .0001;  // Adjust tolerance as needed
+  const tolerance = 0.0001; // Adjust tolerance as needed
   const navBusStop = await NavNode.findOne({
     latitude: {
       $gte: closestBusStop.lat - tolerance,
@@ -680,7 +680,9 @@ wayRouter.get(
     const endBusStop = await getClosestBusStop(end.lat, end.lon, 99999999);
 
     if (startBusStop === null || endBusStop === null) {
-      response.status(400).json({ error: "No bus stops were found, try checking the db" });
+      response
+        .status(400)
+        .json({ error: "No bus stops were found, try checking the db" });
       return;
     }
 
@@ -691,7 +693,7 @@ wayRouter.get(
       busWays,
     );
 
-    console.log("\n\nfootpathToBusStop: ", footpathToBusStop)
+    console.log("\n\nfootpathToBusStop: ", footpathToBusStop);
 
     const busPath = pathBetweenNodes(startBusStop, endBusStop, nodes, busWays);
 
@@ -702,9 +704,9 @@ wayRouter.get(
       busWays,
     );
 
-    console.log("\n\nfootpathToEnd: ", footpathToEnd)
+    console.log("\n\nfootpathToEnd: ", footpathToEnd);
 
-   response.json([...footpathToBusStop,...busPath,...footpathToEnd]);
+    response.json([...footpathToBusStop, ...busPath, ...footpathToEnd]);
   },
 );
 
@@ -722,5 +724,117 @@ wayRouter.get("/buildings", async (request, response) => {
     response.status(500).json({ error: error.message });
   }
 });
+
+const pathWithStops = (stopList, nodes, ways) => {
+  let path = [];
+  for (let i = 0; i < stopList.length - 1; i++) {
+    const startNode = stopList[i];
+    const endNode = stopList[i + 1];
+    const wayPath = pathBetweenWays(startNode, endNode, nodes, ways);
+    path = path.concat(wayPath);
+    // Reset the distance and previous properties of each way
+    ways.forEach((way) => {
+      way.distance = undefined;
+      way.previous = null;
+    });
+  }
+  return path;
+};
+
+wayRouter.get("/schedule/:buildingIds", async (request, response) => {
+  let buildingPositions = [];
+  try {
+    const buildingIds = request.params.buildingIds.split(",");
+    const buildings = await Way.find({ id: { $in: buildingIds } });
+    buildingPositions = buildings.map((building) => {
+      return building.buildingPosition;
+    });
+  } catch (error) {
+    response.status(500).json({ error: error.message });
+  }
+  const nodes = await NavNode.find({});
+  const ways = await NavWay.find({});
+  const searchRadiusMeters = 100;
+  const searchRadiusDegrees = searchRadiusMeters / 111111;
+  const closeNodes = await Promise.all(
+    buildingPositions.map((buildingPosition) => {
+      return NavNode.find({
+        latitude: {
+          $gte: buildingPosition.lat - searchRadiusDegrees,
+          $lte: buildingPosition.lat + searchRadiusDegrees,
+        },
+        longitude: {
+          $gte: buildingPosition.lon - searchRadiusDegrees,
+          $lte: buildingPosition.lon + searchRadiusDegrees,
+        },
+      });
+    }),
+  );
+  const closestNodes = buildingPositions.map((buildingPosition, index) => {
+    return getClosestNode(
+      closeNodes[index],
+      buildingPosition.lat,
+      buildingPosition.lon,
+    );
+  });
+  // Starting nodes should be pointers to the nodes in the nodes array
+  const stopList = closestNodes.map((node) =>
+    nodes.find((n) => n.id === node.id),
+  );
+  const path = pathWithStops(stopList, nodes, ways);
+  response.json(path);
+});
+
+wayRouter.get(
+  "/schedule-gps/:lat/:lon/:buildingIds",
+  async (request, response) => {
+    let buildingPositions = [];
+    try {
+      const buildingIds = request.params.buildingIds.split(",");
+      const buildings = await Way.find({ id: { $in: buildingIds } });
+      buildingPositions = buildings.map((building) => {
+        return building.buildingPosition;
+      });
+    } catch (error) {
+      response.status(500).json({ error: error.message });
+    }
+    // Add the user's location to the building positions
+    buildingPositions.unshift({
+      lat: parseFloat(request.params.lat),
+      lon: parseFloat(request.params.lon),
+    });
+    // console.log(buildingPositions);
+    const nodes = await NavNode.find({});
+    const ways = await NavWay.find({});
+    const searchRadiusMeters = 100;
+    const searchRadiusDegrees = searchRadiusMeters / 111111;
+    const closeNodes = await Promise.all(
+      buildingPositions.map((buildingPosition) => {
+        return NavNode.find({
+          latitude: {
+            $gte: buildingPosition.lat - searchRadiusDegrees,
+            $lte: buildingPosition.lat + searchRadiusDegrees,
+          },
+          longitude: {
+            $gte: buildingPosition.lon - searchRadiusDegrees,
+            $lte: buildingPosition.lon + searchRadiusDegrees,
+          },
+        });
+      }),
+    );
+    const closestNodes = buildingPositions.map((buildingPosition, index) => {
+      return getClosestNode(
+        closeNodes[index],
+        buildingPosition.lat,
+        buildingPosition.lon,
+      );
+    });
+    const stopList = closestNodes.map((node) => {
+      return nodes.find((n) => n.id === node.id);
+    });
+    const path = pathWithStops(stopList, nodes, ways);
+    response.json(path);
+  },
+);
 
 module.exports = wayRouter;

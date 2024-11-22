@@ -13,6 +13,7 @@ import TransportationMode from './components/TransportationMode';
 import ErrorBoundary from './components/ErrorBoundary';
 import SavedLocationsList from './components/SavedLocationsList';
 import MostPopular from './components/MostPopular'
+import Schedule from './components/Schedule'
 
 const baseURL = 'http://localhost:3001'
 
@@ -55,11 +56,31 @@ function App() {
 
   const [isRerouteEnabled, setIsRerouteEnabled] = useState(true);
   const [isBikeRacksVisible, setIsBikeRacksVisible] = useState(false);
+
+  const [schedule, setSchedule] = useState([]);
+  const [isStartBuilding, setIsStartBuilding] = useState(false);
+  const [indexInsert, setIndexInsert] = useState(1);
+  const [isReplacing, setIsReplacing] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [nextScheduleBuilding, setNextScheduleBuilding] = useState(null);
+  const [isScheduleBuildingSelect, setIsScheduleBuildingSelect] = useState(false);
+  const [isScheduleRouting, setIsScheduleRouting] = useState(false);
+
   const mapOptions = {
     isRerouteEnabled: isRerouteEnabled,
     setIsRerouteEnabled: setIsRerouteEnabled,
     isBikeRacksVisible: isBikeRacksVisible,
     setIsBikeRacksVisible: setIsBikeRacksVisible
+  };
+
+  const handleScheduleClick = () => {
+    setShowSchedule(true);
+  };
+
+  const handleScheduleBuildingSelect = (building) => {
+    setIsScheduleBuildingSelect(false);
+    setShowSchedule(true);
+    setNextScheduleBuilding(building);
   };
 
   const handleSelectMode = (mode) => {
@@ -324,6 +345,8 @@ function App() {
   // Check if the user needs to be rerouted if they are off course
   useEffect(() => {
     if (!isRerouteEnabled) return;
+    if (isScheduleBuildingSelect) return;
+    if (isScheduleRouting) return;
     const distanceFromRoute = calculateDistanceFromRoute(userLocation, polylineCoordinates);
     // console.log("Distance from route: ", distanceFromRoute);
     if (distanceFromRoute !== null && (distanceFromRoute > accuracy || distanceFromRoute > 100)) {
@@ -402,6 +425,8 @@ function App() {
     setShowLogin(false);
     setShowProfile(false);
     setIsPopupOpen(false);
+    setShowSchedule(false);
+    setIsScheduleBuildingSelect(false);
   
     // Reset map view
     setLatitude(40.4274); // Default latitude
@@ -547,6 +572,7 @@ const getTravelTime = (distance, selectedMode) => {
 
   const [routeInfo, setRouteInfo] = useState({ manhattanDistance: null, travelTime: null });
   const handleRouting = async () => {
+    setIsScheduleRouting(false);
     console.log("Start: ", start); // list of lat and lon
     console.log("Destination: ", destination); // building way
     // implement routing logic
@@ -589,6 +615,45 @@ const getTravelTime = (distance, selectedMode) => {
        });
     }
   }
+
+  const handleScheduleRouting = async () => {
+    setIsScheduleRouting(true);
+    setShowSchedule(false);
+    setIsScheduleBuildingSelect(false);
+    const buildingIds = schedule.map(building => building.id).join(',');
+    if (buildingIds.length === 0) {
+      showNotification('No buildings in schedule', 'error');
+      return;
+    }
+    try {
+      let response;
+      if (isStartBuilding) {
+        response = await axios.get(`${baseURL}/api/ways/schedule/${buildingIds}`);
+      } else {
+        response = await axios.get(`${baseURL}/api/ways/schedule-gps/${userLocation[0]}/${userLocation[1]}/${buildingIds}`);
+      }
+      const routeNodes = response.data;
+      const nodeCoordinates = routeNodes.map(node => [node.latitude, node.longitude]);
+      setPolylineCoordinates(nodeCoordinates);
+
+      const totalManhattanDistance = getTotalDistance(nodeCoordinates);
+      const travelTime = getTravelTime(totalManhattanDistance, selectedMode);
+      //console.log(`total manhattan dist: ${totalManhattanDistance.toFixed(2)} miles`);
+      //console.log(`est. walking Time: ${walkingTime.toFixed(2)} minutes`);
+
+      setRouteInfo({
+        manhattanDistance: totalManhattanDistance.toFixed(2),
+        travelTime: travelTime.toFixed(2),
+      });
+    } catch (error) {
+      console.error("Error fetching route:", error);
+      setRouteInfo({ 
+        manhattanDistance: null, 
+        travelTime: null
+      });
+    }
+  };
+    
 
   return (
     <ErrorBoundary>
@@ -638,6 +703,18 @@ const getTravelTime = (distance, selectedMode) => {
             onViewSavedRoute={handleViewSavedRoute}
             updatePublicRoutes={fetchPublicRoutes}
           />
+        ) : showSchedule && !isScheduleBuildingSelect ? (
+          <Schedule 
+            nextBuilding={nextScheduleBuilding}
+            setSelectBuilding={setIsScheduleBuildingSelect}
+            setNextBuilding={setNextScheduleBuilding}
+            isBuildingSelect={isScheduleBuildingSelect}
+            onRouteSchedule={handleScheduleRouting}
+            scheduleState={[schedule, setSchedule]}
+            isStartBuildingState={[isStartBuilding, setIsStartBuilding]}
+            indexInsertState={[indexInsert, setIndexInsert]}
+            isReplacingState={[isReplacing, setIsReplacing]}
+          />
         ) : (
         <div>
           <div className="map-content">
@@ -676,6 +753,8 @@ const getTravelTime = (distance, selectedMode) => {
               setIndoorStart={setIndoorStart}
               setIndoorDestination={setIndoorDestination}
               handleTitleClick={handleTitleClick}
+              handleScheduleClick={handleScheduleClick}
+              handleScheduleBuildingSelect={handleScheduleBuildingSelect}
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
             {<MostPopular 

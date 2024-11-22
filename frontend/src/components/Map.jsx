@@ -273,9 +273,10 @@ const FloorPlanView = ({
       properties: {
         id: features.length,
         type: "Intersection",
-        roomName: "Intersection",
-        linkedTo: [],
-        floor: selectedFloorPlan.floorIndex
+        RoomName: "Intersection",
+        LinkedTo: [],
+        Floor: selectedFloorPlan.FloorNumber,
+        DestinationCount: 0
       },
       geometry: { x, y }
     }
@@ -344,10 +345,10 @@ const FloorPlanView = ({
     // Find the scale of the floor plan by comparing the locations of
     // MaxNorth, MaxEast, MaxSouth, MaxWest nodes with
     // the locations of building nodes from map data
-    const maxNorth = features.find((feature) => feature.properties.type === 'MaxNorth');
-    const maxSouth = features.find((feature) => feature.properties.type === 'MaxSouth');
-    const maxEast = features.find((feature) => feature.properties.type === 'MaxEast');
-    const maxWest = features.find((feature) => feature.properties.type === 'MaxWest');
+    const maxNorth = features.find((feature) => feature.properties.Type === 'MaxNorth');
+    const maxSouth = features.find((feature) => feature.properties.Type === 'MaxSouth');
+    const maxEast = features.find((feature) => feature.properties.Type === 'MaxEast');
+    const maxWest = features.find((feature) => feature.properties.Type === 'MaxWest');
     if (!maxNorth || !maxSouth || !maxEast || !maxWest) {
       console.error('Failed to find MaxNorth, MaxSouth, MaxEast, or MaxWest features');
       return -1;
@@ -398,11 +399,11 @@ const FloorPlanView = ({
     if (feature1.properties.id === feature2.properties.id) return;
     const newFeature1 = { ...feature1 };
     const newFeature2 = { ...feature2 };
-    if (!feature1.properties.linkedTo.includes(feature2.properties.id)) {
-      newFeature1.properties.linkedTo.push(feature2.properties.id);
+    if (!feature1.properties.LinkedTo.includes(feature2.properties.id)) {
+      newFeature1.properties.LinkedTo.push(feature2.properties.id);
     }
-    if (!feature2.properties.linkedTo.includes(feature1.properties.id)) {
-      newFeature2.properties.linkedTo.push(feature1.properties.id);
+    if (!feature2.properties.LinkedTo.includes(feature1.properties.id)) {
+      newFeature2.properties.LinkedTo.push(feature1.properties.id);
     }
     const newFeatures = features.map((feature) => {
       if (feature.properties.id === feature1.properties.id) {
@@ -510,8 +511,8 @@ const FloorPlanView = ({
       const features = indoorData.features;
       setFeatures(features)
       const filteredRooms = features.filter((feature) => {
-        if (feature.properties.type !== 'Room') return false;
-        if (feature.properties.floor !== floorIndex) return false;
+        if (feature.properties.Type !== 'Room') return false;
+        if (feature.properties.Floor !== floorIndex) return false;
         return true;
       })
       setRooms(filteredRooms);
@@ -647,7 +648,7 @@ const FloorPlanView = ({
 
         {showPopup && selectedRoom && (
           <InteriorPopupContent
-            roomName={selectedRoom.properties.roomName}
+            roomName={selectedRoom.properties.RoomName}
             onStartClick={handleStartClick}
             onDestinationClick={handleDestinationClick}
             onClose={handleClosePopup}
@@ -680,7 +681,7 @@ const FloorPlanView = ({
   );
 };
 
-const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
+const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle, handleScheduleBuildingSelect }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showFloorPlan, setShowFloorPlan] = useState(false);
@@ -758,6 +759,11 @@ const PopupContent = ({ building, viewIndoorPlan, getDirections, user, showNotif
         </button>
         <button className="popup-button"
         onClick={() => getDirections(building)}>Directions</button>
+        <button
+          className="popup-button"
+          onClick={() => handleScheduleBuildingSelect(building)}>
+          Add to Schedule
+        </button>
       </div>
     </div>
   );
@@ -775,7 +781,7 @@ const BikeRackPopupContent = ({ rack }) => {
   );
 }
 
-const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle }) => {
+const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, showNotification, favoriteLocations, isLoadingFavorites, onFavoriteToggle, handleScheduleBuildingSelect }) => {
   const buildingPathOptions = {
     color: 'black',
     fillColor: 'gold',
@@ -802,7 +808,9 @@ const BuildingsRenderer = ({ buildings, viewIndoorPlan, getDirections, user, sho
         showNotification={showNotification}
         favoriteLocations={favoriteLocations}
         isLoadingFavorites={isLoadingFavorites}
-        onFavoriteToggle={onFavoriteToggle}/>
+        onFavoriteToggle={onFavoriteToggle}
+        handleScheduleBuildingSelect={handleScheduleBuildingSelect}
+        />
       </Popup>
     </CircleMarker>
   });
@@ -942,7 +950,10 @@ const Map = ({ latitude,
   indoorDestination,
   setIndoorStart,
   setIndoorDestination,
-  handleTitleClick }) => {
+  handleTitleClick,
+  handleScheduleClick,
+  handleScheduleBuildingSelect,
+}) => {
   const [parkingLots, setParkingLots] = useState([])
   const [busStops, setBusStops] = useState([]);
   const [bikeRacks, setBikeRacks] = useState([]);
@@ -1146,6 +1157,7 @@ const Map = ({ latitude,
           favoriteLocations={favoriteLocations}
           isLoadingFavorites={isLoadingFavorites}
           onFavoriteToggle={onFavoriteToggle}
+          handleScheduleBuildingSelect={handleScheduleBuildingSelect}
         />
         <BikeRacksRenderer bikeRacks={bikeRacks} isBikeRacksVisible={mapOptions.isBikeRacksVisible} />
         {parkingLots.map((lot, index) => (
@@ -1189,6 +1201,7 @@ const Map = ({ latitude,
     </MapContainer>
     <div className="amenities-menu">
         <MapOptions mapOptions={mapOptions} />
+        <button onClick={(e) => handleScheduleClick()}>Schedule</button>
         <Parking updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
         <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
       </div>

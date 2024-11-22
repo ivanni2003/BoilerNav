@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Pencil, Check, Trash2, Minus, Eye, EyeOff, Map, Lock, Unlock, Info  } from 'lucide-react';
 import './Profile.css';
 
-const baseURL = process.env.VITE_APP_URL;
+const baseURL = import.meta.env.VITE_API_URL;
 
 const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onViewSavedRoute, updatePublicRoutes }) => {
   const [editMode, setEditMode] = useState({

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './CreateAccount.css';
 
-const baseURL = process.env.VITE_APP_URL;
+const baseURL = import.meta.env.VITE_API_URL;
 
 const CreateAccount = ({ onClose, onCreateSuccess, showNotification }) => {
   const [fullName, setFullName] = useState('');

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Lock, Unlock, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
-const baseURL = process.env.VITE_APP_URL;
+const baseURL = import.meta.env.VITE_API_URL;
 
 const IndoorRouteMenu = ({ 
   start, 

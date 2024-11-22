@@ -28,7 +28,8 @@ export const getDeviceId = () => {
   }
   return deviceId
 }
-const baseURL = process.env.VITE_APP_URL;
+
+const baseURL = import.meta.env.VITE_API_URL;
 
 const DEFAULT_LAT = 40.4237;
 const DEFAULT_LON = -86.9212;

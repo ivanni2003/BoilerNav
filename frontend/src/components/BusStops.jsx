@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './BusStops.css'
 import axios from 'axios';
 
-const baseURL = process.env.VITE_APP_URL;
+const baseURL = import.meta.env.VITE_API_URL;
 
 const BusStops = ({updateMap, markBusStops}) => {
     const [busStops, setBusStops] = useState([])

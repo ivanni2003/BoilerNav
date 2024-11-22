@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Navigation, LogIn } from 'lucide-react';
 import './SavedLocationsList.css';
 
-const baseURL = process.env.VITE_APP_URL;
+const baseURL = import.meta.env.VITE_API_URL;
 
 const SavedLocationsList = ({ 
   user, 

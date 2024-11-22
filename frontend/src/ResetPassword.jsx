@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const baseURL = process.env.API_BASE_URL;
+const baseURL = import.meta.env.VITE_API_URL;
 
 function ResetPassword() {
   const [newPassword, setNewPassword] = useState('');

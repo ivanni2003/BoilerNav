@@ -3,7 +3,7 @@ import axios from 'axios';
 import './Login.css';
 import ForgotPassword from './ForgotPassword';
 
-const baseURL = process.env.VITE_APP_URL;
+const baseURL = import.meta.env.VITE_API_URL;
 
 const Login = ({ onClose, onLoginSuccess, showNotification }) => {
   const [username, setUsername] = useState('');

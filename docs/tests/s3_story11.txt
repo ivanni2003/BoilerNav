@@ -1,0 +1,71 @@
+Test Case 3_11_1
+System: MetricImperialToggle
+Phase: 3
+Profile Settings Interface
+Severity: 1
+
+A. Identification and classification
+- Test metric/imperial toggle in profile settings
+- Verify user interface elements for distance preference
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Navigate to profile section
+4. Locate metric/imperial toggle button
+5. Switch between metric and imperial options
+6. Reload the app and head back to the profile section
+
+C. Expected Result:
+1. Toggle button should be visible in profile settings
+2. Selected preference should persist after page reload
+
+-------------------
+
+Test Case 3_11_2
+System: MetricImperialToggle
+Phase: 3
+Main Page Distance Display
+Severity: 1
+
+A. Identification and classification
+- Test distance display conversion on main map
+- Verify route distance updates based on selected system
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Set distance preference to metric in profile
+4. Create a new route on main page
+5. Note distance display
+6. Change preference to imperial in profile
+7. Return to main page with same route
+
+C. Expected Result:
+1. Distances should display in kilometers when metric is selected
+2. Distances should display in miles when imperial is selected
+3. Conversion should be mathematically accurate
+
+-------------------
+
+Test Case 3_11_3
+System: MetricImperialToggle
+Phase: 2
+Saved Routes Distance Display
+Severity: 1
+
+A. Identification and classification
+- Test distance display in saved routes
+- Verify saved routes update based on selected system
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Save several routes while in metric mode
+4. Switch to imperial mode
+5. Navigate to saved routes section
+6. Check distance displays for all saved routes
+
+C. Expected Result:
+1. All saved routes should display distances in selected unit system
+2. Switching between systems should update all route distances

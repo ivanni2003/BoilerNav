@@ -22,7 +22,12 @@ const userSchema = new mongoose.Schema({
       buildingID: Number,
       floorNumber: String
     }
-  ]
+  ],
+  distanceUnit: { 
+    type: String, 
+    enum: ['metric', 'imperial'], 
+    default: 'metric' 
+  }
 });
 
 userSchema.set('toJSON', {

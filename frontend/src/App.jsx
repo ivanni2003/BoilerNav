@@ -637,10 +637,34 @@ const getTravelTime = (distance, selectedMode) => {
   const handleTutorialNext = () => {
     setTutorialStep(prev => prev + 1);
   };
+
+  const handleLawsonClick = (building) => {
+    handleViewIndoorPlan(building);
+  };
   
   const handleCloseTutorial = () => {
     setIsTutorialActive(false);
     setTutorialStep(0);
+  };
+
+  const handleReset = () => {
+    setLatitude(40.4274);
+    setLongitude(-86.9132);
+    setZoom(15);
+    setStart(null);
+    setDestination(null);
+    setPolylineCoordinates([]);
+    setSelectedSavedRoute(null);
+    setShowFloorPlan(false);
+    setIndoorStart(null);
+    setIndoorDestination(null);
+    setActiveMenu('search');
+    setSelectedMode('footpath');
+    setNotification(null);
+    setShowProfile(false);
+    setIsTutorialActive(false);
+    setTutorialStep(0);
+    fetchBuildings();
   };
 
   useEffect(() => {
@@ -687,22 +711,23 @@ const getTravelTime = (distance, selectedMode) => {
     <ErrorBoundary>
     <div className="app-container">
     <header className="app-header" style={{ position: 'relative', zIndex: isMenuOpen ? 10000 : 1 }}>
-    <BurgerMenu 
-      user={user}
-      onCreateAccount={handleCreateAccount}
-      onLogin={handleLogin}
-      onViewProfile={handleViewProfile}
-      onLogout={handleLogout}
-      isOpen={isMenuOpen}
-      setIsOpen={setIsMenuOpen}
-      onStartTutorial={handleStartTutorial}
-    />
-      
-      <div className="logo-title" onClick={handleTitleClick} style={{cursor: 'pointer'}}>
-        <img src={logoImage} alt="BoilerNav Logo" className="logo" />
-        <h1>BoilerNav</h1>
-      </div>
-    </header>
+        <div className="burger-menu">
+          <BurgerMenu 
+            user={user}
+            onCreateAccount={handleCreateAccount}
+            onLogin={handleLogin}
+            onViewProfile={handleViewProfile}
+            onLogout={handleLogout}
+            isOpen={isMenuOpen}
+            setIsOpen={setIsMenuOpen}
+            onStartTutorial={handleStartTutorial}
+          />
+        </div>
+        <div className="logo-title" onClick={handleTitleClick} style={{cursor: 'pointer'}}>
+          <img src={logoImage} alt="BoilerNav Logo" className="logo" />
+          <h1>BoilerNav</h1>
+        </div>
+      </header>
       <div className="content">
         {showCreateAccount ? (
           <CreateAccount onClose={handleCloseCreateAccount} onCreateSuccess={handleCreateSuccess} showNotification={showNotification}/>
@@ -843,6 +868,24 @@ const getTravelTime = (distance, selectedMode) => {
       onClose={handleCloseTutorial}
       onNext={handleTutorialNext}
       onPrevious={handleTutorialPrevious}
+      onLawsonClick={handleLawsonClick}
+      buildings={buildings}
+      onCloseIndoorView={() => {
+        setShowFloorPlan(false);
+        setIndoorStart(null);
+        setIndoorDestination(null);
+      }}
+      user={user}
+      onViewProfile={handleViewProfile}
+      onLogin={() => {
+        setShowLogin(true);
+        setIsTutorialActive(false);
+      }}
+      onCreateAccount={() => {
+        setShowCreateAccount(true);
+        setIsTutorialActive(false);
+      }}
+      onReset={handleReset}
     />
   </div>
   <ShareRoute 

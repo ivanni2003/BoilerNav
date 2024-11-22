@@ -143,6 +143,10 @@ routesRouter.get("/public/outdoor/topRoutes", async (request, response) => {
 // Get user's routes (both public and private)
 routesRouter.get("/:userId", authenticateToken, async (request, response) => {
   try {
+    // Check if the requesting user has a preferred unit
+    const requestingUser = await User.findById(request.user.id);
+    const preferredUnit = requestingUser?.distanceUnit || 'metric';
+
     // Check if the requesting user is the owner of the routes
     if (request.user.id !== request.params.userId) {
       // If not the owner, only return public routes
@@ -150,17 +154,46 @@ routesRouter.get("/:userId", authenticateToken, async (request, response) => {
         userId: request.params.userId,
         isPublic: true,
       });
-      response.json(routes);
+      response.json(convertRouteDistances(routes, preferredUnit));
     } else {
       // If owner, return all routes (public and private)
       const routes = await Route.find({ userId: request.params.userId });
-      response.json(routes);
+      response.json(convertRouteDistances(routes, preferredUnit));
     }
   } catch (error) {
     console.error("Error fetching routes:", error);
     response.status(400).json({ error: error.message });
   }
 });
+
+const convertRouteDistances = (routes, targetUnit) => {
+  if (!Array.isArray(routes)) {
+    return [];
+  }
+
+  return routes.map(route => {
+    const convertedRoute = { ...route.toObject() };
+    
+    if (!convertedRoute.distance) {
+      return convertedRoute;
+    }
+
+    // Convert based on route type and target unit
+    if (route.travelMode === 'indoor') {
+      // Indoor routes are in meters
+      if (targetUnit === 'imperial') {
+        convertedRoute.distance = convertedRoute.distance * 3.28084; // Convert to feet
+      }
+    } else {
+      // Outdoor routes are in km
+      if (targetUnit === 'imperial') {
+        convertedRoute.distance = convertedRoute.distance * 0.621371; // Convert to miles
+      }
+    }
+
+    return convertedRoute;
+  });
+};
 
 // Update route privacy
 routesRouter.patch(

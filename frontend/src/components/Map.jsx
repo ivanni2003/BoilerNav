@@ -178,7 +178,7 @@ const MapViewUpdater = ({ latitude, longitude, zoom }) => {
   const heatmapLayerRef = useRef(null);
   const historicalHeatmapLayerRef = useRef(null);
 
-  let SouthWestCoords = [40.40815, -86.95308];
+  let SouthWestCoords = [40.40815, -86.94308];
   let NorthEastCoords = [40.44628, -86.89712];
   let WL_Bounds = [SouthWestCoords, NorthEastCoords]; 
   map.setMaxBounds(WL_Bounds);

@@ -11,7 +11,7 @@ A. Identification and classification
 
 B. Instructions
 1. npm run dev from the backend and frontend in different terminals
-2. Log in to an existing account
+2. Log in to an existing account | user:nate password: nate
 3. Click on profile icon
 4. Click on "View Profile"
 5. Click on "OPEN BAN PANEL"
@@ -35,7 +35,7 @@ A. Identification and classification
 
 B. Instructions
 1. npm run dev from the backend and frontend in different terminals
-2. Log in to an existing account
+2. Log in to an existing account | user:nate password: nate
 3. Click on profile icon
 4. Click on "View Profile"
 5. Click on "OPEN BAN PANEL"
@@ -61,7 +61,7 @@ A. Identification and classification
 
 B. Instructions
 1. npm run dev from the backend and frontend in different terminals
-2. Enter username and password of a banned account
+2. Enter username and password of a banned account | user:ban password: ban
 3. Click "Log In"
 
 C. Expected Result:

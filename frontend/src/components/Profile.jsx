@@ -3,7 +3,6 @@ import axios from 'axios';
 import { Pencil, Check, Trash2, Minus, Eye, EyeOff, Map, Lock, Unlock, Info  } from 'lucide-react';
 import './Profile.css';
 import UnitPreferenceToggle from './UnitPreferenceToggle'
-const baseURL = 'http://localhost:3001';
 
 const baseURL = import.meta.env.VITE_API_URL;
 

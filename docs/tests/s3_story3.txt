@@ -1,0 +1,89 @@
+Test Case 3_3_1
+System: RouteSchedule
+Phase: 3
+Schedule button rendering
+Severity: 1
+
+A. Identification and classification
+- Test existence of schedule button
+
+B. Instructions
+1. Run the backend and frontend servers by running npm run dev in different terminals
+2. Navigate to http://localhost:5173/ in a browser
+3. Observes the schedule button in the bottom left corner of the screen
+
+C. Expected Result:
+1. Schedule button should be visible on the screen
+
+-------------------
+
+Test Case 3_3_2
+System: RouteSchedule
+Phase: 3
+Schedule button functionality
+Severity: 1
+
+A. Identification and classification
+- Test functionality of schedule button
+
+B. Instructions
+1. Run the backend and frontend servers by running npm run dev in different terminals
+2. Navigate to http://localhost:5173/ in a browser
+3. Click on the schedule button in the bottom left corner of the screen
+4. Observe the page being changed to the schedule page
+
+C. Expected Result:
+1. Clicking on the schedule button should redirect the user to the schedule page
+
+-------------------
+
+Test Case 3_3_3
+System: RouteSchedule
+Phase: 3
+Schedule page rendering and functionality
+Severity: 1
+
+A. Identification and classification
+- Test rendering of schedule page
+- Test adding/removing blocks from schedule
+
+B. Instructions
+1. Run the backend and frontend servers by running npm run dev in different terminals
+2. Navigate to http://localhost:5173/ in a browser
+3. Click on the schedule button in the bottom left corner of the screen
+4. Once the schedule page is loaded, create a schedule by adding buildings using any insert/pick building button
+5. When an insert/pick building button is clicked, the map page will be displayed, and the user can click on a building
+and then click the "Add to schedule" button to add the building to the schedule and return to the schedule page
+6. To remove a building from the schedule, click on the building in the schedule and then click the "Remove from
+schedule" button
+7. Repeat steps 4-6 to add and remove multiple buildings from the schedule until satisfied
+8. Observe the buildings added to the schedule
+
+C. Expected Result:
+1. The schedule page should render correctly
+2. The user should be able to add and remove buildings from the schedule
+
+-------------------
+
+Test Case 3_3_4
+System: RouteSchedule
+Phase: 3
+Routing functionality from schedule page
+Severity: 1
+
+A. Identification and classification
+- Test routing functionality from schedule page
+
+B. Instructions
+1. Run the backend and frontend servers by running npm run dev in different terminals
+2. Navigate to http://localhost:5173/ in a browser
+3. Click on the schedule button in the bottom left corner of the screen
+4. Once the schedule page is loaded, create a schedule by adding buildings using any insert/pick building button
+5. When an insert/pick building button is clicked, the map page will be displayed, and the user can click on a building
+and then click the "Add to schedule" button to add the building to the schedule and return to the schedule page
+6. Reapeat step 5 to add multiple buildings to the schedule
+7. Click on the "Route Schedule" button to generate a route for the schedule
+8. Observe the route generated on the map page
+
+C. Expected Result:
+1. The route generated from the schedule should be displayed on the map page

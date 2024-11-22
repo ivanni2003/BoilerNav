@@ -1,0 +1,113 @@
+Test Case 3_5_1
+System: FlagIndoorMap
+Phase: 3
+Flag button rendering
+Severity: 1
+
+A. Identification and classification
+- Test existence of flag button
+
+B. Instructions
+1. Run the backend and frontend servers by running npm run dev in different terminals
+2. Navigate to http://localhost:5173/ in a browser
+3. Open the floor plan of a building that has a floor plan available (e.g. Lawson)
+4. Observe the flag button in the bottom left corner of the screen
+
+C. Expected Result:
+1. Flag button should be visible on the screen
+
+-------------------
+
+Test Case 3_5_2
+System: FlagIndoorMap
+Phase: 3
+Flag button functionality
+Severity: 1
+
+A. Identification and classification
+- Test functionality of flag button
+
+B. Instructions
+1. Run the backend and frontend servers by running npm run dev in different terminals
+2. Navigate to http://localhost:5173/ in a browser
+3. Open the floor plan of a building that has a floor plan available (e.g. Lawson)
+4. Click on the flag button in the bottom left corner of the screen
+5. Observe the app asking if the user wants to flag the floor plan or its features
+
+C. Expected Result:
+1. Clicking on the flag button should prompt the user to flag the floor plan or its features
+
+-------------------
+
+Test Case 3_5_3
+System: FlagIndoorMap
+Phase: 3
+Flagging floor plan
+Severity: 1
+
+A. Identification and classification
+- Test flagging of floor plan
+
+B. Instructions
+1. Run the backend and frontend servers by running npm run dev in different terminals
+2. Navigate to http://localhost:5173/ in a browser
+3. Open the floor plan of a building that has a floor plan available (e.g. Lawson)
+4. Click on the flag button in the bottom left corner of the screen
+5. Choose to flag the floor plan
+6. Observe the app returning to the outdoor map
+
+C. Expected Result:
+1. User should be able to flag the floor plan
+2. App should return to the outdoor map after flagging the floor plan
+
+-------------------
+
+Test Case 3_5_4
+System: FlagIndoorMap
+Phase: 3
+Flagging features of indoor map
+Severity: 1
+
+A. Identification and classification
+- Test flagging of features on indoor map
+- Test existence of finish button
+
+B. Instructions
+1. Run the backend and frontend servers by running npm run dev in different terminals
+2. Navigate to http://localhost:5173/ in a browser
+3. Open the floor plan of a building that has a floor plan available (e.g. Lawson)
+4. Click on the flag button in the bottom left corner of the screen
+5. Choose to flag the features of the floor plan
+6. Click on a feature on the floor plan to flag it
+7. Repeat step 6 to flag multiple features
+8. Observe the finish button in the bottom left corner of the screen
+
+C. Expected Result:
+1. User should be able to flag features on the indoor map
+2. Finish button should be visible on the screen
+
+-------------------
+
+Test Case 3_5_5
+System: FlagIndoorMap
+Phase: 3
+Finishing flagging features of indoor map
+Severity: 1
+
+A. Identification and classification
+- Test finishing flagging of features on indoor map
+
+B. Instructions
+1. Run the backend and frontend servers by running npm run dev in different terminals
+2. Navigate to http://localhost:5173/ in a browser
+3. Open the floor plan of a building that has a floor plan available (e.g. Lawson)
+4. Click on the flag button in the bottom left corner of the screen
+5. Choose to flag the features of the floor plan
+6. Click on a feature on the floor plan to flag it
+7. Repeat step 6 to flag multiple features
+8. Click on the finish button in the bottom left corner of the screen
+9. Observe the app returning to the normal indoor map view
+
+C. Expected Result:
+1. User should be able to finish flagging features on the indoor map
+2. App should return to the normal indoor map view after finishing flagging features

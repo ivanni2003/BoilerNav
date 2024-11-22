@@ -1,0 +1,87 @@
+Test Case 3_1_1
+System: TutorialInterface
+Phase: 3
+Menu and Tutorial Access
+Severity: 1
+
+A. Identification and classification
+- Test side menu implementation
+- Verify tutorial launch functionality
+- Test account management options
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Open application
+3. Locate side menu
+4. Verify presence of all account options:
+   - Login  + Create Account / View Profile + Log Out (if logged in)
+   - Tutorial Launch
+5. Test each menu option
+6. Launch tutorial from menu
+
+C. Expected Result:
+1. Side menu should be accessible and properly positioned
+2. All account management options should be present and functional
+3. Tutorial launch button should be clearly visible
+4. Each menu option should navigate to correct screen/functionality
+
+-------------------
+
+Test Case 3_1_2
+System: TutorialInterface
+Phase: 2
+Tutorial Mode Isolation
+Severity: 1
+
+A. Identification and classification
+- Test application state during tutorial
+- Verify feature isolation during tutorial mode
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Log in to an existing account
+3. Launch tutorial
+4. Attempt to:
+   - Access main map features
+   - Use building menu
+   - Access search functionality
+   - Use route planning tools
+5. Try exiting tutorial mid-way
+6. Complete tutorial
+
+C. Expected Result:
+1. All non-current stage features should be disabled/inaccessible
+2. Only current tutorial step should be interactive
+3. Tutorial should prevent access to main app features
+4. Clear exit option should be available
+5. App should return to fully functional state after tutorial completion
+
+-------------------
+
+Test Case 3_1_3
+System: TutorialInterface
+Phase: 2
+Tutorial Flow and Structure
+Severity: 1
+
+A. Identification and classification
+- Test tutorial sequence and progression
+- Verify content and order of tutorial steps
+
+B. Instructions
+1. npm run dev from the backend and frontend in different terminals
+2. Launch tutorial
+3. Progress through each tutorial step in order:
+   1. Welcome
+   2. Finding Your Way
+   3. Transportation mode
+   4. Map options and Parking
+   5. Campus Buildings
+   6. Indoor View
+   7. Profile Section
+4. Note completion status of each section
+
+C. Expected Result:
+1. Tutorial should follow specified sequence
+2. Steps should be clearly presented with visual indicators and interactions
+3. All seven sections should be covered comprehensively

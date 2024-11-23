@@ -10,7 +10,7 @@ const MostPopular = ({items, buttonName, markRoom, viewSavedRoute}) => {
 
     const handleItemClick = (item) => {
         if (markRoom) {
-            markRoom(item)
+            markRoom(item, null)
             setIsMenuVisible(false)
         }
         else if (viewSavedRoute) {

@@ -51,7 +51,7 @@ const SearchBar = ({items, updateMap, markRoom, viewSavedRoute, searchStr}) => {
             setShowDropdown(false)
         } 
         else {
-            markRoom(item)
+            markRoom(item, "search")
             setSearch(item.room.properties.RoomName)
             setShowDropdown(false)
         }

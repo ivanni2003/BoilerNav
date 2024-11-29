@@ -863,7 +863,7 @@ const getTravelTime = (distance, selectedMode) => {
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
             {<MostPopular 
               items={topRoutes} 
-              buttonName={'Most Popular Routes'} 
+              buttonName={'Popular Routes'} 
               markRoom={null} 
               viewSavedRoute={handleViewSavedRoute}/>
                }

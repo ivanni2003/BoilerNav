@@ -1,20 +1,28 @@
-input {
-    width: 250px; 
+.search-bar-container {
+    position: absolute;
+    right: -15px;
+}
+
+.search-bar-input {
     padding: 8px; 
     border: 1px solid #4CAF50; 
     border-radius: 3px; 
+    width: 30vw;
+    max-width: 265px;
 }
 
 .search-dropdown {
     position: absolute; 
     padding: 8px;
     margin: 0px 0; 
-    width: 250px;
+    width: 30vw;
+    max-width: 265px;
     background-color: white; 
     border: 1px solid #4CAF50; 
     max-height: 240px; 
     overflow-y: auto; 
     text-align: center;
+    z-index: 1200;
 }
 
 .item {

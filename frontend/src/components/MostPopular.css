@@ -8,19 +8,20 @@
 .most-popular-dropdown {
     position: absolute; 
     padding: 8px;
-    margin: 0px 0; 
-    width: 132px;
     background-color: white; 
     border: 1px solid #4CAF50; 
     max-height: 240px; 
     overflow-y: auto; 
     text-align: center;
+    font-size: clamp(10px, 1vw, 14px); 
+    box-sizing: border-box;
 }
 
 .most-popular-popup {
     position: fixed;
-    top: 104px;
+    top: 100px;
     left: 8px;
+
     background-color: white;
     border-radius: 5px; 
 }

@@ -105,7 +105,7 @@ const SubmitFloorPlan = ({user, building, showNotification}) => {
       return (
         <div className='submit-floor-plan'>
             {!isPopupFormVisible && 
-             <button className="submit-floor-plan-btn" onClick={() => handleOpenPopupForm()}>Submit Floor Plan Image</button>
+             <button className="submit-floor-plan-btn" onClick={() => handleOpenPopupForm()}>Submit Floor Plan</button>
             }
         <PopupForm isVisible={isPopupFormVisible} onClose={closePopupForm} user={user} building={building} showNotification={showNotification}/>
         </div>

@@ -1,7 +1,7 @@
 .transportation-mode {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
+    bottom: 0px;
+    right: 0px;
     background-color: white;
     padding: 10px;
     border-radius: 8px;
@@ -11,10 +11,11 @@
   
   .transportation-mode h4 {
     margin: 0 0 10px;
-    font-size: 16px;
+    font-size: clamp(10px, 1.2vw, 14px); 
   }
   
   .transportation-mode button {
+    font-size: clamp(10px, 1.2vw, 14px); 
     padding: 8px 12px;
     margin-right: 8px;
     border: none;

@@ -518,7 +518,7 @@ const FloorPlanView = ({
       setRooms(filteredRooms);
     }
     fetchAndSetRooms()
-    clearRoute()
+    //clearRoute()
   }, [selectedFloorPlan, building]);
 
 

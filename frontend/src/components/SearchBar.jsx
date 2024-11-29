@@ -58,8 +58,8 @@ const SearchBar = ({items, updateMap, markRoom, viewSavedRoute, searchStr}) => {
     }
 
     return (
-        <div ref={wrapperRef}>
-            <input
+        <div className="search-bar-container" ref={wrapperRef}>
+            <input className='search-bar-input'
                 type="text"
                 value={search}
                 onChange={handleChange}

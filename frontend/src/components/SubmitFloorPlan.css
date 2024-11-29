@@ -18,12 +18,12 @@
     bottom: 0px; 
     left: 0px;  
     color: white;
-    border-radius: 2px;
+    border-radius: 3px;
     border: none;
-    font-size: 12px;
     padding: 8px 15px;
     cursor: pointer;
     z-index: 2000;
-    height: 40px; 
-    width: 180px;
+    font-size: clamp(8px, 1vw, 12px); 
+    width: 20vw;
+    max-width: 150px;  
   }

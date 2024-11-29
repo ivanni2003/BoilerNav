@@ -566,7 +566,7 @@ const FloorPlanView = ({
       <div className='most-popular-rooms'>
       {<MostPopular 
               items={topRooms} 
-              buttonName={'Most Popular Rooms'} 
+              buttonName={'Popular Rooms'} 
               markRoom={markRoom} 
               viewSavedRoute={null}/> }
       </div>  

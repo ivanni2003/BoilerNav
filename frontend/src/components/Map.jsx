@@ -1109,6 +1109,65 @@ const Map = ({ latitude,
     //   }
     // };
 
+    useEffect(() => {
+      const handleOpenFloorPlan = async (event) => {
+        const { building, route, startLocationId, endLocationId } = event.detail;
+        console.log('Received floor plan event:', event.detail);
+        
+        try {
+          // Set the selected building and get floor plans
+          setSelectedBuilding(building);
+          setFloorPlans(building.floorPlans);
+          
+          // Create start and destination objects
+          const start = {
+            properties: {
+              id: parseInt(startLocationId),
+              RoomName: route.startLocation.name,
+              Floor: route.startLocation.floor
+            }
+          };
+          
+          const destination = {
+            properties: {
+              id: parseInt(endLocationId),
+              RoomName: route.endLocation.name,
+              Floor: route.endLocation.floor
+            }
+          };
+    
+          console.log('Setting route points:', { start, destination });
+    
+          // Set the route points
+          setIndoorStart(start);
+          setIndoorDestination(destination);
+          setShowFloorPlan(true);
+    
+          // Find the correct floor plan to show based on start location
+          const startFloor = route.startLocation.floor;
+          const matchingFloorPlan = building.floorPlans.find(fp => {
+            // Convert floor numbers to match your system
+            const fpNum = fp.floorNumber === 'Basement' ? -1 : 
+                         parseInt(fp.floorNumber) - 1; // Adjust based on your floor numbering
+            return fpNum === startFloor;
+          });
+    
+          if (matchingFloorPlan) {
+            setSelectedFloorPlan(matchingFloorPlan);
+          }
+    
+        } catch (error) {
+          console.error('Error setting up indoor route:', error);
+          showNotification('Error setting up indoor route view', 'error');
+        }
+      };
+    
+      window.addEventListener('openFloorPlan', handleOpenFloorPlan);
+      return () => {
+        window.removeEventListener('openFloorPlan', handleOpenFloorPlan);
+      };
+    }, []);
+
     const mapCenter = [
       latitude !== undefined ? latitude : DEFAULT_LAT,
       longitude !== undefined ? longitude : DEFAULT_LON

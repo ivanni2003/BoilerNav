@@ -174,8 +174,8 @@ const Tutorial = ({
     bottom: '90%',
     width: '100vw',
     height: '100vh',
-    background: currentStep === 6 ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.5)',
-    zIndex: 1000,
+    background: currentStep === 6 ? 'rgba(0, 0, 0, 0)' : 'rgba(0, 0, 0, 0.5)',
+    zIndex: currentStep === 6 ? 0 : 1000,
     pointerEvents: currentStep === 6 ? 'none' : 'all'
   };
 

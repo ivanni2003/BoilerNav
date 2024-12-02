@@ -576,48 +576,75 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
   const handleViewRoute = async (route) => {
     if (route.travelMode === 'indoor') {
       try {
+        console.log('Processing indoor route:', route);
+  
         // Fetch building data
         const response = await axios.get(`${baseURL}/api/ways/buildings`);
         const buildings = response.data;
         const building = buildings.find(b => b.id === route.buildingId);
         
         if (!building) {
+          console.error('Building not found:', { buildingId: route.buildingId });
           showNotification('Building not found', 'error');
           return;
         }
-
+  
+        console.log('Found building:', building);
+  
         // Fetch floor plans
         const floorPlansResponse = await axios.get(`${baseURL}/api/floorplans/building/${building.id}`);
-        
-        if (!floorPlansResponse.data || floorPlansResponse.data.length === 0) {
-          showNotification('No floor plans available for this building', 'info');
-          return;
-        }
-
-        // Add floor plans to building object
         building.floorPlans = floorPlansResponse.data;
-
-        // Fetch indoor data for room details
-        const indoorDataResponse = await axios.get(`${baseURL}/api/indoordata/${building.tags.name}`);
-        if (!indoorDataResponse.data) {
+  
+        // Format building name - use the name format exactly as stored in the route
+        const formattedBuildingName = building.tags.name
+          .split('(')[0]    // Take the part before any parentheses
+          .trim()           // Remove leading/trailing spaces
+          .split(' ')       // Split by spaces
+          .join('')         // Join without spaces
+          .replace(/[^a-zA-Z0-9]/g, ''); // Remove any remaining special characters
+  
+        console.log('Fetching indoor data with name:', formattedBuildingName);
+  
+        // Fetch indoor data for this building
+        const indoorDataResponse = await axios.get(`${baseURL}/api/indoordata/${formattedBuildingName}`);
+        
+        if (!indoorDataResponse.data || !indoorDataResponse.data.features) {
+          console.error('Invalid indoor data response:', indoorDataResponse.data);
           showNotification('Indoor data not available', 'error');
           return;
         }
-
-        // Find start and end rooms in indoor data
-        const startRoom = indoorDataResponse.data.features.find(
-          feature => feature.properties.id === parseInt(route.startLocation.lat)
-        );
-        const endRoom = indoorDataResponse.data.features.find(
-          feature => feature.properties.id === parseInt(route.endLocation.lat)
-        );
-
+  
+        const features = indoorDataResponse.data.features;
+  
+        // For indoor routes, the lat field is used to store the room ID
+        const startRoomId = parseInt(route.startLocation.lat);
+        const endRoomId = parseInt(route.endLocation.lat);
+  
+        console.log('Looking for rooms:', { startRoomId, endRoomId });
+  
+        // Find start and end rooms by their IDs
+        const startRoom = features.find(f => f.properties.id === startRoomId);
+        const endRoom = features.find(f => f.properties.id === endRoomId);
+  
         if (!startRoom || !endRoom) {
-          showNotification('Route endpoints not found', 'error');
+          console.error('Rooms not found:', {
+            startRoomId,
+            endRoomId,
+            availableRooms: features.map(f => ({
+              id: f.properties.id,
+              name: f.properties.RoomName
+            }))
+          });
+          showNotification('Could not find route endpoints', 'error');
           return;
         }
-
-        // Create event with complete route data
+  
+        console.log('Found rooms:', {
+          start: startRoom.properties,
+          end: endRoom.properties
+        });
+  
+        // Create and dispatch the event
         const event = new CustomEvent('openFloorPlan', {
           detail: {
             building,
@@ -634,25 +661,32 @@ const Profile = ({ user, onClose, onUpdateUser, onLogout, showNotification, onVi
                 floor: endRoom.properties.Floor
               }
             },
-            startLocationId: startRoom.properties.id,
-            endLocationId: endRoom.properties.id
+            startLocationId: startRoomId,
+            endLocationId: endRoomId
           }
         });
-
-        // Dispatch event and close profile
+  
+        // Log event details and dispatch
+        console.log('Dispatching event:', event.detail);
         window.dispatchEvent(event);
         onClose();
+  
       } catch (error) {
         console.error('Error loading indoor route:', error);
-        showNotification('Error loading indoor route: ' + (error.response?.data?.message || error.message), 'error');
+        // If we get a 404, log the attempted URL
+        if (error.response?.status === 404) {
+          console.error('404 on URL:', error.config.url);
+        }
+        if (error.response?.data) {
+          console.error('Server response:', error.response.data);
+        }
+        showNotification('Error loading indoor route. Please try again.', 'error');
       }
     } else {
       // Handle outdoor routes
       onViewSavedRoute(route);
     }
   };
-
-  // In Profile.jsx
 
 const renderSavedRoutes = () => {
   const formatRouteDistance = (route) => {

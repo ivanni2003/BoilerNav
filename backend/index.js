@@ -8,7 +8,7 @@ const preprocessNavWays = require("./preprocessNavWays");
 everything from app, hierarchy is index->app->...
 */
 
-const PORT = 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
 

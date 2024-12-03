@@ -1,7 +1,3 @@
-/*
-Mainly for importing stuff from other files/folders
-*/
-
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
@@ -19,9 +15,10 @@ const heatMapRouter = require("./controllers/heatMap");
 const Route = require('./models/route');
 const ShareRouterouter = require("./controllers/ShareRouteEmail");
 
+require('dotenv').config()
 
-const url =
-  "mongodb+srv://boilernav123:team13@boilernav.93a2g.mongodb.net/?retryWrites=true&w=majority&appName=BoilerNav";
+const url = process.env.MONGODB_URI
+  
 const cors = require("cors");
 
 mongoose.set("strictQuery", false);

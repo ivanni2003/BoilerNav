@@ -34,7 +34,7 @@ const SearchBar = ({items, updateMap, markRoom, viewSavedRoute, searchStr}) => {
                 return (`${item.startLocation.name} to ${item.endLocation.name}`).toLowerCase().includes(search.toLowerCase()) 
             }
             else {
-                return item.room.properties.RoomName.toLowerCase().includes(search.toLowerCase())
+                return item.properties.RoomName.toLowerCase().includes(search.toLowerCase())
             }
         }).slice(0, 20) 
         : []
@@ -52,7 +52,7 @@ const SearchBar = ({items, updateMap, markRoom, viewSavedRoute, searchStr}) => {
         } 
         else {
             markRoom(item, "search")
-            setSearch(item.room.properties.RoomName)
+            setSearch(item.properties.RoomName)
             setShowDropdown(false)
         }
     }
@@ -78,7 +78,7 @@ const SearchBar = ({items, updateMap, markRoom, viewSavedRoute, searchStr}) => {
                                 {updateMap ? item.tags.name : 
                                     viewSavedRoute 
                                         ? `${item.startLocation.name} to ${item.endLocation.name}` 
-                                        : item.room.properties.RoomName}
+                                        : item.properties.RoomName}
                             </ul>
                         ))
                     ) : search != "" && (

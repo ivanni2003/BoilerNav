@@ -81,7 +81,6 @@ function App() {
     setIsBikeRacksVisible: setIsBikeRacksVisible
   };
 
-
   const handleScheduleClick = () => {
     setShowSchedule(true);
   };
@@ -611,6 +610,7 @@ const getTravelTime = (distance, selectedMode) => {
 
   const [routeInfo, setRouteInfo] = useState({ manhattanDistance: null, travelTime: null });
   const handleRouting = async () => {
+    setIsScheduleRouting(false);
     console.log("Start: ", start); // list of lat and lon
     console.log("Destination: ", destination); // building way
     // implement routing logic
@@ -817,7 +817,8 @@ const getTravelTime = (distance, selectedMode) => {
             scheduleState={[schedule, setSchedule]}
             isStartBuildingState={[isStartBuilding, setIsStartBuilding]}
             indexInsertState={[indexInsert, setIndexInsert]}
-            isReplacingState={[isReplacing, setIsReplacing]}          />
+            isReplacingState={[isReplacing, setIsReplacing]}
+          />
         ) : (
         <div>
           <div className="map-content">
@@ -858,7 +859,6 @@ const getTravelTime = (distance, selectedMode) => {
               handleTitleClick={handleTitleClick}
               handleScheduleClick={handleScheduleClick}
               handleScheduleBuildingSelect={handleScheduleBuildingSelect}
-
             />
             {<TransportationMode selectedMode={selectedMode} onSelectMode={handleSelectMode} />}
             {<MostPopular 

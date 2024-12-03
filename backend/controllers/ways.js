@@ -746,7 +746,6 @@ wayRouter.get("/schedule/:buildingIds", async (request, response) => {
   try {
     const buildingIds = request.params.buildingIds.split(",");
     const buildings = await Way.find({ id: { $in: buildingIds } });
-    console.log(buildings);
     // buildings might not be in same order as buildingIds
     // resort
     const sortedBuildings = buildingIds.map((id) =>

@@ -1,5 +1,5 @@
 const indoorDataRouter = require('express').Router();
-const IndoorData = require('../models/indoorData');
+const IndoorData = require('../models/indoorNav');
 const UpdateRequest = require('../models/updateRequest');
 const User = require('../models/user');
 const FloorPlan = require('../models/floorPlan')
@@ -102,18 +102,32 @@ indoorDataRouter.post('/decline-floor-plan-request', async (request, response) =
   }
 });
 
-indoorDataRouter.post('/', async(request, response) => {   // post entire building data object
-    const indoorData = request.body
+indoorDataRouter.post("/", async (request, response) => {
+  // post entire building data object
+  const indoorData = request.body;
+  const indoorDataObj = new IndoorData(indoorData);
 
-    const indoorDataObj = new IndoorData(indoorData)
+  // If a document with the same name already exists, update it
+  // Otherwise, create a new document
 
-    try {
-        await indoorDataObj.save()
-        response.json(indoorDataObj)
-    } catch (error) {
-        response.json(400, error)
+  try {
+    const existingIndoorData = await IndoorData.findOne({
+      name: indoorData.name,
+    });
+    if (existingIndoorData) {
+      await IndoorData.findOneAndReplace({ name: indoorData.name }, indoorData);
+    } else {
+      // console.log(indoorData.features[0].properties);
+      await indoorDataObj.save();
     }
-})
+    response.status(201).json(indoorData);
+  } catch (error) {
+    console.log(error);
+    console.log("indoorData: ", indoorData, "indoorDataObj: ", indoorDataObj);
+    response.status(400).json({ error: error.message });
+  }
+});
+
 
 // GET endpoint to get ALL update requests.
 indoorDataRouter.get('/get-update-requests', async (request, response) => {
@@ -154,101 +168,104 @@ indoorDataRouter.get('/get-update-requests', async (request, response) => {
 indoorDataRouter.get('/:name', async(request, response) => {  // get building data by name
     const name = request.params.name.replace(' ', '')
 
-    try {
-        const indoorData = await IndoorData.findOne({ name })
-        if (!indoorData) {
-            return response.status(404).send('indoor data not found')
-        }
-        response.json(indoorData)
-    } catch (error) {
-        response.status(400, error)
-    }
-})
-
-indoorDataRouter.patch('/:name/:id', async(request, response) => {
-    const name = request.params.name.replace(' ', '')
-    const id = parseInt(request.params.id)
-
-
-    try {
-        const indoorData = await IndoorData.findOne({ name })
-
-        if (id < 0) {
-            return response.status(404).send('Feature with requested id does not exist');
-        }
-        
-        indoorData.features[id - 1].properties.DestinationCount += 1;   // assumes ids are aligned with order of objects
-
-        await indoorData.save();
-        response.status(200).json(indoorData.features[id - 1]);
-
-    } catch (error) {
-        response.status(400, error)
-    }
-})
-
-indoorDataRouter.get('/:name/:floor/topRooms', async (request, response) => { // get top rooms on requested floor of building
-    const name = request.params.name.replace(' ', '')
-    const floorNum = request.params.floor
-
-
-    try {
-        const indoorData = await IndoorData.findOne({ name })
-        if (!indoorData) {
-            return response.status(404).send('indoor data not found')
-        }
-        const floorRooms = indoorData.features.filter(item => item.properties.Floor == floorNum && item.properties.Type == 'Room')
-        const sortedRooms = floorRooms.sort((itemA, itemB) => itemB.properties.DestinationCount - itemA.properties.DestinationCount)
-
-        const topRooms = []
-        for (i = 0; i < 3; i++) {  // add top 3 rooms
-            if (sortedRooms[i].properties.DestinationCount > 0) {
-                topRooms.push(sortedRooms[i])
-            }
-        }   
-        response.json(topRooms)
-
-    } catch (error) {
-        response.json(400, error)
-    }
-
-})
-
-// Add endpoint to submit update requests
-indoorDataRouter.post('/update-request', async (request, response) => {
-    const { buildingName, roomId, newRoomName, username } = request.body;
-    try {
-      const updateRequest = new UpdateRequest({
-        buildingName,
-        roomId,
-        newRoomName,
-        username
-      });
-      await updateRequest.save();
-  
-      response.status(200).json({ message: 'Update request submitted successfully' });
-    } catch (error) {
-      console.error('Error handling update request:', error);
-      response.status(500).json({ error: 'Failed to submit update request' });
-    }
-  });
-
-// DELETE endpoint to decline (delete) an update request
-indoorDataRouter.delete('/update-request/:id', async (request, response) => {
-  const id = request.params.id;
   try {
-    const deletedRequest = await UpdateRequest.findByIdAndDelete(id);
-    if (!deletedRequest) {
-      return response.status(404).json({ error: 'Update request not found' });
+    const indoorData = await IndoorData.findOne({ name });
+    if (!indoorData) {
+      return response.status(404).send("indoor data not found");
     }
-    response.status(200).json({ message: 'Update request declined and deleted successfully' });
+    response.json(indoorData);
   } catch (error) {
-    console.error('Error declining update request:', error);
-    response.status(500).json({ error: 'Failed to decline update request' });
+    response.status(400, error);
   }
 });
 
-// GET endpoint to DECLINE or APPROVE an update request.
+indoorDataRouter.patch("/:name/:id", async (request, response) => {
+  const name = request.params.name.replace(" ", "");
+  const id = parseInt(request.params.id);
 
 
-module.exports = indoorDataRouter
+  try {
+    const indoorData = await IndoorData.findOne({ name });
+
+    if (id < 0) {
+      return response
+        .status(404)
+        .send("Feature with requested id does not exist");
+    }
+
+    indoorData.features[id - 1].properties.DestinationCount += 1; // assumes ids are aligned with order of objects
+
+    await indoorData.save();
+    response.status(200).json(indoorData.features[id - 1]);
+  } catch (error) {
+    response.status(400, error);
+  }
+});
+
+indoorDataRouter.get("/:name/:floor/topRooms", async (request, response) => {
+  // get top rooms on requested floor of building
+  const name = request.params.name.replace(" ", "");
+  const floorNum = request.params.floor;
+
+  try {
+    const indoorData = await IndoorData.findOne({ name });
+    if (!indoorData) {
+      return response.status(404).send("indoor data not found");
+    }
+    const floorRooms = indoorData.features.filter(
+      (item) =>
+        item.properties.Floor == floorNum && item.properties.Type == "Room",
+    );
+    const sortedRooms = floorRooms.sort(
+      (itemA, itemB) =>
+        itemB.properties.DestinationCount - itemA.properties.DestinationCount,
+    );
+
+    const topRooms = [];
+    for (i = 0; i < 3; i++) {
+      // add top 3 rooms
+      if (sortedRooms[i].properties.DestinationCount > 0) {
+        topRooms.push(sortedRooms[i]);
+      }
+    }
+    response.json(topRooms);
+  } catch (error) {
+    response.json(400, error);
+  }
+});
+
+// Add endpoint to submit update requests
+indoorDataRouter.post('/update-request', async (request, response) => {
+  const { buildingName, roomId, newRoomName, username } = request.body;
+  try {
+    const updateRequest = new UpdateRequest({
+      buildingName,
+      roomId,
+      newRoomName,
+      username
+    });
+    await updateRequest.save();
+
+    response.status(200).json({ message: 'Update request submitted successfully' });
+  } catch (error) {
+    console.error('Error handling update request:', error);
+    response.status(500).json({ error: 'Failed to submit update request' });
+  }
+});
+
+// DELETE endpoint to decline (delete) an update request
+indoorDataRouter.delete('/update-request/:id', async (request, response) => {
+const id = request.params.id;
+try {
+  const deletedRequest = await UpdateRequest.findByIdAndDelete(id);
+  if (!deletedRequest) {
+    return response.status(404).json({ error: 'Update request not found' });
+  }
+  response.status(200).json({ message: 'Update request declined and deleted successfully' });
+} catch (error) {
+  console.error('Error declining update request:', error);
+  response.status(500).json({ error: 'Failed to decline update request' });
+}
+});
+
+module.exports = indoorDataRouter;

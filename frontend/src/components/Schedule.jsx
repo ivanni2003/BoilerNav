@@ -5,10 +5,12 @@ const ScheduleItem = ({ building, index, onPickBuilding, onInsertBuilding, onDel
   // 4. building insert button, 5. building delete button
   if (isStartBuilding && index === 0) return null;
   const name = building?.tags?.name ?? "Building";
+  let number = index + 1;
+  if (!isStartBuilding) number += 1;
+  const title = `${number}. ${name}`;
   return (
     <div className="schedule-item">
-      <p>{index + 1}.</p>
-      <p>{name}</p>
+      <p>{title}.</p>
       <button onClick={() => onPickBuilding(index)}>Pick Building</button>
       <button onClick={() => onInsertBuilding(index + 1)}>Insert Building</button>
       <button onClick={() => onDeleteBuilding(index)}>Delete Building</button>
@@ -20,10 +22,10 @@ const FirstScheduleItem = ({ isStartBuilding, schedule, onSetGPS, onPickBuilding
   // This is the start, and is special because it can be either gps or a building, and can't be deleted
   console.log("isStartBuilding: ", isStartBuilding);
   const name = isStartBuilding ? ( schedule[0]?.tags?.name ?? "Building" ) : "GPS";
+  const title = `1. ${name}`;
   return (
     <div className="schedule-start">
-      <p>1.</p>
-      <p>{name}</p>
+      <p>{title}.</p>
       <button onClick={() => onPickBuilding(0)}>Pick Building</button>
       <button onClick={() => onInsertBuilding(1)}>Insert Building</button>
       { isStartBuilding ? <button onClick={onSetGPS}>Set GPS</button> : null }

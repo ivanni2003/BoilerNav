@@ -31,6 +31,7 @@ export const getDeviceId = () => {
 }
 
 const baseURL = import.meta.env.VITE_API_URL;
+// const baseURL = 'http://localhost:3001';
 
 const DEFAULT_LAT = 40.4237;
 const DEFAULT_LON = -86.9212;
@@ -584,7 +585,7 @@ const FloorPlanView = ({
         const time = ((distance / avgMsRate) / 60).toFixed(2);
         setDistancetime(distance, time);
         try {
-          await axios.patch(`http://localhost:3001/api/indoordata/${buildingNameNoSpaces}/${destination.properties.id}`)
+          await axios.patch(`${baseURL}/api/indoordata/${buildingNameNoSpaces}/${destination.properties.id}`);
         } catch (error) {
           console.log(error);
         }
@@ -627,14 +628,14 @@ const FloorPlanView = ({
       try {
         // Remove all spaces from building name
         // URL doesn't accept spaces?
-        const response = await axios.get(`${baseURL}/api/indoordata/${buildingNameNoSpaces}`);
-        if (response.status !== 200) {
-          console.error("Failed to fetch indoor data:", response.data);
+        const indoorResponse = await axios.get(`${baseURL}/api/indoordata/${buildingNameNoSpaces}`);
+        if (indoorResponse.status !== 200) {
+          console.error("Failed to fetch indoor data:", indoorResponse.data);
           showNotification('Failed to fetch indoor data.', 'error');
           return;
         }
-        console.log("Fetched indoor data:", response.data);
-        const indoorData = response.data;
+        console.log("Fetched indoor data:", indoorResponse.data);
+        const indoorData = indoorResponse.data;
         setIndoorNavData(indoorData);
       // Catch 404 error and create new indoor data
       } catch (error) {
@@ -668,8 +669,21 @@ const FloorPlanView = ({
   }, [building]);
 
   useEffect(() => {
-    function setFilteredRooms() {
+    async function setFilteredRooms() {
       const indoorData = indoorNavData;
+      const buildingNameNoSpaces = building.tags.name.replaceAll(' ', '');
+      const currentFloorNumber = selectedFloorPlan?.floorIndex;
+      if (currentFloorNumber !== null) {
+        try {
+          const topRoomsResponse = await axios.get(`${baseURL}/api/indoordata/${buildingNameNoSpaces}/${currentFloorNumber}/topRooms`);
+          setTopRooms(topRoomsResponse.data);
+          // console.log("Top rooms Response:", topRoomsResponse);
+        }
+        catch (error) {
+          console.error('Failed to fetch top rooms:', error);
+          showNotification('Failed to fetch top rooms.', 'error');
+        }
+      }
       if (!indoorData || !selectedFloorPlan) return;
       // Find the index of element in indoorData.floor that matches selectedFloorPlan.floorNumber
       const floorFromFeatureCollection = indoorData.floors.find((floor) => floor.floorName === selectedFloorPlan.floorNumber);

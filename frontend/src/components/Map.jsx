@@ -1415,7 +1415,7 @@ const Map = ({ latitude,
     </MapContainer>
     <div className="amenities-menu">
         <MapOptions mapOptions={mapOptions} />
-        <button onClick={(e) => handleScheduleClick()}>Schedule</button>
+        <button className='feature-button'onClick={(e) => handleScheduleClick()}>Schedule</button>
         <Parking updateMap={handleMapUpdate} markParkingLots={markParkingLots}/>
         <BusStops updateMap={handleMapUpdate} markBusStops={markBusStops}/>
       </div>

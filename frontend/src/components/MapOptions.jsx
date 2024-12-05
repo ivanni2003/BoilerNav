@@ -35,7 +35,7 @@ const MapOptionsButton = ({mapOptions}) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   return (
     <div className="map-options-button">
-      <button onClick={() => setIsPopupVisible(true)}>Map Options</button>
+      <button className='feature-button' onClick={() => setIsPopupVisible(true)}>Map Options</button>
       <MapOptions isVisible={isPopupVisible} onClose={() => setIsPopupVisible(false)} mapOptions={mapOptions} />
     </div>
   );

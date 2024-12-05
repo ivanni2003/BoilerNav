@@ -261,9 +261,9 @@ const DirectionsMenu = ({
             </div>
           )}
           <form onSubmit={saveRoute}>
-            <div className='save-route-input'>
+            <div>
               <label>
-                <input type="text" placeholder="Enter Start Location for Saved Route" onChange={handleSavedRouteStartChange} value={savedRouteStartName}/>
+                <input className='save-route-input' type="text" placeholder="Enter Start Location for Saved Route" onChange={handleSavedRouteStartChange} value={savedRouteStartName}/>
               </label>  
             </div>
               <div>
